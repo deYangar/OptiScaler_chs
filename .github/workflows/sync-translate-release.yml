@@ -11,9 +11,9 @@ on:
         options: [nightly, beta, release]
         default: nightly
       upstream_ref:
-        description: '上游分支或 tag（默认 dev）'
+        description: '上游分支或 tag（默认 master）'
         type: string
-        default: 'dev'
+        default: 'master'
   push:
     paths: ['overlay/**', 'scripts/**']
 
@@ -41,7 +41,7 @@ jobs:
         id: ver
         run: |
           TYPE="${{ github.event.inputs.release_type || 'nightly' }}"
-          REF="${{ github.event.inputs.upstream_ref || 'dev' }}"
+          REF="${{ github.event.inputs.upstream_ref || 'master' }}"
           echo "REF=$REF" >> $GITHUB_ENV
           echo "type=$TYPE" >> "$GITHUB_OUTPUT"
           DATE=$(date +%Y%m%d)
