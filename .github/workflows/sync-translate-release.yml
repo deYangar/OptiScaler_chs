@@ -1,0 +1,172 @@
+name: CHS Sync & Release
+
+on:
+  schedule:
+    - cron: '0 4 * * *'          # 每天 04:00 UTC (12:00 北京) 自动 Nightly
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: '发布类型'
+        type: choice
+        options: [nightly, beta, release]
+        default: nightly
+      upstream_ref:
+        description: '上游分支或 tag（默认 dev）'
+        type: string
+        default: 'dev'
+  push:
+    paths: ['overlay/**', 'scripts/**']
+
+permissions:
+  contents: write
+
+env:
+  UPSTREAM_REPO: optiscaler/OptiScaler
+  FONT_DEB: http://deb.debian.org/debian/pool/main/f/fonts-wqy-microhei/fonts-wqy-microhei_0.2.0-beta-3_all.deb
+
+jobs:
+  sync:
+    name: 拉上游 + 注入汉化 + 自动翻译
+    runs-on: ubuntu-latest
+    outputs:
+      version_tag: ${{ steps.ver.outputs.tag }}
+      release_type: ${{ steps.ver.outputs.type }}
+    steps:
+      - name: 检出本仓库
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 确定发布类型与 tag
+        id: ver
+        run: |
+          TYPE="${{ github.event.inputs.release_type || 'nightly' }}"
+          REF="${{ github.event.inputs.upstream_ref || 'dev' }}"
+          echo "REF=$REF" >> $GITHUB_ENV
+          echo "type=$TYPE" >> "$GITHUB_OUTPUT"
+          DATE=$(date +%Y%m%d)
+          TAG="$TYPE-$DATE"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: 克隆上游源码
+        run: |
+          git clone --depth 1 -b "$REF" --recurse-submodules \
+            https://github.com/${{ env.UPSTREAM_REPO }}.git upstream
+          echo "上游 HEAD: $(git -C upstream rev-parse --short HEAD)"
+
+      - name: 注入汉化补丁
+        run: |
+          python scripts/apply_patch.py "$GITHUB_WORKSPACE/upstream"
+
+      - name: 扫描新字符串
+        id: scan
+        run: |
+          python scripts/scan_strings.py "$GITHUB_WORKSPACE/upstream" --output pending.json || true
+          if [ -s pending.json ]; then
+            CNT=$(python -c "import json;print(len(json.load(open('pending.json'))))")
+            echo "has_new=true" >> "$GITHUB_OUTPUT"
+            echo "新增待翻译字符串: $CNT"
+          else
+            echo "has_new=false" >> "$GITHUB_OUTPUT"
+            echo "无新增字符串"
+          fi
+
+      - name: 自动翻译（DeepSeek）
+        if: steps.scan.outputs.has_new == 'true' && env.DEEPSEEK_API_KEY != ''
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          python scripts/translate.py --input pending.json
+          # 重新注入，让新翻译的串也进入源码
+          python scripts/apply_patch.py "$GITHUB_WORKSPACE/upstream"
+          git config user.name "CHS Bot"
+          git config user.email "chs-bot@users.noreply.github.com"
+          git add overlay/ scripts/strings_map.json
+          git commit -m "chore: 自动翻译新增字符串 $(date +%Y%m%d) [skip ci]" || echo "无变更"
+          git push origin master || echo "push 失败（可忽略）"
+
+      - name: 下载中文字体（文泉驿微米黑）
+        run: |
+          curl -L -o wqy.deb "${{ env.FONT_DEB }}"
+          dpkg-deb -x wqy.deb font-extract
+          mkdir -p upstream/font
+          find font-extract -name "*.ttc" -exec cp {} upstream/font/ \;
+          ls -la upstream/font/
+
+      - name: 上传处理后的源码
+        uses: actions/upload-artifact@v4
+        with:
+          name: upstream-source
+          path: upstream/
+          retention-days: 3
+
+  build:
+    name: Windows 编译
+    needs: sync
+    runs-on: windows-latest
+    steps:
+      - name: 检出本仓库脚本
+        uses: actions/checkout@v4
+        with:
+          path: chs
+          fetch-depth: 1
+
+      - name: 下载源码
+        uses: actions/download-artifact@v4
+        with:
+          name: upstream-source
+          path: source
+
+      - name: 构建
+        shell: pwsh
+        run: |
+          & "$env:GITHUB_WORKSPACE/chs/scripts/build.ps1" -SourceDir "$env:GITHUB_WORKSPACE/source" -OutDir "$env:GITHUB_WORKSPACE/dist/CHS"
+
+      - name: 打包 zip
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "$env:GITHUB_WORKSPACE/dist/CHS/*" -DestinationPath "$env:GITHUB_WORKSPACE/dist/OptiScaler_CHS_${{ needs.sync.outputs.version_tag }}.zip" -Force
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-zip
+          path: dist/*.zip
+          retention-days: 7
+
+  release:
+    name: 发布
+    needs: [sync, build]
+    runs-on: ubuntu-latest
+    if: needs.build.result == 'success'
+    steps:
+      - name: 下载 zip
+        uses: actions/download-artifact@v4
+        with:
+          name: release-zip
+          path: dist
+
+      - name: 创建 Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.sync.outputs.version_tag }}
+          TYPE: ${{ needs.sync.outputs.release_type }}
+        run: |
+          ZIP=$(ls dist/*.zip | head -1)
+          DATE=$(date +%Y-%m-%d)
+          if [ "$TYPE" = "nightly" ]; then
+            TITLE="Nightly $DATE"
+            NOTES="自动构建的每日预览版（上游 dev + 汉化）"
+            PRERELEASE=true
+          elif [ "$TYPE" = "beta" ]; then
+            TITLE="Beta $DATE"
+            NOTES="测试版（上游 dev + 汉化）"
+            PRERELEASE=true
+          else
+            TITLE="Release $DATE"
+            NOTES="正式版（上游 dev + 汉化）"
+            PRERELEASE=false
+          fi
+          gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
+          gh release create "$TAG" "$ZIP" --title "$TITLE" --notes "$NOTES" --prerelease="$PRERELEASE"
+          echo "已发布: $TAG"
