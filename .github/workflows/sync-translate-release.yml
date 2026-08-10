@@ -48,10 +48,35 @@ jobs:
           TAG="$TYPE-$DATE"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      - name: 克隆上游源码
+      - name: 获取上游最新 commit（用于缓存 key）
+        id: up
+        run: |
+          HASH=$(git ls-remote https://github.com/${{ env.UPSTREAM_REPO }}.git "refs/heads/${{ github.event.inputs.upstream_ref || 'master' }}" | cut -f1)
+          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+          echo "上游 commit: $HASH"
+
+      - name: 缓存上游源码
+        id: cache-up
+        uses: actions/cache@v4
+        with:
+          path: upstream
+          key: upstream-src-${{ steps.up.outputs.hash }}
+          restore-keys: |
+            upstream-src-
+
+      - name: 克隆上游源码（缓存未命中时）
+        if: steps.cache-up.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 -b "$REF" --recurse-submodules \
             https://github.com/${{ env.UPSTREAM_REPO }}.git upstream
+          echo "上游 HEAD: $(git -C upstream rev-parse --short HEAD)"
+
+      - name: 上游源码增量更新（缓存命中时）
+        if: steps.cache-up.outputs.cache-hit == 'true'
+        run: |
+          git -C upstream fetch --depth 1 origin "$REF"
+          git -C upstream checkout FETCH_HEAD
+          git -C upstream submodule update --init --recursive --depth 1 || echo "submodule 增量更新失败，可接受"
           echo "上游 HEAD: $(git -C upstream rev-parse --short HEAD)"
 
       - name: 注入汉化补丁
