@@ -258,10 +258,12 @@ def sync_md_docs(repo, api_key):
         prev_ref = read_file(ref_path)
 
         if prev_ref is None:
-            # 首次：建立基线快照，不处理
+            # 首次：建立基线快照，并标记为需要提交（快照必须进仓库，否则下次 CI 又是全新 checkout）
             if not args_dry_run_global():
                 write_file(ref_path, up_text)
-            print(f'[md] {doc}: 建立上游基线快照')
+            changed.append(doc)
+            report.append(f'- {doc}: 建立上游基线快照（首次）')
+            print(f'[md] {doc}: 建立上游基线快照（首次，需提交）')
             continue
 
         if prev_ref == up_text:
