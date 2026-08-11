@@ -646,7 +646,6 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::TXT_PresetD_C_desc)] = "Preset C\nRemoved on recent versions!";
     table[static_cast<int>(LK::TXT_PresetD_D_desc)] = "Default model, Transformer";
     table[static_cast<int>(LK::TXT_PresetD_E_desc)] = "Latest Transformer model\nMust use if DoF guide is needed";
-}
     table[static_cast<int>(LK::UI_Menu_key_pressed_will_be_switching_menu)] = "Menu key pressed, will be switching menu";
     table[static_cast<int>(LK::UI_Menu_key_pressed_will_be_switching_FPS)] = "Menu key pressed, will be switching FPS";
     table[static_cast<int>(LK::UI_Menu_key_pressed_will_be_switching_FG_mode)] = "Menu key pressed, will be switching FG mode";
@@ -1120,7 +1119,6 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Render_Width)] = "Render Width";
     table[static_cast<int>(LK::UI_S_08x_s_s_Count_llu_s)] = "%08x, %s->%s, Count: %llu, %s";
     table[static_cast<int>(LK::UI_s_s_s_s_s)] = "%s - %s %s %s %s";
-}
     table[static_cast<int>(LK::UI_Don_t_Exist)] = "Don't Exist";
     table[static_cast<int>(LK::UI_Preset_0)] = "Preset 0";
     table[static_cast<int>(LK::UI_Preset_1)] = "Preset 1";

@@ -658,7 +658,6 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::TXT_PresetD_C_desc)] = "预设 C\n在新版本中已移除！";
     table[static_cast<int>(LK::TXT_PresetD_D_desc)] = "默认模型，Transformer";
     table[static_cast<int>(LK::TXT_PresetD_E_desc)] = "最新 Transformer 模型\n需要 DoF 引导时必须使用";
-}
     table[static_cast<int>(LK::UI_Menu_key_pressed_will_be_switching_menu)] = "按下菜单键，正在切换菜单";
     table[static_cast<int>(LK::UI_Menu_key_pressed_will_be_switching_FPS)] = "按下菜单键，正在切换FPS";
     table[static_cast<int>(LK::UI_Menu_key_pressed_will_be_switching_FG_mode)] = "按下菜单键，正在切换帧生成模式";
@@ -1132,7 +1131,6 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Render_Width)] = "渲染宽度";
     table[static_cast<int>(LK::UI_S_08x_s_s_Count_llu_s)] = "%08x, %s->%s, 计数：%llu, %s";
     table[static_cast<int>(LK::UI_s_s_s_s_s)] = "%s - %s %s %s %s";
-}
     table[static_cast<int>(LK::UI_Don_t_Exist)] = "不存在";
     table[static_cast<int>(LK::UI_Preset_0)] = "预设 0";
     table[static_cast<int>(LK::UI_Preset_1)] = "预设 1";

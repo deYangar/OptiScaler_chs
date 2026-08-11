@@ -181,7 +181,11 @@ def main():
         for k, en, zh in new_entries:
             v = zh if is_zh else en
             lines.append(f'    table[static_cast<int>(LK::{k})] = "{v}";')
-        c = c.rstrip() + '\n' + '\n'.join(lines) + '\n}\n'
+        # 先剥掉已有的结尾 '}'（防止重复运行导致结构错乱：'}' 被夹在中间）
+        c = c.rstrip()
+        if c.endswith('}'):
+            c = c[:c.rfind('}')].rstrip()
+        c = c + '\n' + '\n'.join(lines) + '\n}\n'
         with io.open(path, 'w', encoding='utf-8', newline='\n') as f:
             f.write(c)
 

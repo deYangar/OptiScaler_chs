@@ -48,7 +48,7 @@ for fn in os.listdir(os.path.join(OVERLAY, 'OptiScaler', 'localization')):
     shutil.copy2(os.path.join(OVERLAY, 'OptiScaler', 'localization', fn), os.path.join(LOCAL_DIR, fn))
     print(f'    {fn}')
 
-print(f'[2] vcxproj /utf-8')
+print(f'[2] vcxproj /utf-8 + localization.cpp')
 vcx = read(VCX)
 if '/utf-8' not in vcx:
     n = vcx.count('<AdditionalOptions>/w34996 %(AdditionalOptions)</AdditionalOptions>')
@@ -57,7 +57,20 @@ if '/utf-8' not in vcx:
     write(VCX, vcx)
     print(f'    注入 /utf-8 x{n}')
 else:
-    print('    已存在')
+    print('    /utf-8 已存在')
+
+# 确保 localization.cpp 被编译（vcxproj 需显式引用，否则链接器找不到 LocalizationManager::Get）
+if 'localization\\localization.cpp' not in vcx and 'localization/localization.cpp' not in vcx:
+    anchor = '<ClCompile Include="menu\\menu_common.cpp" />'
+    if anchor in vcx:
+        vcx = vcx.replace(anchor,
+                          '<ClCompile Include="localization\\localization.cpp" />\n    ' + anchor)
+        write(VCX, vcx)
+        print('    注入 localization.cpp 编译项')
+    else:
+        print('    !! menu_common.cpp 锚点未找到，localization.cpp 未注入')
+else:
+    print('    localization.cpp 已存在')
 
 print(f'[3] imgui.cpp FontStack fix')
 imgui = read(IMGUI)
@@ -135,7 +148,22 @@ mc = '\n'.join(new_lines)
 write(MC, mc)
 print(f'    LOC 注入 {injected} 处')
 
-print(f'[5] menu_common.cpp CJK 字体加载')
+# 注入 LocalizationManager::Init() 调用（MenuCommon::Init 开头），否则表格未初始化、LOC 全部返回 [MISSING]
+INIT_MARK = 'LocalizationManager::Instance().Init();'
+if INIT_MARK not in mc:
+    init_anchor = 'void MenuCommon::Init(HWND InHwnd, bool isUWP)\n{'
+    if init_anchor in mc:
+        idx = mc.find(init_anchor) + len(init_anchor)
+        mc = mc[:idx] + '\n    ' + INIT_MARK + '\n' + mc[idx:]
+        write(MC, mc)
+        print('    注入 LocalizationManager::Init()（MenuCommon::Init 开头）')
+    else:
+        print('    !! MenuCommon::Init 锚点未找到，Init 注入失败')
+        sys.exit(4)
+else:
+    print('    Init 已存在')
+
+print(f'[6] menu_common.cpp CJK 字体加载')
 if 'cjk_ranges' not in mc:
     cjk_block = '''
         // FIX-CJK: 中文字体加载（覆盖 Latin + CJK）
@@ -187,7 +215,7 @@ if 'cjk_ranges' not in mc:
 else:
     print('    已存在')
 
-print(f'[6] 字体文件')
+print(f'[7] 字体文件')
 os.makedirs(os.path.join(OS_DIR, '..', 'run', 'font'), exist_ok=True)
 font_dst = os.path.join(UPSTREAM, 'font')
 os.makedirs(font_dst, exist_ok=True)
