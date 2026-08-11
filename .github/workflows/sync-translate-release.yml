@@ -98,11 +98,11 @@ jobs:
           echo "上游 HEAD: $(git rev-parse upstream/master)"
 
           # 只同步上游的源码路径，保留我们的 overlay/ scripts/ fonts/ .github/ 等汉化资产
-          # ⚠️ 以下中文文档已汉化，禁止从上游覆盖：README.md Config.md CONTRIBUTING.md Features.md Issues.md Spoofing.md
+          # ⚠️ 以下中文文档已汉化，禁止从上游覆盖：README.md Config.md CONTRIBUTING.md Features.md Issues.md Spoofing.md OptiScaler.ini
           # 核心路径（上游必有），缺失即报错
           git checkout upstream/master -- \
             OptiScaler/ external/ images/ \
-            OptiScaler.sln OptiScaler.ini Changelog.md \
+            OptiScaler.sln Changelog.md \
             LICENSE \
             setup_linux.sh setup_windows.bat \
             .clang-format .gitattributes .gitignore .gitmodules
