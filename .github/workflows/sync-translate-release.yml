@@ -175,6 +175,6 @@ jobs:
             NOTES="正式版（上游 master + 汉化）"
             PRERELEASE=false
           fi
-          gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
-          gh release create "$TAG" "$ZIP" --title "$TITLE" --notes "$NOTES" --prerelease="$PRERELEASE"
+          gh release delete "$TAG" --repo "${{ github.repository }}" --yes --cleanup-tag 2>/dev/null || true
+          gh release create "$TAG" "$ZIP" --repo "${{ github.repository }}" --title "$TITLE" --notes "$NOTES" --prerelease="$PRERELEASE"
           echo "已发布: $TAG"
