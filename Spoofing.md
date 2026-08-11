@@ -1,58 +1,68 @@
-# Spoofing
-Except from first generation of DLSS2 games they all have some kind of NVidia verifying to enable DLSS option.   
-To bypass these checks modders have developed some tools.
+# GPU 伪装（Spoofing）
+
+除第一代 DLSS2 游戏外，其余游戏都有某种 Nvidia 验证机制，用于决定是否启用 DLSS 选项。
+为了绕过这些检查，模组作者开发了一些工具。
 
 ## Windows
+
 ### Nvapi
-For spoofing Nvapi calls FakeNvapi can be used. This is needed for enabling DLSS support for some games (like Shadow of the Tomb Raider etc.) 
+对于 Nvapi 调用伪装，可以使用 FakeNvapi。某些游戏（如《古墓丽影：暗影》等）需要它才能启用 DLSS 支持。
 
-Also as a **big bonus** with latest releases FakeNvapi added support for AMD's AntiLag 2 & LatencyFlex to reduce input latency on games that supports Nvidia's Reflex.
-##### Usage 
-Just put `nvapi64.dll` next to OptiScaler and set `OverrideNvapiDll=true` from `OptiScaler.ini`. This only works when OptiScaler is working as non-nvngx (not as `nvngx.dll`).
+同时作为**额外福利**，最新版本的 FakeNvapi 增加了对 AMD 的 AntiLag 2 和 LatencyFlex 的支持，可在支持 Nvidia Reflex 的游戏中降低输入延迟。
 
-For using without OptiScaler:  
-You need to put `nvapi64.dll` file to your `%WINDIR%\System32` but **be careful!**
-* If you are an Nvidia user **backup your original file** and restore after mod usage is over.
-* Do not use this mod with online games, it might cause anti cheat issues or banning.
-##### Link
-[FakeNvapi](https://github.com/FakeMichau/fakenvapi/releases)   
+##### 使用方法
+只需将 `nvapi64.dll` 放在 OptiScaler 旁边，并在 `OptiScaler.ini` 中设置 `OverrideNvapiDll=true`。此方法仅在 OptiScaler 以非 nvngx 模式（即不是 `nvngx.dll`）运行时有效。
+
+不使用 OptiScaler 时的用法：
+你需要将 `nvapi64.dll` 文件放到 `%WINDIR%\System32` 目录，但**请小心！**
+* 如果你是 Nvidia 用户，请**备份原始文件**，并在模组使用结束后恢复。
+* 请勿在联机游戏中使用此模组，可能触发反作弊问题或导致封号。
+
+##### 链接
+[FakeNvapi](https://github.com/FakeMichau/fakenvapi/releases)
 
 ### DXGI
-OptiScaler have built-in DXGI spoofing option which is enabled by default when working as non-nvngx (not as `nvngx.dll`).  
+OptiScaler 内置 DXGI 伪装选项，在以非 nvngx 模式（即不是 `nvngx.dll`）运行时默认启用。
 
 #### d3d12-proxy
-Alternatively for spoofing DXGI adapter checks d3d12-proxy can be used. This mod reports your GPU as RTX 4090.   
-##### Usage 
-Just place dxgi.dll file next to games executable.  
-##### Link 
-[d3d12-proxy](https://github.com/cdozdil/d3d12-proxy/releases)   
+另外，对于 DXGI 适配器检查的伪装，可以使用 d3d12-proxy。该模组会将你的 GPU 报告为 RTX 4090。
+
+##### 使用方法
+只需将 dxgi.dll 文件放在游戏可执行文件旁边。
+
+##### 链接
+[d3d12-proxy](https://github.com/cdozdil/d3d12-proxy/releases)
 
 ### Vulkan
-OptiScaler have built-in Vulkan spoofing options when working as non-nvngx (not as `nvngx.dll`).  
-Vulkan spoofing by default disabled and should be enabled from `OptiScaler.ini` when needed.
+OptiScaler 在以非 nvngx 模式（即不是 `nvngx.dll`）运行时内置 Vulkan 伪装选项。
+Vulkan 伪装默认禁用，需要时从 `OptiScaler.ini` 启用。
+
 ```ini
-; Enables Nvidia GPU spoofing for Vulkan
-; true or false - Default (auto) is false
+; 启用 Vulkan 的 Nvidia GPU 伪装
+; true 或 false - 默认 (auto) 为 false
 Vulkan=auto
 
-; Enables Nvidia extension spoofing for Vulkan
-; true or false - Default (auto) is false
+; 启用 Vulkan 的 Nvidia 扩展伪装
+; true 或 false - 默认 (auto) 为 false
 VulkanExtensionSpoofing=auto
 ```
 
 #### vulkan-spoofer
-Alternatively for spoofing `GetPhysicalDeviceProperties` checks vulkan-spoofer can be used. This mod reports your GPU as RTX 4090.   
-Compatiblity is a bit hit and miss, works for No Man's Sky (not working with latest streamline patch) but not working with Doom Eternal.  
-##### Usage 
-Just place version.dll file next to games executable.  
-##### Link 
-[vulkan-spoofer](https://github.com/cdozdil/vulkan-spoofer/releases)   
+另外，对于 `GetPhysicalDeviceProperties` 检查的伪装，可以使用 vulkan-spoofer。该模组会将你的 GPU 报告为 RTX 4090。
+兼容性时好时坏，适用于《无人深空》（不适用于最新的 streamline 补丁），但不适用于《毁灭战士：永恒》。
+
+##### 使用方法
+只需将 version.dll 文件放在游戏可执行文件旁边。
+
+##### 链接
+[vulkan-spoofer](https://github.com/cdozdil/vulkan-spoofer/releases)
 
 ## Linux
-On Linux with you can use Wine & DXVK's embedded spoofing mechanisms. 
+在 Linux 上，你可以使用 Wine 和 DXVK 内置的伪装机制。
 
-### DirectX & Vulkan
-For DXGI & Vulkan spoofing just create a `dxvk.conf` file next to game's executable with this content or just download it from [here](https://raw.githubusercontent.com/cdozdil/CyberXeSS/imgui-intergration/dxvk.conf).
+### DirectX 与 Vulkan
+对于 DXGI 和 Vulkan 伪装，只需在游戏可执行文件旁边创建一个 `dxvk.conf` 文件，内容如下，或从[此处](https://raw.githubusercontent.com/cdozdil/CyberXeSS/imgui-intergration/dxvk.conf)下载。
+
 ```ini
 dxgi.customVendorId = 10de
 dxgi.hideAmdGpu = True
@@ -60,9 +70,10 @@ dxgi.hideNvidiaGpu = False
 dxgi.customDeviceId = 2684
 dxgi.customDeviceDesc = "NVIDIA GeForce RTX 4090"
 ```
-### NVAPI
-For spoofing NVAPI with Proton set this envvar `PROTON_FORCE_NVAPI=1`
 
-## Goghor's DLSS Unlocker's
-Goghor have created DLSS Unlocker mods for a lot of games which can be found on his [Nexus](https://www.nexusmods.com/spidermanmilesmorales/users/12564231?tab=user+files&BH=0) profile.   
-For example as far as I know for Doom Eternal still only way to enable DLSS is his mod.
+### NVAPI
+要在 Proton 下伪装 NVAPI，请设置环境变量 `PROTON_FORCE_NVAPI=1`。
+
+## Goghor 的 DLSS 解锁器
+Goghor 为许多游戏制作了 DLSS 解锁器模组，可在他的 [Nexus](https://www.nexusmods.com/spidermanmilesmorales/users/12564231?tab=user+files&BH=0) 主页找到。
+例如，据我所知，《毁灭战士：永恒》目前仍然只能通过他的模组启用 DLSS。

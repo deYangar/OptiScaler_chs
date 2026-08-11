@@ -1,16 +1,23 @@
-# Contributing to OptiScaler
+# 参与 OptiScaler 开发
 
-To maintain build efficiency and project structure, please follow these requirements for all code contributions.
+为了保持构建效率和项目结构，所有代码贡献请遵循以下要求。
 
-### Precompiled Header (PCH) Usage
+### 预编译头（PCH）使用规范
 
-We use Precompiled Headers to significantly reduce compile times. To prevent build degradation, please follow these rules:
+我们使用预编译头来显著减少编译时间。为防止构建性能下降，请遵守以下规则：
 
-* **Source Files (`.cpp`):** Every source file must include `"pch.h"` as the **very first** non-comment line.
-* **Header Files (`.h`):** Never include `"pch.h"` inside a header file.
-* **Utility Code:** Do not add general-purpose utilities, macros, or global declarations to `pch.h`. Use `SysUtils.h` or create a new functional header instead.
-* **Adding Dependencies:** Only add large, stable, third-party or system headers (e.g., Windows/SDK headers) to `pch.h`.
+* **源文件（`.cpp`）：** 每个源文件必须将 `"pch.h"` 作为**第一行**（非注释行）包含。
+* **头文件（`.h`）：** 禁止在头文件内部包含 `"pch.h"`。
+* **通用工具代码：** 不要将通用工具函数、宏或全局声明添加到 `pch.h`。请使用 `SysUtils.h` 或新建功能性头文件。
+* **添加依赖：** 只将大型、稳定、第三方或系统头文件（如 Windows/SDK 头文件）添加到 `pch.h`。
 
-### Why this matters
+### 为什么这很重要
 
-Correct PCH usage keeps our build times fast (more than 2x faster than a standard build). Including `pch.h` in other headers or using it as a global utility bucket breaks the compiler's ability to cache the precompiled state and forces unnecessary full rebuilds.
+正确使用 PCH 可以保持构建速度（比标准构建快 2 倍以上）。在其他头文件中包含 `pch.h` 或将其用作通用工具桶，会破坏编译器缓存预编译状态的能力，并强制进行不必要的完整重建。
+
+### 汉化贡献
+
+如果你发现游戏内菜单有漏翻的英文文本，可以：
+1. 修改 `overlay/OptiScaler/localization/lang_zh_cn.h`（新增条目）
+2. 或修改 `scripts/strings_map.json`（自动翻译映射表）
+3. 提交 PR 即可，CI 会自动构建验证

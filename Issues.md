@@ -1,66 +1,65 @@
-# Known Issues
+# 已知问题
 
-## In-game Menu
+## 游戏内菜单
 
-If you can't open in-game menu:
-1. Please check that you have enabled DLSS, XeSS or FSR from game options
-2. If using legacy installation, please try opening menu while you are in-game (while 3D rendering is happening)
-3. If you are using RTSS (MSI Afterburner, CapFrameX) please enable this setting of RTSS and try updating RTSS.
+如果无法打开游戏内菜单：
+1. 请确认已在游戏选项中启用 DLSS、XeSS 或 FSR
+2. 如果使用的是旧式安装方式，请在进入游戏后（正在进行 3D 渲染时）尝试打开菜单
+3. 如果你在使用 RTSS（MSI Afterburner、CapFrameX），请启用 RTSS 的此设置并尝试更新 RTSS。
   ![image](https://github.com/optiscaler/OptiScaler/assets/35529761/8afb24ac-662a-40ae-a97c-837369e03fc7)
 
-* Some games do not release mouse control, kayboard & gamepad controls should still work in these situations.
-* On some system and game combinations, opening the old in-game menu may cause the game to crash or cause graphical corruption (especially in Unreal Engine 5 games).
+* 部分游戏不释放鼠标控制权，此时键盘和手柄控制仍应可用。
+* 在某些系统和游戏组合下，打开旧版游戏内菜单可能导致游戏崩溃或图形损坏（尤其是在 Unreal Engine 5 游戏中）。
 
-![Banishers](/images/banishers.png)<br>*Banishers: Ghosts of New Eden*
+![Banishers](/images/banishers.png)<br>*《尘封大陆》（Banishers: Ghosts of New Eden）*
 
-* Changing settings mostly tested but might cause crashes (especially changing backends or reinitializing backends).
-* In games that use Unity Engine legacy in-game menu will be upside down.
+* 更改设置大多经过测试，但可能导致崩溃（尤其是更换后端或重新初始化后端时）。
+* 使用 Unity 引擎旧版的游戏中，游戏内菜单会上下颠倒。
 
-![barrel roll](/images/upsidedown.png)<br>*Sons of Forest*
+![barrel roll](/images/upsidedown.png)<br>*《森林之子》（Sons of Forest）*
 
-## DirectX 11 with DirectX 12 Upscalers
-This implementations uses a background DirectX12 device to be able to use Dirext12 only upscalers. There is %10-15 performance penalty for this method but allows much more upscaler options. 
+## DirectX 11 配合 DirectX 12 超分辨率技术
+此实现使用后台 DirectX12 设备，以使用仅限 DirectX12 的超分辨率技术。此方法有 10-15% 的性能损失，但提供了更多超分辨率选项。
 
-## Exposure Texture
-Sometimes games exposure texture format is not recognized by upscalers. Most of the time manifests itself as crushed colors (especially in dark areas). 
+## 曝光纹理（Exposure Texture）
+有时游戏使用的曝光纹理格式无法被超分辨率技术识别。大多数情况下表现为颜色压暗（尤其是在黑暗区域）。
 
-![exposure](/images/exposure.png)<br>*Shadow of the Tomb Raider*
+![exposure](/images/exposure.png)<br>*《古墓丽影：暗影》（Shadow of the Tomb Raider）*
 
-In most cases, enabling `AutoExposure=true` in `OptiScaler.ini` or selecting `Auto Exposure` in `Init Parameters` from the in-game menu should fix these issues.
+大多数情况下，在 `OptiScaler.ini` 中启用 `AutoExposure=true`，或在游戏内菜单的 `Init Parameters` 中选择 `Auto Exposure` 即可修复这些问题。
 
-## Resource Barriers
-The Unreal Engine DLSS plugin is known to send DLSS resources in the wrong state. Normally OptiScaler checks engine info from NVSDK and automatically enables necessary fixes for Unreal Engine games, but some games do not report engine info correctly. This problem usually manifests itself as colored areas at the bottom of the screen.
+## 资源屏障（Resource Barriers）
+已知 Unreal Engine DLSS 插件会以错误状态发送 DLSS 资源。通常 OptiScaler 会从 NVSDK 检查引擎信息并自动为 Unreal Engine 游戏启用必要的修复，但部分游戏无法正确报告引擎信息。此问题通常表现为屏幕底部出现彩色区域。
 
-![christmas lights](/images/christmas.png)<br>*Deep Rock Galactic*
+![christmas lights](/images/christmas.png)<br>*《深岩银河》（Deep Rock Galactic）*
 
-Workaround is to set `ColorResourceBarrier=4` from `OptiScaler.ini` or select `RENDER_TARGET` for `Color` at `Resource Barriers (Dx12)` from the in-game menu.
+解决办法是从 `OptiScaler.ini` 设置 `ColorResourceBarrier=4`，或在游戏内菜单的 `Resource Barriers (Dx12)` 中为 `Color` 选择 `RENDER_TARGET`。
 
-## Black/Garbled Screen or Crashes with XeSS
-Some users have reported that when using XeSS upscaler backend, the result is a black/garbled screen with UI or crashes (in Guardins of the Galaxy for example). In some cases downloading the latest version of [DirectX Shader Compiler](https://github.com/microsoft/DirectXShaderCompiler/releases) and extracting `dxcompiler.dll`, `dxil.dll` from `bin\x64\` next to the game exe file resolved this issue.  
+## XeSS 黑屏/花屏或崩溃
+有用户反馈，使用 XeSS 超分辨率后端时会出现黑屏/花屏、仅显示 UI 或崩溃（例如《银河护卫队》）。某些情况下，下载最新版本的 [DirectX Shader Compiler](https://github.com/microsoft/DirectXShaderCompiler/releases)，并将 `bin\x64\` 中的 `dxcompiler.dll`、`dxil.dll` 解压到游戏 exe 旁边即可解决此问题。
 
 ## Minecraft RTX
-XeSS 1.1 has the best compatibility with Minecraft RTX. But I've seen reports that with [various launchers](https://github.com/MCMrARM/mc-w10-version-launcher/releases) it's possible to use 1.2 and above as well.
+XeSS 1.1 与 Minecraft RTX 的兼容性最好。但我也看到有报告说，通过[各种启动器](https://github.com/MCMrARM/mc-w10-version-launcher/releases)也可以使用 1.2 及以上版本。
 
-## Shader Compilation error on Linux
-If you are using OptiScaler with Linux and you have problems with `RCAS`, `Reactive Mask Bias` or `Output Scaling`, you will probably notice this message in your logs.
+## Linux 上的着色器编译错误
+如果你在 Linux 上使用 OptiScaler，并且遇到 `RCAS`、`Reactive Mask Bias` 或 `Output Scaling` 的问题，你可能会在日志中看到这样的消息：
 ```
 CompileShader error compiling shader : <anonymous>:83:26: E5005: Function "rcp" is not defined.
 ```
-To solve this problem you can use `Precompiled Shaders` option from menu or install `d3dcompiler_47` with `WineTricks`/`ProtonTricks`. OptiScaler uses custom shaders for these features and depends on this compiler file to compile these shaders at runtime. 
+要解决此问题，可以使用菜单中的 `Precompiled Shaders` 选项，或使用 `WineTricks`/`ProtonTricks` 安装 `d3dcompiler_47`。OptiScaler 为这些功能使用自定义着色器，并在运行时依赖此编译器文件来编译这些着色器。
 
-## Performance Issues
-* In general XeSS is heavier than FSR for GPUs so it's expected to be have lower performance even on Intel Arc GPUs.
-* As a result of spoofing the Nvidia card to enable DLSS some games would use an Nvidia-optimized codepath which may result in lower performance on other GPUs.
+## 性能问题
+* 一般来说，XeSS 对 GPU 的负担比 FSR 更重，因此即使在 Intel Arc 显卡上性能也更低，这是正常的。
+* 由于伪装成 Nvidia 显卡以启用 DLSS，部分游戏会使用 Nvidia 优化过的代码路径，这可能导致其他 GPU 上性能更低。
 
-## Display Resolution Motion Vectors
-Sometimes games would set the wrong `DisplayResolution` init flag, resulting in excessive motion blur. Setting or resetting `DisplayResolution` would help resolve this issue.
+## 显示分辨率运动矢量（Display Resolution Motion Vectors）
+有时游戏会设置错误的 `DisplayResolution` 初始化标志，导致过度运动模糊。设置或重置 `DisplayResolution` 有助于解决此问题。
 
-![mv wrong](/images/mv_wrong.png)<br>*Deep Rock Galactic*
+![mv wrong](/images/mv_wrong.png)<br>*《深岩银河》（Deep Rock Galactic）*
 
-## Graphichal Corruption and Crashes
-As mentioned above, spoofing an Nvidia card can cause games to use special codepaths that can cause graphichal corruptions. If possible disable spoofing and use FSR or XeSS inputs on these situations.
-  
-![talos principle 2](/images/talos.png)<br>*Talos Principle 2*
+## 图形损坏与崩溃
+如上所述，伪装成 Nvidia 显卡可能导致游戏使用特殊代码路径，从而造成图形损坏。如果可能，请在这些情况下禁用伪装并使用 FSR 或 XeSS 输入。
 
-* And crashes, especially when raytracing is enabled.
+![talos principle 2](/images/talos.png)<br>*《塔洛斯法则 2》（Talos Principle 2）*
 
+* 以及崩溃，尤其是在启用光线追踪时。

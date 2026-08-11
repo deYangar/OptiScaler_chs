@@ -1,24 +1,25 @@
-## Features
-* Supports multiple upscaling backends (XeSS, FSR 2.1.2, FSR 2.2.1, FSR 3.1 and DLSS)
-* Experimental support for frame generation (OptiFG by FSR) with version 0.7.0 and above
-* Supports DLSS 3.7 and above (check [installation instructions](#install-as-non-nvngx))
-* Supports DLSS-D (Ray Reconstruction) on Nvidia cards (Supports changing presets and using OptiScaler enhancements)
-* Ability to modify DLSS/DLSS-D presets on the fly
-* Supports XeSS v1.3.x's Ultra Performance, NativeAA modes (**Not using default XeSS 1.3.x scaling ratios, rather the old ones**) 
-* An [in-game menu](https://github.com/optiscaler/OptiScaler/blob/master/Config.md) for tuning and saving settings on the fly (Shortcut key is **INSERT**)
-* Full integration with [DLSS Enabler](https://www.nexusmods.com/site/mods/757) for DLSS-FG support
-* **RCAS** support with **MAS** (Motion Adaptive Sharpening) for all Dx12 & Dx11 upscalers
-* **Output Scaling** option (0.5x to 3.0x) for backends running on Dx12 & Dx11
-* Supports DXGI spoofing (when running as `dxgi.dll`) as Nvidia GPUs (with XeSS detection to enable XMX on Intel Arc cards)
-* Supports Vulkan spoofing (needs to be enabled from `nvngi.ini`) as Nvidia GPUs (not working for Doom Eternal)
-* Supports loading specific `nvapi64.dll` file (when running in non-nvngx mode)
-* Supports loading specific `nvngx_dlss.dll` file (when running in non-nvngx mode)
-* Supports overriding scaling ratios
-* Supports overriding DRS range
-* Autofixes for [colored lights](https://github.com/optiscaler/OptiScaler/blob/master/Config.md#resource-barriers-dx12-only) on Unreal Engine & AMD graphics cards 
-* Autofixes for [missing exposure texture](https://github.com/optiscaler/OptiScaler/blob/master/Config.md#init-flags) information
-* Ability to modify [Mipmap Lod Bias](https://github.com/optiscaler/OptiScaler/blob/master/Config.md#mipmap-lod-bias-override-dx12-only) game value
-* Supports [Fakenvapi](https://github.com/FakeMichau/fakenvapi) integration which enables Reflex hooking and injecting Anti-Lag 2 or LatencyFlex (LFX)
-* Supports Nukem's FSR FG mod [dlssg-to-fsr3](https://github.com/Nukem9/dlssg-to-fsr3) (since version 0.7.7)  
- 
-**To overcome DLSS 3.7's signature check requirements, OptiScaler uses a method developed by **Artur** (creator of [DLSS Enabler](https://www.nexusmods.com/site/mods/757?tab=description)).**
+# 功能特性
+
+* 支持多种超分辨率后端（XeSS、FSR 2.1.2、FSR 2.2.1、FSR 3.1 和 DLSS）
+* 自 v0.7.0 起实验性支持帧生成（基于 FSR 的 OptiFG）
+* 支持 DLSS 3.7 及以上版本（查看[安装说明](#以非-nvngx-方式安装)）
+* 支持 Nvidia 显卡上的 DLSS-D（光线重建），（支持更改预设并使用 OptiScaler 增强功能）
+* 支持在游戏运行时修改 DLSS/DLSS-D 预设
+* 支持 XeSS v1.3.x 的超级性能、NativeAA 模式（**不使用默认的 XeSS 1.3.x 缩放比例，而是使用旧的比例**）
+* 内置[游戏内菜单](https://github.com/optiscaler/OptiScaler/blob/master/Config.md)，可实时调整并保存设置（快捷键为 **INSERT**）
+* 与 [DLSS Enabler](https://www.nexusmods.com/site/mods/757) 完全集成，支持 DLSS-FG
+* 所有 Dx12 与 Dx11 超分辨率技术均支持 **RCAS** 锐化和 **MAS**（运动自适应锐化）
+* 支持 **输出缩放** 选项（0.5x 至 3.0x），适用于运行在 Dx12 与 Dx11 上的后端
+* 支持 DXGI 伪装（以 `dxgi.dll` 运行时），可将 GPU 伪装为 Nvidia 显卡（带 XeSS 检测，可在 Intel Arc 显卡上启用 XMX）
+* 支持 Vulkan 伪装（需从 `nvngi.ini` 启用），可将 GPU 伪装为 Nvidia 显卡（不适用于《毁灭战士：永恒》）
+* 支持加载指定的 `nvapi64.dll` 文件（以非 nvngx 模式运行时）
+* 支持加载指定的 `nvngx_dlss.dll` 文件（以非 nvngx 模式运行时）
+* 支持覆盖缩放比例
+* 支持覆盖 DRS 范围
+* 自动修复 Unreal Engine 与 AMD 显卡上的[彩色灯光](https://github.com/optiscaler/OptiScaler/blob/master/Config.md#resource-barriers-dx12-only)问题
+* 自动修复[曝光纹理缺失](https://github.com/optiscaler/OptiScaler/blob/master/Config.md#init-flags)问题
+* 支持修改游戏中的 [Mipmap Lod Bias](https://github.com/optiscaler/OptiScaler/blob/master/Config.md#mipmap-lod-bias-override-dx12-only) 值
+* 支持 [Fakenvapi](https://github.com/FakeMichau/fakenvapi) 集成，可启用 Reflex 挂钩并注入 Anti-Lag 2 或 LatencyFlex（LFX）
+* 支持 Nukem 的 FSR FG 模组 [dlssg-to-fsr3](https://github.com/Nukem9/dlssg-to-fsr3)（自 v0.7.7 起）
+
+**为了绕过 DLSS 3.7 的签名检查要求，OptiScaler 使用了由 **Artur**（[DLSS Enabler](https://www.nexusmods.com/site/mods/757?tab=description) 的作者）开发的方法。**

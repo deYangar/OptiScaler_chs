@@ -11,14 +11,14 @@
 </div>
 <br />
 
-## Table of Contents
+## 目录
 
-**1.** [**About**](#about)  
-**2.** [**How it works?**](#how-it-works)  
-**3.** [**Supported APIs and Upscalers**](#which-apis-and-upscalers-are-supported)  
-**4.** [**Installation**](#installation)  
-**5.** [**Known Issues**](#known-issues)  
-**6.** [**Compilation and Credits**](#compilation)  
+**1.** [**项目简介**](#项目简介)  
+**2.** [**工作原理**](#工作原理)  
+**3.** [**支持的 API 与超分辨率技术**](#支持的-api-与超分辨率技术)  
+**4.** [**安装**](#安装)  
+**5.** [**已知问题**](#已知问题)  
+**6.** [**编译与致谢**](#编译)  
 **7.** [**Wiki**](https://github.com/optiscaler/OptiScaler/wiki)
 
 <br />
@@ -28,166 +28,181 @@
   <a href="https://github.com/optiscaler/OptiScaler/releases/tag/nightly"><img src="https://img.shields.io/badge/Download-Nightly-purple?style=for-the-badge&logo=github&logoSize=auto" alt="Nightly release"></a>
   <a href="https://github.com/optiscaler/OptiScaler/wiki"><img src="https://img.shields.io/badge/Documentation-blue?style=for-the-badge&logo=gitbook&logoColor=white&logoSize=auto" alt="Wiki"></a>
 </div>
-<div align="center">
-  <a href="https://github.com/optiscaler/OptiScaler/releases"><img src="https://img.shields.io/github/downloads/optiscaler/optiscaler/total?style=for-the-badge&logo=gitextensions&logoSize=auto&label=Total" alt="Total DL"></a>
-  <a href="https://github.com/optiscaler/OptiScaler/releases/latest"><img src="https://img.shields.io/github/downloads/optiscaler/optiscaler/latest/total?style=for-the-badge&logo=gitextensions&logoSize=auto&label=Stable&color=green&logoColor=white" alt="Stable DL"></a>
-  <a href="https://github.com/optiscaler/OptiScaler/releases/tag/nightly"><img src="https://img.shields.io/github/downloads/optiscaler/OptiScaler/nightly/total?style=for-the-badge&logo=gitextensions&logoColor=white&logoSize=auto&label=Nightly&color=purple" alt="Nightly DL"></a>
-  <a href="https://github.com/optiscaler/OptiScaler/stargazers"><img src="https://img.shields.io/github/stars/optiscaler/optiscaler?style=for-the-badge&logo=githubsponsors&logoColor=white&label=S.T.A.R.S." alt="Stars"></a>
-</div>
 
+---
 
-## About
+# 🌏 OptiScaler 中文汉化版（OptiScaler_CHS）
 
-**OptiScaler** is a tool that lets you replace upscalers in games that ***already support DLSS2+ / FSR2+ / XeSS*** ($`^1`$), as well as manage ***frame generation*** in already mentioned games _(either by replacing existing FG options or enabling it in DX12 games through experimental ***OptiFG***)_. It also offers extensive customization options for all users, including those with Nvidia GPUs using DLSS.
-
-> [!CAUTION]
-> * We've been informed about some **FAKE websites** presenting themselves as OptiScaler team, so we would like to strongly highlight that we **DO NOT HAVE an official website!**  
-> * We **DON'T have an official manager app**, so please be careful when downloading or using them! And please don't bother us to provide support for something which isn't even ours!
-> * Only **LEGIT places** are this Github, our Discord server and Nitec's NexusMods page.  
-> * OptiScaler is **FREE**, any kind of monetary requirements are scams!  
-
-> [!TIP]
-> _For example, if a game has DLSS only, OptiScaler can be used to replace DLSS with XeSS or FSR 3.1 (also works for FSR2-only games, like The Outer Worlds Spacer's Choice, albeit requires manually providing nvngx_dlss.dll)._
-
-**Key aspects of OptiScaler:**
-- Enables usage of XeSS, FSR2, FSR3, **FSR4**$`^2`$ (_officially, RDNA4 and RDNA3 dGPUs only_) and DLSS in (temporal) upscaler-enabled games
-- Allows users to fine-tune their upscaling experience with a wide range of tweaks and enhancements (RCAS & MAS, Output Scaling, DLSS Presets, Ratio & DRS Overrides etc.)
-- Since v0.7.0+, added ***experimental DX12*** frame generation support with possible HUDfix solution ([**OptiFG**](#optifg--hudfix-experimental-hud-ghosting-fix))
-- Supports [**Fakenvapi**](#installation) integration - enables Reflex hooking and injecting _Anti-Lag 2_ (RDNA1+ only), _LatencyFlex_ (LFX) or _XeLL_ - _bundled since 0.9_  
-- Since v0.7.7, added support for **Nukem's** FSR3-FG mod [**dlssg-to-fsr3**](#installation), only supports games with ***native DLSS-FG*** - _bundled since 0.9_
-- Since v0.7.8, added **ASI plugin loading** support (_disabled_ by default (`LoadAsiPlugins=` in INI), loads from customisable folder, default `plugins`)
-- New project - [**OptiPatcher**](https://github.com/optiscaler/OptiPatcher) - an ASI Plugin for OptiScaler for enabling DLSS and DLSSG inputs without spoofing in ***supported games***.
-- Since v0.7.8, OptiScaler is now automatically applying certain game patches for a better out-of-the-box experience
-- Since v0.9.0, separated FG Inputs and Outputs, added XeFG and FSR4-FG support, as well as bundled Fakenvapi and Nukem's FSR3-FG mod
-- For a detailed list of all features, check [Features](Features.md)
-
+> 本项目是 [OptiScaler](https://github.com/optiscaler/OptiScaler) 的**中文汉化分支**，在保持上游功能完全一致的基础上，将游戏内菜单、界面文本及文档翻译为简体中文，并内置中文字体支持（文泉驿微米黑），开箱即用，无需额外配置。
 
 > [!IMPORTANT]
-> _**Always check the [Wiki Compatibility list](https://github.com/optiscaler/OptiScaler/wiki) for known game issues and workarounds.**_  
-> Also please check the  [***OptiScaler known issues***](#known-issues) at the end regarding **RTSS** compatibility.  
-> A separate [***FSR4 Compatibility list***](https://github.com/optiscaler/OptiScaler/wiki/FSR4-Compatibility-List) is available for community-sourced tested games.  
-> ***[3]** For **not bundled** items, please check [Installation](#installation).*  
+> **本仓库与上游的关系：**
+> * 上游：https://github.com/optiscaler/OptiScaler （原版，英文界面）
+> * 本仓库：每日自动同步上游源码 + 自动翻译新增文本 + 自动构建发布
+> * 使用上与上游完全兼容，存档、配置文件格式不变，可直接替换 `dxgi.dll` / `nvngx.dll`
+
+---
+
+## 项目简介
+
+**OptiScaler** 是一款允许你在 ***已经支持 DLSS2+ / FSR2+ / XeSS*** 的游戏中替换超分辨率技术的工具（$`^1`$），同时也能管理上述游戏的***帧生成***功能（_既可以替换已有的帧生成选项，也可以通过实验性的 ***OptiFG*** 在 DX12 游戏中启用帧生成_）。它还为用户提供了丰富的自定义选项，包括使用 Nvidia 显卡 + DLSS 的用户。
+
+> [!CAUTION]
+> * 我们已得知一些**假冒网站**自称是 OptiScaler 团队，在此强调：我们**没有任何官方网站！**
+> * 我们**没有官方的管理器应用**，请谨慎下载和使用！也请不要向我们索取与本项目无关的所谓"官方"支持！
+> * 只有 **GitHub**、我们的 **Discord 服务器** 和 Nitec 的 **NexusMods 页面** 是**正规渠道**。
+> * OptiScaler 是**免费的**，任何形式的收费要求都是诈骗！
+
+> [!TIP]
+> _例如：如果某游戏只有 DLSS，OptiScaler 可以用 XeSS 或 FSR 3.1 替换 DLSS（同样适用于只有 FSR2 的游戏，比如《天外世界：太空人之选》，不过需要手动提供 nvngx_dlss.dll）。_
+
+**OptiScaler 的核心特性：**
+- 在支持（时间）超分辨率的游戏中启用 XeSS、FSR2、FSR3、**FSR4**$`^2`$（_官方仅支持 RDNA4 和 RDNA3 独立显卡_）和 DLSS
+- 通过大量微调与增强选项精细调整超分辨率体验（RCAS & MAS、输出缩放、DLSS Preset、比率 & DRS 覆盖等）
+- 自 v0.7.0+ 起，加入***实验性 DX12*** 帧生成支持，并提供可能的 HUDfix 解决方案（[**OptiFG**](#optifg--hudfix实验性-hud-重影修复)）
+- 支持 [**Fakenvapi**](#安装) 集成——可启用 Reflex 挂钩，并注入 _Anti-Lag 2_（仅限 RDNA1+）、_LatencyFlex_（LFX）或 _XeLL_ - _自 0.9 起内置_
+- 自 v0.7.7 起，支持 **Nukem 的** FSR3-FG 模组 [**dlssg-to-fsr3**](#安装)，仅支持***原生 DLSS-FG*** 的游戏 - _自 0.9 起内置_
+- 自 v0.7.8 起，支持 **ASI 插件加载**（_默认关闭_（`LoadAsiPlugins=` 于 INI），从可自定义文件夹加载，默认 `plugins`）
+- 新项目 - [**OptiPatcher**](https://github.com/optiscaler/OptiPatcher) - 一个用于 OptiScaler 的 ASI 插件，可在***受支持的游戏***中无需伪装即可启用 DLSS 和 DLSSG 输入
+- 自 v0.7.8 起，OptiScaler 会自动为某些游戏应用特定补丁，以获得更开箱即用的体验
+- 自 v0.9.0 起，帧生成的输入与输出分离，新增 XeFG 和 FSR4-FG 支持，并内置 Fakenvapi 和 Nukem 的 FSR3-FG 模组
+- 完整功能列表请查看 [Features.md](Features.md)（中文）
+
+> [!IMPORTANT]
+> _**始终查看 [Wiki 兼容性列表](https://github.com/optiscaler/OptiScaler/wiki)，了解已知游戏问题和解决方案。**_  
+> 另外请查看文末的 [***OptiScaler 已知问题***](#已知问题)，了解 **RTSS** 兼容性。  
+> 社区实测游戏可参考单独的 [***FSR4 兼容性列表***](https://github.com/optiscaler/OptiScaler/wiki/FSR4-Compatibility-List)。  
+> ***[3]** 未内置的项目请查看 [安装](#安装)。*
 
 > [!NOTE]
-> ### Upscaler notes
+> ### 超分辨率技术说明
 > <details>
->  <summary><b>Click for [1], [2] </b></summary>  
+>  <summary><b>点击展开 [1]、[2]</b></summary>  
 >  
-> **[1]** For **Unreal Engine** games, only UE XeSS -> Opti XeSS/FSR4 work  
+> **[1]** 对于 **Unreal Engine** 游戏，只有 UE XeSS -> Opti XeSS/FSR4 可用  
 >  
-> *Regarding **XeSS** inputs, since **Unreal Engine plugin** does not provide depth, replacing in-game XeSS breaks other upscalers (e.g. Redout 2 as a XeSS-only game), but you can still apply RCAS sharpening to XeSS to reduce blurry visuals.* 
->
-> *Regarding **FSR inputs**, FSR 3.1 is the first version with a fully standardised, forward-looking API and should be fully supported. Since FSR2 and FSR3 support custom interfaces, game support will depend on the developers' implementation. With Unreal Engine games, you might need [ini tweaks](https://github.com/optiscaler/OptiScaler/wiki/Unreal-Engine-Tweaks) for FSR inputs.*  
->
-> **[2]** *Regarding **FSR4**, please check [FSR4 Compatibility list](https://github.com/optiscaler/OptiScaler/wiki/FSR4-Compatibility-List) for known supported games and general info.*
+> *关于 **XeSS** 输入：由于 **Unreal Engine 插件**不提供深度信息，替换游戏内 XeSS 会破坏其他超分辨率技术（例如 Redout 2 这类只有 XeSS 的游戏），但你仍然可以对 XeSS 应用 RCAS 锐化来减少画面模糊。*
+> 
+> *关于 **FSR 输入**：FSR 3.1 是第一个拥有完全标准化、面向未来的 API 的版本，应获得完整支持。由于 FSR2 和 FSR3 支持自定义接口，游戏支持程度取决于开发者的实现。对于 Unreal Engine 游戏，FSR 输入可能需要 [ini 调整](https://github.com/optiscaler/OptiScaler/wiki/Unreal-Engine-Tweaks)。*
+>  
+> **[2]** *关于 **FSR4**，请查看 [FSR4 兼容性列表](https://github.com/optiscaler/OptiScaler/wiki/FSR4-Compatibility-List) 了解已知受支持的游戏和一般信息。*
 > 
 > </details>
 
+## 官方 Discord 服务器: [OptiScaler](https://discord.gg/wEyd9w4hG5)
 
-## Official Discord Server: [OptiScaler](https://discord.gg/wEyd9w4hG5)
+*本项目基于 [PotatoOfDoom](https://github.com/PotatoOfDoom) 的杰出作品 [CyberFSR2](https://github.com/PotatoOfDoom/CyberFSR2)。*
 
-*This project is based on [PotatoOfDoom](https://github.com/PotatoOfDoom)'s excellent [CyberFSR2](https://github.com/PotatoOfDoom/CyberFSR2).*
-
-## How it works?
-* OptiScaler acts as a middleware, it intercepts upscaler calls from the game (_**Inputs**_) and redirects them to the chosen upscaling backend (_**Output**_), allowing user to replace one technology with another one. **Inputs -> OptiScaler -> Outputs**  
-* _Or put more bluntly, **Input** is the upscaler used in game settings, and **Output** the one selected in Opti Overlay._
-* _Same goes for FG options which are separated into **FG Input** and **FG Output**._
+## 工作原理
+* OptiScaler 作为中间件，拦截游戏的超分辨率调用（_**输入**_）并将其重定向到所选的超分辨率后端（_**输出**_），从而允许用户用一种技术替换另一种技术。**输入 -> OptiScaler -> 输出**
+* _更直白地说，**输入**是游戏设置中使用的超分辨率技术，**输出**是 Opti 覆盖层中选择的技术。_
+* _帧生成选项同样分离为 **FG 输入** 和 **FG 输出**。_
 
 > [!NOTE]
-> * Pressing **`Insert`** should open the Optiscaler **Overlay** in-game with all of the options (_`ShortcutKey=` can be changed in the INI file, or under **Keybinds** in the overlay_). 
-> * Pressing **`Page Up`** shows the performance stats overlay in the top left, and can be cycled between different modes with **`Page Down`** (_keybinds customisable in the overlay_).  
-> * If Opti overlay is instantly disappearing after trying Insert a few times, maybe try **`Alt + Insert`** ([reported workaround](https://github.com/optiscaler/OptiScaler/issues/484) for alternate keyboard layouts).
+> * 在游戏中按 **`Insert`** 键应可打开 OptiScaler **覆盖层**，包含所有选项（_`ShortcutKey=` 可在 INI 文件中修改，或在覆盖层的 **按键绑定** 中修改_）。
+> * 按 **`Page Up`** 在左上角显示性能统计覆盖层，可用 **`Page Down`** 在不同模式间切换（_按键绑定可在覆盖层中自定义_）。
+> * 如果按几次 Insert 后 Opti 覆盖层立即消失，可以试试 **`Alt + Insert`**（[报告的解决方案](https://github.com/optiscaler/OptiScaler/issues/484)，适用于替代键盘布局）。
 
 ![inputs_and_outputs](https://github.com/user-attachments/assets/7ff37fd7-515f-488d-99ff-faa586e206fc)
 
-## Which APIs and Upscalers are Supported?
-Currently **OptiScaler** can be used with DirectX 11, DirectX 12 and Vulkan, but each API has different sets of supported upscalers.  
-[**OptiFG**](#optifg--hudfix-experimental-hud-ghosting-fix) currently **only supports DX12** and is explained in a separate paragraph.
+## 支持的 API 与超分辨率技术
+目前 **OptiScaler** 可用于 DirectX 11、DirectX 12 和 Vulkan，但每种 API 支持的超分辨率技术不同。  
+[**OptiFG**](#optifg--hudfix实验性-hud-重影修复) 目前**仅支持 DX12**，将在单独段落说明。
 
-#### For DirectX 12
-- XeSS (Default)
-- FSR 2.1.2, 2.2.1
-- FSR 3.X (and FSR 2.3.X)
-- FSR 4.X (via FSR 3.X/4, _officially RDNA4 and RDNA3 dGPUs only_)
+#### DirectX 12
+- XeSS（默认）
+- FSR 2.1.2、2.2.1
+- FSR 3.X（及 FSR 2.3.X）
+- FSR 4.X（通过 FSR 3.X/4，_官方仅限 RDNA4 和 RDNA3 独立显卡_）
 - DLSS
 
-#### For DirectX 11
-- FSR 2.2.1 (Default, native DX11)
-- FSR 3.1.2 (unofficial port to native DX11)
-- DLSS (native DX11)
-- XeSS 2.X (native DX11, _Intel ARC only_)
-- XeSS, FSR 2.1.2, 2.2.1, FSR 3.X w/Dx12 (_via D3D11on12_)$`^1`$
-- FSR 4.X (via FSR 3.X/4 w/Dx12 interop, _officially RDNA4 and RDNA3 dGPUs only_)
+#### DirectX 11
+- FSR 2.2.1（默认，原生 DX11）
+- FSR 3.1.2（非官方移植到原生 DX11）
+- DLSS（原生 DX11）
+- XeSS 2.X（原生 DX11，_仅限 Intel ARC_）
+- XeSS、FSR 2.1.2、2.2.1、FSR 3.X（通过 D3D11on12 使用 DX12）$`^1`$
+- FSR 4.X（通过 FSR 3.X/4 的 DX12 互操作，_官方仅限 RDNA4 和 RDNA3 独立显卡_）
 
 > [!NOTE]
 > <details>
->  <summary><b>Expand for [1]</b></summary>
+>  <summary><b>展开查看 [1]</b></summary>
 >
-> _**[1]** These implementations use a background DirectX12 device to be able to use DX12-only upscalers. There's a performance penalty up to 10-ish % for this method, but allows many more upscaler options. Also native DX11 implementation of FSR 2.2.1 is a backport from Unity renderer and has its own problems of which some were fixed by OptiScaler._
+> _**[1]** 这些实现使用后台 DirectX12 设备以使用仅限 DX12 的超分辨率技术。此方法有最高约 10% 的性能损失，但提供了更多超分辨率选项。此外，FSR 2.2.1 的原生 DX11 实现是从 Unity 渲染器移植而来，有其自身的问题，其中部分已由 OptiScaler 修复。_
 > </details>
 
-#### For Vulkan
-- FSR 4.X (via FSR 3.X/4 w/Dx12 interop, _officially RDNA4 and RDNA3 dGPUs only_)
-- FSR2 2.1.2 (Default), 2.2.1
-- FSR3 3.1 (and FSR2 2.3.2)
+#### Vulkan
+- FSR 4.X（通过 FSR 3.X/4 的 DX12 互操作，_官方仅限 RDNA4 和 RDNA3 独立显卡_）
+- FSR2 2.1.2（默认）、2.2.1
+- FSR3 3.1（及 FSR2 2.3.2）
 - DLSS
 - XeSS 2.x
 
-#### OptiFG + HUDfix (experimental HUD ghosting fix) 
-**OptiFG** was added with **v0.7** and is **only supported in DX12**. 
-It's an **experimental** way of adding FG to games without native Frame Generation, or can also be used as a last case scenario if the native FG is not working properly.  
-* Currently supports FSR3-FG (requires HUDfix to avoid HUD ghosting), XeFG and FSR4-FG (ML model deals with the HUD, so may or may not require HUDfix).
+#### OptiFG + HUDfix（实验性 HUD 重影修复）
+**OptiFG** 自 **v0.7** 起加入，**仅支持 DX12**。  
+它是一种为没有原生帧生成的游戏添加帧生成的**实验性**方法，也可以作为原生帧生成无法正常工作时最后的手段。  
+* 目前支持 FSR3-FG（需要 HUDfix 以避免 HUD 重影）、XeFG 和 FSR4-FG（ML 模型处理 HUD，可能不一定需要 HUDfix）。
 
-For more information on OptiFG and how to use it, please check the Wiki page - [OptiFG](https://github.com/optiscaler/OptiScaler/wiki/OptiFG).
+有关 OptiFG 及其用法的更多信息，请查看 Wiki 页面 - [OptiFG](https://github.com/optiscaler/OptiScaler/wiki/OptiFG)。
 
-
-## Installation
+## 安装
 > [!CAUTION]
-> _**Warning**: **Do not use this mod with online games.** It may trigger anti-cheat software and cause bans!_
+> _**警告**：**请勿在联机游戏中使用此模组。** 可能触发反作弊软件并导致封号！_
 
 > [!IMPORTANT]
-> **For installation steps, please check the [**Wiki**](https://github.com/optiscaler/OptiScaler/wiki)**  
+> **安装步骤请查看 [**Wiki**](https://github.com/optiscaler/OptiScaler/wiki)**
 
-## Configuration
-Please check [this](Config.md) document for configuration parameters and explanations. If your GPU is not an Nvidia one, check [GPU spoofing options](Spoofing.md) *(Will be updated)*
+> [!TIP]
+> **汉化版快速使用：**
+> 1. 从本仓库 Releases 下载最新 `OptiScaler_CHS_*.zip`
+> 2. 将 `dxgi.dll`（或 `nvngx.dll`）放到游戏可执行文件旁边（与上游使用方法完全一致）
+> 3. 中文字体已内置（`font/wqy-microhei.ttc`），游戏内菜单直接显示简体中文
+> 4. 按 `Insert` 打开菜单，可在 **语言** 选项中切换中文/英文
 
-## Known Issues
+## 配置
+请查看 [Config.md](Config.md)（中文）了解配置参数和说明。如果你的显卡不是 Nvidia 的，请查看 [GPU 伪装选项](Spoofing.md)（中文）_（持续更新中）_
 
+## 已知问题
 > [!NOTE]
-> **For a list of known issues, please check the [**Wiki**](https://github.com/optiscaler/OptiScaler/wiki)**.
+> **已知问题列表请查看 [**Wiki**](https://github.com/optiscaler/OptiScaler/wiki)**。
 > 
-> Also worth checking the [Compatibility List](https://github.com/optiscaler/OptiScaler/wiki/Compatibility-List) for possible game issues and their fixes.
+> 也建议查看 [兼容性列表](https://github.com/optiscaler/OptiScaler/wiki/Compatibility-List)，了解可能的游戏问题及其修复方法。
+> 
+> 中文版参见 [Issues.md](Issues.md)（中文）。
 
-## Compilation
+## 编译
 
-### Requirements
+### 环境要求
 * Visual Studio 2022
 
-### Instructions
-* Clone this repo with **all of its submodules**.
-* Open the OptiScaler.sln with Visual Studio 2022.
-* Build the project
+### 编译步骤
+* 使用**所有子模块**克隆本仓库。
+* 用 Visual Studio 2022 打开 OptiScaler.sln。
+* 构建项目。
 
-## Thanks
-* @PotatoOfDoom for CyberFSR2
-* @Artur for DLSS Enabler and helping me implement NVNGX api correctly
-* @LukeFZ & @Nukem for their great mods and sharing their knowledge 
-* @FakeMichau for continous support, testing and feature creep
-* @QM for continous testing efforts and helping me to reach games
-* @TheRazerMD for continous testing and support
-* @Cryio, @krispy, @krisshietala, @Lordubuntu, @scz, @Veeqo for their hard work on (now outdated) [compatibility matrix](https://docs.google.com/spreadsheets/d/1qsvM0uRW-RgAYsOVprDWK2sjCqHnd_1teYAx00_TwUY)
-* And the whole DLSS2FSR community for all their support
+> [!NOTE]
+> **汉化注入说明**：本仓库的汉化通过 `scripts/apply_patch.py` 在构建时自动注入（自动添加 `/utf-8` 编译选项、中文字体加载和 localization 编译单元），无需手动干预。CI 会自动完成同步上游 → 注入 → 编译 → 发布的全流程。
 
-## Credit
-This project uses [FreeType](https://gitlab.freedesktop.org/freetype/freetype) licensed under the [FTL](https://gitlab.freedesktop.org/freetype/freetype/-/blob/master/docs/FTL.TXT)
+## 致谢
+* @PotatoOfDoom 的 CyberFSR2
+* @Artur 的 DLSS Enabler，以及帮助正确实现 NVNGX API
+* @LukeFZ 与 @Nukem 的优秀模组与知识分享
+* @FakeMichau 的持续支持、测试与功能贡献
+* @QM 的持续测试工作，帮助接触到更多游戏
+* @TheRazerMD 的持续测试与支持
+* @Cryio、@krispy、@krisshietala、@Lordubuntu、@scz、@Veeqo 在（现已过时的）[兼容性矩阵](https://docs.google.com/spreadsheets/d/1qsvM0uRW-RgAYsOVprDWK2sjCqHnd_1teYAx00_TwUY)上的辛勤工作
+* 以及整个 DLSS2FSR 社区的支持
 
-## Sponsors
+## 许可
+本项目使用 [FreeType](https://gitlab.freedesktop.org/freetype/freetype)，遵循 [FTL](https://gitlab.freedesktop.org/freetype/freetype/-/blob/master/docs/FTL.TXT) 许可。
+内置中文字体 [文泉驿微米黑](https://launchpad.net/wqy)（wqy-microhei）遵循 GPL 许可，可自由再分发。
+
+## 赞助商
 <table>
  <tbody>
   <tr>
    <td align="center"><img alt="[SignPath]" src="https://avatars.githubusercontent.com/u/34448643" height="30"/></td>
-   <td>Free code signing on Windows provided by <a href="https://signpath.io/">SignPath.io</a>, certificate by <a href="https://signpath.org/">SignPath Foundation</a></td>
+   <td>Windows 免费代码签名由 <a href="https://signpath.io/">SignPath.io</a> 提供，证书由 <a href="https://signpath.org/">SignPath Foundation</a> 颁发</td>
   </tr>
  </tbody>
 </table>
-
