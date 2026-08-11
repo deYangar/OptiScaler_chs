@@ -31,15 +31,35 @@
 
 ---
 
+<div align="center">
+
 # 🌏 OptiScaler 中文汉化版（OptiScaler_CHS）
+
+<font size="6"><b>✨ 全中文界面 · 每日自动同步上游 · 开箱即用 ✨</b></font>
 
 > 本项目是 [OptiScaler](https://github.com/optiscaler/OptiScaler) 的**中文汉化分支**，在保持上游功能完全一致的基础上，将游戏内菜单、界面文本及文档翻译为简体中文，并内置中文字体支持（文泉驿微米黑），开箱即用，无需额外配置。
 
-> [!IMPORTANT]
-> **本仓库与上游的关系：**
-> * 上游：https://github.com/optiscaler/OptiScaler （原版，英文界面）
-> * 本仓库：每日自动同步上游源码 + 自动翻译新增文本 + 自动构建发布
-> * 使用上与上游完全兼容，存档、配置文件格式不变，可直接替换 `dxgi.dll` / `nvngx.dll`
+</div>
+
+<div align="center">
+
+<table>
+<tr>
+<td style="background-color:#FFF8E1; border:2px solid #FFB300; border-radius:10px; padding:16px 32px;">
+
+<font size="5"><b>🔗 本仓库与上游的关系</b></font>
+
+| | |
+|:---|---:|
+| <font size="4">⬆️ **上游**</font> | <font size="4">[optiscaler/OptiScaler](https://github.com/optiscaler/OptiScaler)（原版，英文界面）</font> |
+| <font size="4">🏠 **本仓库**</font> | <font size="4">每日自动同步上游源码 + 自动翻译新增文本 + 自动构建发布</font> |
+| <font size="4">✅ **完全兼容**</font> | <font size="4">存档、配置文件格式不变，可直接替换 `dxgi.dll` / `nvngx.dll`</font> |
+
+</td>
+</tr>
+</table>
+
+</div>
 
 ---
 
@@ -196,8 +216,4 @@
 ## 许可
 本项目使用 [FreeType](https://gitlab.freedesktop.org/freetype/freetype)，遵循 [FTL](https://gitlab.freedesktop.org/freetype/freetype/-/blob/master/docs/FTL.TXT) 许可。
 内置中文字体 [文泉驿微米黑](https://launchpad.net/wqy)（wqy-microhei）遵循 GPL 许可，可自由再分发。
-
-## 赞助商
-
-_（本汉化版不展示上游赞助商信息，如欲支持上游请前往 [OptiScaler](https://github.com/optiscaler/OptiScaler)）_
 
