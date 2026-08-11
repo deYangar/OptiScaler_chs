@@ -1126,4 +1126,110 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Using_upscaler_data_for_FG)] = "Using upscaler data for FG";
     table[static_cast<int>(LK::UI_Select_FSR_FG_in_game)] = "Select FSR-FG in-game";
     table[static_cast<int>(LK::UI_Affects_both_FSR_FG_Upscalers)] = "Affects both FSR-FG & Upscalers";
+
+    table[static_cast<int>(LK::UI_Contrast)] = "Contrast";
+    table[static_cast<int>(LK::UI_MotionSharpness)] = "MotionSharpness";
+    table[static_cast<int>(LK::UI_MotionThreshod)] = "MotionThreshod";
+    table[static_cast<int>(LK::UI_MotionRange)] = "MotionRange";
+    table[static_cast<int>(LK::UI_DLAA)] = "DLAA";
+    table[static_cast<int>(LK::UI_Quality)] = "Quality";
+    table[static_cast<int>(LK::UI_Balanced)] = "Balanced";
+    table[static_cast<int>(LK::UI_Performance)] = "Performance";
+    table[static_cast<int>(LK::UI_Ratio)] = "Ratio";
+    table[static_cast<int>(LK::UI_Size)] = "Size";
+    table[static_cast<int>(LK::UI_Scale)] = "Scale";
+    table[static_cast<int>(LK::UI_Frames)] = "frames";
+    table[static_cast<int>(LK::UI_Limit)] = "Limit";
+    table[static_cast<int>(LK::UI_Auto)] = "Auto";
+    table[static_cast<int>(LK::UI_Off)] = "Off";
+    table[static_cast<int>(LK::UI_Menu)] = "Menu";
+    table[static_cast<int>(LK::UI_Input)] = "Input";
+    table[static_cast<int>(LK::UI_Zero)] = "Zero";
+    table[static_cast<int>(LK::UI_Fallback)] = "Fallback";
+    table[static_cast<int>(LK::UI_Conservative)] = "Conservative";
+    table[static_cast<int>(LK::UI_Aggressive)] = "Aggressive";
+    table[static_cast<int>(LK::UI_Unbound)] = "Unbound";
+    table[static_cast<int>(LK::UI_Unknown)] = "Unknown";
+    table[static_cast<int>(LK::UI_Unused)] = "Unused";
+    table[static_cast<int>(LK::UI_Latest)] = "Latest";
+    table[static_cast<int>(LK::UI_Active)] = "Active";
+    table[static_cast<int>(LK::UI_Passive)] = "Passive";
+    table[static_cast<int>(LK::UI_Enabling)] = "Enabling";
+    table[static_cast<int>(LK::UI_Disabling)] = "Disabling";
+    table[static_cast<int>(LK::UI_Full)] = "Full";
+    table[static_cast<int>(LK::UI_FG_Watermark)] = "FG Watermark";
+    table[static_cast<int>(LK::UI_Linear_Depth)] = "Linear Depth";
+    table[static_cast<int>(LK::LBL_Downscaler)] = "Downscaler";
+    table[static_cast<int>(LK::UI_Update_Available)] = "Update Available";
+    table[static_cast<int>(LK::UI_No_Frame_Generation)] = "No Frame Generation";
+    table[static_cast<int>(LK::UI_Enable_Logging_To_File)] = "Enable Logging To File";
+    table[static_cast<int>(LK::UI_Enable_Trace_Logs)] = "Enable Trace Logs";
+    table[static_cast<int>(LK::LBL_Menu_Theme_Colour)] = "Menu Theme and Colour";
+    table[static_cast<int>(LK::UI_Custom_Accent_Colour)] = "Custom Accent Colour";
+    table[static_cast<int>(LK::UI_Reset_Accent_Colour)] = "Reset Accent Colour";
+    table[static_cast<int>(LK::UI_DA_Debug)] = "DA Debug";
+    table[static_cast<int>(LK::LBL_Input_Colour_Space)] = "Input Colour Space";
+    table[static_cast<int>(LK::UI_LogLevel_Trace)] = "Trace";
+    table[static_cast<int>(LK::UI_LogLevel_Debug)] = "Debug";
+    table[static_cast<int>(LK::UI_LogLevel_Information)] = "Information";
+    table[static_cast<int>(LK::UI_LogLevel_Warning)] = "Warning";
+    table[static_cast<int>(LK::UI_LogLevel_Error)] = "Error";
+    table[static_cast<int>(LK::UI_Debug_Color)] = "Color";
+    table[static_cast<int>(LK::UI_Debug_Depth)] = "Depth";
+    table[static_cast<int>(LK::UI_Debug_Exposure)] = "Exposure";
+    table[static_cast<int>(LK::UI_Debug_Mask)] = "Mask";
+    table[static_cast<int>(LK::UI_Debug_Output)] = "Output";
+    table[static_cast<int>(LK::UI_XeFG_Frametimes)] = "Let XeFG to handle frametimes";
+    table[static_cast<int>(LK::TXT_Unsupported_Opti_Mode)] = "Unsupported Opti working mode";
+    table[static_cast<int>(LK::TXT_nvngx_dlss_missing)] = "nvngx_dlss.dll not found, DLSS disabled!";
+    table[static_cast<int>(LK::TXT_Save_Restart)] = "Save Settings and restart to apply the changes";
+    table[static_cast<int>(LK::TXT_Restart_XeFG)] = "Restart the game to apply correct XeFG settings!";
+    table[static_cast<int>(LK::TXT_Borderless_Required)] = "Borderless display mode required!";
+    table[static_cast<int>(LK::TXT_XeFG_HDR10)] = "XeFG only supports HDR10";
+    table[static_cast<int>(LK::TXT_ffx_dx12_missing)] = "amd_fidelityfx_dx12.dll is missing!";
+    table[static_cast<int>(LK::TXT_xess_fg_missing)] = "libxess_fg.dll is missing!";
+    table[static_cast<int>(LK::TXT_DLSSG_Menu_Visible)] = "DLSSG is purposefully disabled when this menu is visible";
+    table[static_cast<int>(LK::TXT_RTSS_AntiLag_Warn)] = "Using RTSS Reflex injection with AntiLag 2 and FSR FG might cause issues";
+    table[static_cast<int>(LK::TXT_Reflex_Limit_Overhead)] = "Using Reflex's limit with OptiFG has performance overhead";
+    table[static_cast<int>(LK::TXT_Presets_Overridden)] = "Presets are overridden externally";
+    table[static_cast<int>(LK::TXT_Ratio_Below1)] = "Only FSR1 and Bicubic are supported when Ratio is below 1.0.";
+    table[static_cast<int>(LK::TXT_Requires_Disabling_DMV)] = "Requires disabling dilated motion vectors";
+    table[static_cast<int>(LK::TXT_FSR3_Fallback)] = "(Potential FSR3 fallback)";
+    table[static_cast<int>(LK::TXT_Fallback_Aggressive)] = "and will fallback to Aggressive";
+    table[static_cast<int>(LK::TT_Input_Colour_Space)] = "Select the input colour space that the game uses.\nNon-Linear / sRGB: Might improve FSR4 upscaling quality, might increase ghosting.\nPQ: Rarest, might increase ghosting and break lights.";
+    table[static_cast<int>(LK::TT_FSR31_Shading_Scale)] = "Increasing this scales fsr3.1 computed shading\nchange value at read to have higher reactiveness.";
+    table[static_cast<int>(LK::TT_AntiLag_LatencyFlex)] = "By default, AntiLag 2/XeLL is used when available.\nThis setting lets you force LatencyFlex instead";
+    table[static_cast<int>(LK::TT_Linear_Depth)] = "Most games use non-linear depth, but\nDLSS-D might need this option to be enabled.\nCould be verified via Debug view";
+    table[static_cast<int>(LK::TT_DAS_Debug)] = "Enable DAS debug view\n\nBlue tint for detected edges";
+    table[static_cast<int>(LK::TXT_Easter_Egg_70Euro)] = "Did you really just pay 70€ for this game?!";
+    table[static_cast<int>(LK::TXT_Easter_Egg_Placeholder)] = "<Your funny text goes here>";
+    table[static_cast<int>(LK::TT_External_Override_Note)] = "Selecting setting below will disable that external override\n";
+
+    table[static_cast<int>(LK::TT_DLSSG_Input_Streamline)] = "Can be used with any FG Output\n\nSupports Hudless out of the box\n\nLimited to games that use Streamline v2";
+
+    table[static_cast<int>(LK::TXT_Enable_DLSSFG_InGame)] = "Enable DLSS-FG in-game";
+
+    table[static_cast<int>(LK::TT_Nukems_Required)] = "Requires Nukem's dlssg_to_fsr3 dll\nSelect DLSS-FG in-game";
+
+    table[static_cast<int>(LK::TXT_Put_dlssg_dll)] = "Please put dlssg_to_fsr3_amd_is_better.dll next to OptiScaler";
+
+    table[static_cast<int>(LK::TT_Conservative_Mode)] = "Best when can be used, some games are not compatible (e.g. Cyberpunk)\nand will fallback to Aggressive";
+
+    table[static_cast<int>(LK::UI_Exists)] = "Exists";
+
+    table[static_cast<int>(LK::UI_Exist)] = "Exist";
+
+    table[static_cast<int>(LK::UI_ON)] = "ON";
+
+    table[static_cast<int>(LK::UI_OFF)] = "OFF";
+
+    table[static_cast<int>(LK::UI_On)] = "On";
+
+    table[static_cast<int>(LK::UI_ENABLED)] = "ENABLED";
+
+    table[static_cast<int>(LK::UI_DISABLED)] = "DISABLED";
+
+    table[static_cast<int>(LK::UI_Simple)] = "Simple";
+
+    table[static_cast<int>(LK::UI_Detailed)] = "Detailed";
 }

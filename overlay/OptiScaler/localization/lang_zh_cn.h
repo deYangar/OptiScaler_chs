@@ -302,7 +302,7 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::Splash_285)] = "0.8 是内鬼干的";
     table[static_cast<int>(LK::Splash_286)] = "FSR4 DP4a wenETA，AMD 求你了";
     table[static_cast<int>(LK::Splash_287)] = "OptiCopers，集结！";
-    table[static_cast<int>(LK::Splash_288)] = "The Way It's Meant To Be Upscaled";
+    table[static_cast<int>(LK::Splash_288)] = "以它应有的方式被超分";
     table[static_cast<int>(LK::Splash_289)] = "你的游戏今天可能不会崩溃";
     table[static_cast<int>(LK::Splash_290)] = "今天才第 5 次崩溃而已";
     table[static_cast<int>(LK::Splash_291)] = "帧生成有延迟？但我网速很快啊";
@@ -333,13 +333,13 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::Splash_316)] = "Vul... 啥？~AMD";
     table[static_cast<int>(LK::Splash_317)] = "我的 8 个点在浮动";
     table[static_cast<int>(LK::Splash_318)] = "这里不浮动 - 我严格在 -128 到 127 之间";
-    table[static_cast<int>(LK::Splash_319)] = "fake it til you bake it";
+    table[static_cast<int>(LK::Splash_319)] = "装到炉火纯青";
     table[static_cast<int>(LK::Splash_320)] = "最坏的情况就关了再开";
     table[static_cast<int>(LK::Splash_321)] = "*在几何层面处于生成式损害控制模式*";
-    table[static_cast<int>(LK::Splash_322)] = "Deep Learning Slop Sampling 5";
+    table[static_cast<int>(LK::Splash_322)] = "深度学习糊采样 5";
     table[static_cast<int>(LK::Splash_323)] = "2D AI 滤镜，仅需 2 块 5090";
     table[static_cast<int>(LK::Splash_324)] = "Neural Slop Sampling 搭配 DLSS5";
-    table[static_cast<int>(LK::Splash_325)] = "DLSS 5 - the way it's meant to be slopped";
+    table[static_cast<int>(LK::Splash_325)] = "DLSS 5 - 以它应有的方式被糊化";
     table[static_cast<int>(LK::Splash_326)] = "我刚以为摆脱了，他们又把我拉回来";
     table[static_cast<int>(LK::Splash_327)] = "就像在高速上挂一档";
     table[static_cast<int>(LK::Splash_328)] = "Nitec 的奇妙超分";
@@ -764,7 +764,7 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Value_of_0_0f_can_improve_temporal_stability_of_bright_pixel)] = "0.0f 的值可以提高亮像素的时间稳定性\n";
     table[static_cast<int>(LK::UI_Lower_values_are_more_stable_with_ghosting_n)] = "较低的值更稳定，但会有拖影\n";
     table[static_cast<int>(LK::UI_Higher_values_are_more_pixelly_but_less_ghosting)] = "较高的值像素感更强，但拖影更少。";
-    table[static_cast<int>(LK::UI_Reactive_Scale)] = "Reactive Scale";
+    table[static_cast<int>(LK::UI_Reactive_Scale)] = "Reactive 缩放";
     table[static_cast<int>(LK::UI_Meant_for_development_purpose_to_test_if_n)] = "用于开发目的，测试\n";
     table[static_cast<int>(LK::UI_writing_a_larger_value_to_reactive_mask_reduces_ghosting)] = "向 reactive mask 写入更大的值是否能减少拖影。";
     table[static_cast<int>(LK::UI_Shading_Scale)] = "着色比例";
@@ -806,7 +806,7 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_OptiFG_Upscaler)] = "OptiFG（超分辨率）";
     table[static_cast<int>(LK::UI_Upscaler_must_be_enabled_n_nCan_be_used_with_any_FG_Output_b)] = "必须启用超分辨率\n\n可与任何帧生成输出配合使用，但某些情况下可能不完美\n\n为防止 UI 闪烁，需要 HUDfix";
     table[static_cast<int>(LK::UI_FSR_3_0_FG)] = "FSR 3.0 帧生成";
-    table[static_cast<int>(LK::UI_FSR3_FG_Nukem_Enabler)] = "FSR3-FG Nukem/Enabler";
+    table[static_cast<int>(LK::UI_FSR3_FG_Nukem_Enabler)] = "FSR3-FG Nukem/启用器";
     table[static_cast<int>(LK::UI_Uses_Game_s_DLSSG_implementation_nEnable_DLSS_FG_in_game)] = "使用游戏的 DLSSG 实现。\n在游戏中启用 DLSS-FG";
     table[static_cast<int>(LK::UI_FSR_FG)] = "FSR 帧生成";
     table[static_cast<int>(LK::UI_FSR3_4_FG)] = "FSR3/4 帧生成";
@@ -906,8 +906,8 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Resource_Settings)] = "以防止可能发生的损坏";
     table[static_cast<int>(LK::UI_Make_a_copy_of_motion_vectors_to_use_with_OptiFG_n)] = "复制深度以用于 OptiFG\n";
     table[static_cast<int>(LK::UI_For_preventing_corruptions_that_might_happen)] = "FG 缩放深度最大值";
-    table[static_cast<int>(LK::UI_Make_a_copy_of_depth_to_use_with_OptiFG_n)] = "Make a copy of depth to use with OptiFG\n";
-    table[static_cast<int>(LK::UI_FG_Scale_Depth_Max)] = "FG Scale Depth Max";
+    table[static_cast<int>(LK::UI_Make_a_copy_of_depth_to_use_with_OptiFG_n)] = "复制一份深度供 OptiFG 使用\n";
+    table[static_cast<int>(LK::UI_FG_Scale_Depth_Max)] = "FG 缩放深度上限";
     table[static_cast<int>(LK::UI_Syncing_Settings)] = "正在同步设置";
     table[static_cast<int>(LK::UI_Use_mutex_to_prevent_desync_of_FG_and_crashes_n)] = "使用互斥锁防止帧生成不同步及崩溃\n";
     table[static_cast<int>(LK::UI_Disabling_might_improve_the_perf_but_decrease_stability)] = "禁用可能会提升性能，但会降低稳定性";
@@ -1138,4 +1138,110 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Using_upscaler_data_for_FG)] = "使用超分辨率数据用于帧生成";
     table[static_cast<int>(LK::UI_Select_FSR_FG_in_game)] = "在游戏中选择 FSR-FG";
     table[static_cast<int>(LK::UI_Affects_both_FSR_FG_Upscalers)] = "同时影响 FSR-FG 与超分辨率";
+
+    table[static_cast<int>(LK::UI_Contrast)] = "对比度";
+    table[static_cast<int>(LK::UI_MotionSharpness)] = "运动锐化";
+    table[static_cast<int>(LK::UI_MotionThreshod)] = "运动阈值";
+    table[static_cast<int>(LK::UI_MotionRange)] = "运动范围";
+    table[static_cast<int>(LK::UI_DLAA)] = "DLAA";
+    table[static_cast<int>(LK::UI_Quality)] = "质量";
+    table[static_cast<int>(LK::UI_Balanced)] = "均衡";
+    table[static_cast<int>(LK::UI_Performance)] = "性能";
+    table[static_cast<int>(LK::UI_Ratio)] = "比例";
+    table[static_cast<int>(LK::UI_Size)] = "尺寸";
+    table[static_cast<int>(LK::UI_Scale)] = "缩放";
+    table[static_cast<int>(LK::UI_Frames)] = "帧数";
+    table[static_cast<int>(LK::UI_Limit)] = "限制";
+    table[static_cast<int>(LK::UI_Auto)] = "自动";
+    table[static_cast<int>(LK::UI_Off)] = "关闭";
+    table[static_cast<int>(LK::UI_Menu)] = "菜单";
+    table[static_cast<int>(LK::UI_Input)] = "输入";
+    table[static_cast<int>(LK::UI_Zero)] = "零";
+    table[static_cast<int>(LK::UI_Fallback)] = "回退";
+    table[static_cast<int>(LK::UI_Conservative)] = "保守";
+    table[static_cast<int>(LK::UI_Aggressive)] = "激进";
+    table[static_cast<int>(LK::UI_Unbound)] = "未绑定";
+    table[static_cast<int>(LK::UI_Unknown)] = "未知";
+    table[static_cast<int>(LK::UI_Unused)] = "未使用";
+    table[static_cast<int>(LK::UI_Latest)] = "最新";
+    table[static_cast<int>(LK::UI_Active)] = "主动";
+    table[static_cast<int>(LK::UI_Passive)] = "被动";
+    table[static_cast<int>(LK::UI_Enabling)] = "启用中";
+    table[static_cast<int>(LK::UI_Disabling)] = "禁用中";
+    table[static_cast<int>(LK::UI_Full)] = "完整";
+    table[static_cast<int>(LK::UI_FG_Watermark)] = "FG 水印";
+    table[static_cast<int>(LK::UI_Linear_Depth)] = "线性深度";
+    table[static_cast<int>(LK::LBL_Downscaler)] = "降采样器";
+    table[static_cast<int>(LK::UI_Update_Available)] = "有可用更新";
+    table[static_cast<int>(LK::UI_No_Frame_Generation)] = "无帧生成";
+    table[static_cast<int>(LK::UI_Enable_Logging_To_File)] = "启用日志写入文件";
+    table[static_cast<int>(LK::UI_Enable_Trace_Logs)] = "启用跟踪日志";
+    table[static_cast<int>(LK::LBL_Menu_Theme_Colour)] = "菜单主题与颜色";
+    table[static_cast<int>(LK::UI_Custom_Accent_Colour)] = "自定义强调色";
+    table[static_cast<int>(LK::UI_Reset_Accent_Colour)] = "重置强调色";
+    table[static_cast<int>(LK::UI_DA_Debug)] = "DA 调试";
+    table[static_cast<int>(LK::LBL_Input_Colour_Space)] = "输入色彩空间";
+    table[static_cast<int>(LK::UI_LogLevel_Trace)] = "跟踪";
+    table[static_cast<int>(LK::UI_LogLevel_Debug)] = "调试";
+    table[static_cast<int>(LK::UI_LogLevel_Information)] = "信息";
+    table[static_cast<int>(LK::UI_LogLevel_Warning)] = "警告";
+    table[static_cast<int>(LK::UI_LogLevel_Error)] = "错误";
+    table[static_cast<int>(LK::UI_Debug_Color)] = "颜色";
+    table[static_cast<int>(LK::UI_Debug_Depth)] = "深度";
+    table[static_cast<int>(LK::UI_Debug_Exposure)] = "曝光";
+    table[static_cast<int>(LK::UI_Debug_Mask)] = "遮罩";
+    table[static_cast<int>(LK::UI_Debug_Output)] = "输出";
+    table[static_cast<int>(LK::UI_XeFG_Frametimes)] = "让 XeFG 处理帧时间";
+    table[static_cast<int>(LK::TXT_Unsupported_Opti_Mode)] = "不支持的 Opti 工作模式";
+    table[static_cast<int>(LK::TXT_nvngx_dlss_missing)] = "未找到 nvngx_dlss.dll，DLSS 已禁用！";
+    table[static_cast<int>(LK::TXT_Save_Restart)] = "保存设置并重启游戏以应用更改";
+    table[static_cast<int>(LK::TXT_Restart_XeFG)] = "请重启游戏以应用正确的 XeFG 设置！";
+    table[static_cast<int>(LK::TXT_Borderless_Required)] = "需要无边框显示模式！";
+    table[static_cast<int>(LK::TXT_XeFG_HDR10)] = "XeFG 仅支持 HDR10";
+    table[static_cast<int>(LK::TXT_ffx_dx12_missing)] = "缺少 amd_fidelityfx_dx12.dll！";
+    table[static_cast<int>(LK::TXT_xess_fg_missing)] = "缺少 libxess_fg.dll！";
+    table[static_cast<int>(LK::TXT_DLSSG_Menu_Visible)] = "此菜单显示时 DLSSG 会被有意禁用";
+    table[static_cast<int>(LK::TXT_RTSS_AntiLag_Warn)] = "同时使用 RTSS Reflex 注入与 AntiLag 2 和 FSR FG 可能导致问题";
+    table[static_cast<int>(LK::TXT_Reflex_Limit_Overhead)] = "在 OptiFG 中使用 Reflex 帧率限制会带来性能开销";
+    table[static_cast<int>(LK::TXT_Presets_Overridden)] = "预设已被外部覆盖";
+    table[static_cast<int>(LK::TXT_Ratio_Below1)] = "比例低于 1.0 时仅支持 FSR1 和 Bicubic。";
+    table[static_cast<int>(LK::TXT_Requires_Disabling_DMV)] = "需要禁用 Dilated Motion Vectors";
+    table[static_cast<int>(LK::TXT_FSR3_Fallback)] = "(可能回退到 FSR3)";
+    table[static_cast<int>(LK::TXT_Fallback_Aggressive)] = "并将回退到激进模式";
+    table[static_cast<int>(LK::TT_Input_Colour_Space)] = "选择游戏使用的输入色彩空间。\nNon-Linear / sRGB：可能改善 FSR4 超分画质，也可能加重重影。\nPQ：最罕见，可能加重重影并破坏灯光效果。";
+    table[static_cast<int>(LK::TT_FSR31_Shading_Scale)] = "增大此值会放大 FSR3.1 计算出的着色\n在读取时修改该值可获得更高响应性。";
+    table[static_cast<int>(LK::TT_AntiLag_LatencyFlex)] = "默认在可用时使用 AntiLag 2/XeLL。\n此设置可强制改用 LatencyFlex";
+    table[static_cast<int>(LK::TT_Linear_Depth)] = "大多数游戏使用非线性深度，但\nDLSS-D 可能需要启用此选项。\n可通过调试视图验证";
+    table[static_cast<int>(LK::TT_DAS_Debug)] = "启用 DAS 调试视图\n\n检测到的边缘将显示蓝色着色";
+    table[static_cast<int>(LK::TXT_Easter_Egg_70Euro)] = "你真花 70€ 买了这游戏？！";
+    table[static_cast<int>(LK::TXT_Easter_Egg_Placeholder)] = "<你的搞笑文本请写在这里>";
+    table[static_cast<int>(LK::TT_External_Override_Note)] = "选择下方设置将禁用对应的外部覆盖\n";
+
+    table[static_cast<int>(LK::TT_DLSSG_Input_Streamline)] = "可用于任何 FG 输出\n\n开箱即支持 Hudless\n\n仅限使用 Streamline v2 的游戏";
+
+    table[static_cast<int>(LK::TXT_Enable_DLSSFG_InGame)] = "请先在游戏内启用 DLSS-FG";
+
+    table[static_cast<int>(LK::TT_Nukems_Required)] = "需要 Nukem 的 dlssg_to_fsr3 dll\n请在游戏内选择 DLSS-FG";
+
+    table[static_cast<int>(LK::TXT_Put_dlssg_dll)] = "请将 dlssg_to_fsr3_amd_is_better.dll 放到 OptiScaler 同目录下";
+
+    table[static_cast<int>(LK::TT_Conservative_Mode)] = "可用时效果最佳，部分游戏不兼容（如 Cyberpunk）\n并将回退到激进模式";
+
+    table[static_cast<int>(LK::UI_Exists)] = "存在";
+
+    table[static_cast<int>(LK::UI_Exist)] = "存在";
+
+    table[static_cast<int>(LK::UI_ON)] = "开";
+
+    table[static_cast<int>(LK::UI_OFF)] = "关";
+
+    table[static_cast<int>(LK::UI_On)] = "开";
+
+    table[static_cast<int>(LK::UI_ENABLED)] = "已启用";
+
+    table[static_cast<int>(LK::UI_DISABLED)] = "已禁用";
+
+    table[static_cast<int>(LK::UI_Simple)] = "简洁";
+
+    table[static_cast<int>(LK::UI_Detailed)] = "详细";
 }
