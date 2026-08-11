@@ -72,10 +72,17 @@ else:
 print(f'[4] menu_common.cpp LOC 注入')
 mc = read(MC)
 if '#include <localization/localization.h>' not in mc:
-    # 在第一个 #include 后插入
-    first_inc = mc.find('#include')
-    mc = mc[:first_inc] + '#include <localization/localization.h>\n' + mc[first_inc:]
-    print('    注入 include')
+    # 插到 pch.h 之后（预编译头模式下 pch.h 之前的内容会被 MSVC 静默忽略）
+    pch_anchor = '#include "pch.h"'
+    if pch_anchor in mc:
+        idx = mc.find(pch_anchor) + len(pch_anchor)
+        mc = mc[:idx] + '\n#include <localization/localization.h>' + mc[idx:]
+        print('    注入 include（pch.h 后）')
+    else:
+        first_inc = mc.find('#include')
+        nl = mc.find('\n', first_inc)
+        mc = mc[:nl + 1] + '#include <localization/localization.h>\n' + mc[nl + 1:]
+        print('    注入 include（首个 include 后）')
 
 with io.open(os.path.join(HERE, 'strings_map.json'), encoding='utf-8') as f:
     strings_map = json.load(f)
