@@ -69,6 +69,35 @@ def call_deepseek(api_key, texts):
         raise RuntimeError(f'无法解析翻译结果: {content[:300]}')
     return json.loads(m.group(0))
 
+
+def call_deepseek_retry(api_key, texts, max_retries=3):
+    """调用 DeepSeek 翻译，返回与 texts 等长的列表；失败/丢条时重试，最终用原文兜底"""
+    res = None
+    last_err = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            res = call_deepseek(api_key, texts)
+            if not isinstance(res, list):
+                raise RuntimeError(f'返回不是数组: {type(res)}')
+            if len(res) == len(texts):
+                return res
+            last_err = f'数量不匹配: {len(res)} != {len(texts)}'
+            print(f'    重试 {attempt}: {last_err}')
+        except Exception as e:
+            last_err = str(e)
+            print(f'    重试 {attempt}: {e}')
+    # 重试耗尽：按位置尽量对齐，缺失的用原文兜底
+    out = []
+    for i, t in enumerate(texts):
+        if res is not None and i < len(res) and isinstance(res[i], str) and res[i].strip():
+            out.append(res[i])
+        else:
+            out.append(t)
+    fallback_cnt = sum(1 for i, t in enumerate(texts)
+                       if not (res is not None and i < len(res) and isinstance(res[i], str) and res[i].strip()))
+    print(f'    ⚠️ 重试耗尽（{last_err}），{fallback_cnt} 条用原文兜底')
+    return out
+
 def key_from_en(en):
     """英文串 → 合法 key 名"""
     words = re.findall(r'[A-Za-z0-9]+', en)
@@ -95,13 +124,13 @@ def main():
         print('没有待翻译字符串')
         return
 
-    # 分批（每批 50 条）
+    # 分批（每批 50 条），带重试+原文兜底
     zh_all = []
     BATCH = 50
     for i in range(0, len(pending), BATCH):
         batch = pending[i:i + BATCH]
         print(f'翻译批次 {i // BATCH + 1}/{(len(pending) + BATCH - 1) // BATCH} ({len(batch)} 条)...')
-        zh_all.extend(call_deepseek(api_key, batch))
+        zh_all.extend(call_deepseek_retry(api_key, batch))
 
     if len(zh_all) != len(pending):
         print(f'!! 翻译数量不匹配: {len(zh_all)} != {len(pending)}')
