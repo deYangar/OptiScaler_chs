@@ -33,9 +33,19 @@ def scan_file(path, strings_map):
     translated = 0
     pat = re.compile(r'"((?:[^"\\]|\\.)*)"')
     skip_prefixes = ('//', '*', 'LOG_', 'IM_ASSERT', 'IMGUI_DEBUG', 'std::', 'return ', 'case ')
+    fmt_call = re.compile(r'\b(?:std|fmt)::(?:v?format|format_to)\s*\(')
     for line in lines:
         s = line.lstrip()
         if s.startswith(skip_prefixes):
+            continue
+        # std::format 格式串是编译期常量，不是 UI 字符串 → 跳过
+        if fmt_call.search(line):
+            continue
+        # 跨行字符串续行：行首引号 / 行尾引号后无终止符 → 跳过（避免片段被当独立字符串）
+        if s.startswith('"'):
+            continue
+        stripped = line.rstrip()
+        if stripped.endswith('"') and not re.search(r'"[),;}]\s*$', stripped):
             continue
         if 'LOC(' in line:
             translated += 1

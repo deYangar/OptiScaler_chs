@@ -105,9 +105,24 @@ with io.open(os.path.join(HERE, 'strings_map.json'), encoding='utf-8') as f:
 
 injected = 0
 # 按行注入：跳过 #include 行，防止把 include 文件名误替换成 LOC()
+# 同时跳过：std::format 调用行（格式串需编译期常量）、跨行字符串拼接（行首"或行尾引号后无终止符）
 new_lines = []
 for line in mc.split('\n'):
-    if line.lstrip().startswith('#include'):
+    ls = line.lstrip()
+    if ls.startswith('#include'):
+        new_lines.append(line)
+        continue
+    # std::format / fmt::format 的格式串必须是编译期常量，LOC() 是运行时调用 → 跳过整行
+    if re.search(r'\b(?:std|fmt)::(?:v?format|format_to)\s*\(', line):
+        new_lines.append(line)
+        continue
+    # 跨行字符串续行：行首是引号（上一行字符串的延续）→ 跳过
+    if ls.startswith('"'):
+        new_lines.append(line)
+        continue
+    # 行尾引号后无终止符（),;}）→ 可能有后续拼接 → 跳过
+    stripped = line.rstrip()
+    if stripped.endswith('"') and not re.search(r'"[),;}]\s*$', stripped):
         new_lines.append(line)
         continue
     for en, key in strings_map.items():
