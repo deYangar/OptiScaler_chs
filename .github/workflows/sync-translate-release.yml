@@ -158,8 +158,11 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
+          # bash -e 会在 python 返回非零时直接杀掉步骤，exit 2（需提交）分支永远走不到 → set +e 包裹
+          set +e
           python scripts/sync_docs.py --repo "$GITHUB_WORKSPACE" --api-key "$DEEPSEEK_API_KEY"
           EXIT=$?
+          set -e
           if [ $EXIT -eq 2 ]; then
             git config user.name "deYangar"
             git config user.email "70438628+deYangar@users.noreply.github.com"
@@ -180,8 +183,11 @@ jobs:
         id: bat
         if: github.event.inputs.build_only != 'true'
         run: |
+          # 同上：bash -e 会让 exit 2（需提交）分支永远走不到 → set +e 包裹
+          set +e
           python scripts/translate_setup_bat.py --repo "$GITHUB_WORKSPACE"
           EXIT=$?
+          set -e
           if [ $EXIT -eq 2 ]; then
             git config user.name "deYangar"
             git config user.email "70438628+deYangar@users.noreply.github.com"
@@ -241,7 +247,10 @@ jobs:
       - name: 打包 7z
         shell: pwsh
         run: |
-          7z a -t7z -mx=9 "$env:GITHUB_WORKSPACE/dist/OptiScaler_CHS_${{ needs.sync.outputs.version_tag }}.7z" "$env:GITHUB_WORKSPACE/dist/CHS/*"
+          # 必须先进目录再打包（7z 对 路径\* 会保留父目录前缀，导致包内层级错误）
+          Push-Location "$env:GITHUB_WORKSPACE/dist/CHS"
+          7z a -t7z -mx=9 "$env:GITHUB_WORKSPACE/dist/OptiScaler_CHS_${{ needs.sync.outputs.version_tag }}.7z" "*"
+          Pop-Location
 
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
