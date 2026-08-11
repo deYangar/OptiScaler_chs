@@ -100,13 +100,13 @@ jobs:
           echo "上游 HEAD: $(git rev-parse upstream/master)"
 
           # 只同步上游的源码路径，保留我们的 overlay/ scripts/ fonts/ .github/ 等汉化资产
-          # ⚠️ 以下中文文档已汉化，禁止从上游覆盖：README.md Config.md CONTRIBUTING.md Features.md Issues.md Spoofing.md OptiScaler.ini
+          # ⚠️ 以下中文文档已汉化，禁止从上游覆盖：README.md Config.md CONTRIBUTING.md Features.md Issues.md Spoofing.md OptiScaler.ini setup_windows.bat
           # 核心路径（上游必有），缺失即报错
           git checkout upstream/master -- \
             OptiScaler/ external/ images/ \
             OptiScaler.sln Changelog.md \
             LICENSE \
-            setup_linux.sh setup_windows.bat \
+            setup_linux.sh \
             .clang-format .gitattributes .gitignore .gitmodules
           # 兼容：上游新出现的目录也同步（存在才拉，避免 pathspec 报错）
           for d in run overlay_dev; do
@@ -176,6 +176,28 @@ jobs:
             echo "⚠️ sync_docs 异常退出 ($EXIT)，继续流程"
           fi
 
+      - name: 同步汉化 setup_windows.bat（增量）
+        id: bat
+        if: github.event.inputs.build_only != 'true'
+        run: |
+          python scripts/translate_setup_bat.py --repo "$GITHUB_WORKSPACE"
+          EXIT=$?
+          if [ $EXIT -eq 2 ]; then
+            git config user.name "deYangar"
+            git config user.email "70438628+deYangar@users.noreply.github.com"
+            git add setup_windows.bat docs/upstream_ref/setup_windows.bat
+            git commit -m "chore: 同步上游 setup_windows.bat 更新并重新汉化 $(date +%Y%m%d) [skip ci]" || echo "无变更"
+            git push origin master || echo "push 失败（可忽略）"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "✅ 已同步并汉化 setup_windows.bat"
+          elif [ $EXIT -eq 0 ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "ℹ️ 上游 setup_windows.bat 无变化"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "⚠️ translate_setup_bat 异常退出 ($EXIT)，继续流程"
+          fi
+
       - name: 判断是否需要构建
         id: check
         run: |
@@ -187,7 +209,7 @@ jobs:
           elif [ "$TYPE" = "release" ]; then
             echo "required=true" >> "$GITHUB_OUTPUT"
             echo "本次为正式版发布，构建"
-          elif [ "${{ steps.sync_up.outputs.changed }}" = "true" ] || [ "${{ steps.scan.outputs.has_new }}" = "true" ] || [ "${{ steps.docs.outputs.changed }}" = "true" ]; then
+          elif [ "${{ steps.sync_up.outputs.changed }}" = "true" ] || [ "${{ steps.scan.outputs.has_new }}" = "true" ] || [ "${{ steps.docs.outputs.changed }}" = "true" ] || [ "${{ steps.bat.outputs.changed }}" = "true" ]; then
             echo "required=true" >> "$GITHUB_OUTPUT"
             echo "检测到实质变更（上游源码/新字符串/文档），构建"
           else

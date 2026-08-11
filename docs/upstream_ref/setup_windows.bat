@@ -1,8 +1,3 @@
-REM ============================================================
-REM OptiScaler 中文汉化版安装向导（CHS）
-REM 基于上游 setup_windows.bat 汉化，逻辑与上游完全一致
-REM 注意：本文件必须以 GBK/ANSI 编码保存，否则中文会乱码！
-REM ============================================================
 REM Setup OptiScaler for your game
 @echo off
 cls
@@ -15,48 +10,41 @@ echo #+#    #+# #+#            #+#         #+#     #+#    #+# #+#    #+# #+#    
 echo  ########  ###            ###     ###########  ########   ########  ###     ### ########## ########## ###    ### 
 echo.
 echo Coping is strong with this one...
-echo v3.0-pre1（汉化版）
+echo v3.0-pre1
 echo.
 
 del "!! README_EXTRACT ALL FILES TO GAME FOLDER !!.txt" 2>nul
-echo.
-echo ============================================
-echo   OptiScaler 中文汉化版安装向导
-echo   汉化版与上游完全兼容，开箱即用
-echo ============================================
-echo.
-del "!! EXTRACT ALL FILES TO GAME FOLDER !!" 2>nul
 
 setlocal enabledelayedexpansion
 
 if exist OptiScaler.sln (
-    echo 检测到 OptiScaler.sln 或 .git 文件！
+    echo Detected OptiScaler.sln or .git files^^!
     echo.
-    echo 如果文件夹里有 .sln 或 .git 文件，恭喜你，这是源码目录。
-    echo 请从 GitHub Releases 页面下载正式安装包。
+    echo If .sln or .git files are in the folder, congratz, you have the source code.
+	echo Now please try properly downloading OptiScaler.
+	echo.
+    echo Hint - use the Releases page on GitHub, or RTFM :^)
+	echo.
     echo.
-    echo 提示 - 使用 GitHub Releases 页面，或阅读文档 :^)
-    echo.
-    echo.
-    echo 补充：如果你同时有 OptiScaler.dll 和 .sln 文件，请删除 .sln 文件，重新运行本脚本。
-    echo.
+	echo P.S. If you somehow have both the OptiScaler.dll and .sln file, then be nice, just delete the .sln file, re-run the BAT setup and hope for the best.
+	echo.
     goto end
 )
 
 if not exist OptiScaler.dll (
-    echo 未找到 OptiScaler "OptiScaler.dll" 文件！
-    echo 很可能是文件夹权限问题，尝试以管理员身份运行本脚本。
+    echo OptiScaler "OptiScaler.dll" file is not found^^!
+    echo Detected a folder permissions issue most likely. Might have more luck running the BAT as admin.
     echo.
-    echo 或者
-    echo.
-    echo 如果 "OptiScaler.dll" 存在，请手动重命名为支持的文件名（如 dxgi/winmm.dll）即可完成！
-    echo 重命名后无需再次运行安装脚本。
-    echo.
+	echo OR
+	echo.
+    echo If "OptiScaler.dll" exists, please manually rename to a supported filename ^(e.g. dxgi/winmm.dll^) and you are done^^!
+	echo No need to run the setup BAT again after renaming.
+	echo.
     echo.
     goto end
 )
 
-REM 检查旧版 0.9 之前的残留文件，以及已存在的 Opti 安装
+REM Check if old pre-0.9 additional files exist, along with an existing Opti installation
 set "OLD_FILES_FOUND=0"
 set "OPTI_DLL_LIST="
 if exist nvapi64.dll set "OLD_FILES_FOUND=1"
@@ -79,74 +67,74 @@ for %%F in (dxgi.dll winmm.dll d3d12.dll dbghelp.dll version.dll wininet.dll win
 )
 
 if "!OLD_FILES_FOUND!"=="1" (
-    echo 警告：检测到可能的旧版 OptiScaler 文件！
+    echo WARNING: Possible old OptiScaler file^(s^) detected^^!
     if exist nvapi64.dll echo   - nvapi64.dll
     if exist nvngx.dll echo   - nvngx.dll
     if exist OptiScaler.asi echo   - OptiScaler.asi
 	if exist "Remove OptiScaler.bat" echo   - Remove OptiScaler.bat
     if exist "Remove_OptiScaler.bat" echo   - Remove_OptiScaler.bat
-    for %%F in (!OPTI_DLL_LIST!) do echo   - %%F （原始文件名：OptiScaler.dll）
+    for %%F in (!OPTI_DLL_LIST!) do echo   - %%F ^(original filename: OptiScaler.dll^)
     echo.
-    echo 这些文件可能与当前版本的 OptiScaler 冲突，建议删除。
-    echo 建议删除。
+    echo These files may conflict with the current version of OptiScaler.
+    echo It is recommended to delete them.
     echo.
-    echo 是否删除这些文件？
+    echo Do you want to delete these files?
     echo.
-	echo [1] 是
-    echo [2] 否
+	echo [1] Yes
+    echo [2] No
     echo.
-	set /p "USER_CHOICE=请选择 - "
-    echo.
+	set /p "USER_CHOICE=Waiting - "
+	echo.
     if /i "!USER_CHOICE!"=="1" (
         if exist nvapi64.dll (
             del nvapi64.dll
-            echo 已删除 nvapi64.dll
+            echo Deleted nvapi64.dll
         )
         if exist nvngx.dll (
             del nvngx.dll
-            echo 已删除 nvngx.dll
+            echo Deleted nvngx.dll
         )
         if exist OptiScaler.asi (
             del OptiScaler.asi
-            echo 已删除 OptiScaler.asi
+            echo Deleted OptiScaler.asi
         )
 		if exist "Remove OptiScaler.bat" (
             del "Remove OptiScaler.bat"
-            echo 已删除 Remove OptiScaler.bat
+            echo Deleted Remove OptiScaler.bat
         )
         if exist "Remove_OptiScaler.bat" (
             del "Remove_OptiScaler.bat"
-            echo 已删除 Remove_OptiScaler.bat
+            echo Deleted Remove_OptiScaler.bat
         )
         for %%F in (!OPTI_DLL_LIST!) do (
             del "%%F"
-            echo 已删除 %%F
+            echo Deleted %%F
         )
-        echo 完成！
+        echo Done^^!
     ) else (
-        echo 已跳过删除。注意这些文件可能引起问题。
+        echo Skipping deletion. Note that these files may cause issues.
     )
     echo.
 )
 
-REM 根据当前目录设置路径
+REM Set paths based on current directory
 
 set "optiScalerFile=.\OptiScaler.dll"
 set setupSuccess=false
 
-REM 检查是否存在 Engine 文件夹
+REM Check if the Engine folder exists
 if exist ".\Engine" (
-    echo 检测到 Engine 文件夹。如果是虚幻引擎游戏，请将 OptiScaler 解压到 #CODENAME#\Binaries\Win64
-	echo 不要解压到 Engine 文件夹！
+    echo Found Engine folder. If this is an Unreal Engine game, then please extract Optiscaler to #CODENAME#\Binaries\Win64
+	echo Do not extract to the Engine folder^^!
+	echo.
+	echo Example - \Jedi Survivor\SwGame\Binaries\Win64, \Witchfire\Witchfire\Binaries\Win64
     echo.
-	echo 示例 - \Jedi Survivor\SwGame\Binaries\Win64, \Witchfire\Witchfire\Binaries\Win64
-    echo.
-    echo 是否继续安装到当前文件夹？
+    echo Continue installation to current folder?
 	echo. 
-    echo [1] 是
-    echo [2] 否
+    echo [1] Yes
+    echo [2] No
     echo.
-	set /p continueChoice="请选择 - "
+	set /p continueChoice="Waiting - "
     set continueChoice=!continueChoice: =!
 
     if "!continueChoice!"=="1" (
@@ -156,11 +144,11 @@ if exist ".\Engine" (
     goto end
 )
 
-REM 提示用户选择 OptiScaler 文件名
+REM Prompt user to select a filename for OptiScaler
 :selectFilename
 echo.
-echo 请为 OptiScaler 选择文件名（默认 dxgi.dll，兼容性最好）：
-echo （Vulkan 游戏请用 winmm.dll；XGP/微软商店 winmm/version.dll 可能更好）
+echo Choose a filename for OptiScaler (default is dxgi.dll, most compatible):
+echo (For Vulkan, use winmm.dll. For XGP/MS Store, winmm/version.dll may be better)
 echo.
 echo  [1] dxgi.dll
 echo  [2] winmm.dll
@@ -171,7 +159,7 @@ echo  [6] wininet.dll
 echo  [7] winhttp.dll
 echo  [8] OptiScaler.asi
 echo.
-set /p filenameChoice="请输入 1-8（回车使用默认值）: "
+set /p filenameChoice="Enter 1-8 (or press Enter for default): "
 
 if "%filenameChoice%"=="" (
     set selectedFilename="dxgi.dll"
@@ -192,21 +180,21 @@ if "%filenameChoice%"=="" (
 ) else if "%filenameChoice%"=="8" (
     set selectedFilename="OptiScaler.asi"
 ) else (
-    echo 无效选项，请重新选择。
+    echo Invalid choice. Please select a valid option.
     echo.
     goto selectFilename
 )
 
 if exist %selectedFilename% (
     echo.
-    echo 警告：%selectedFilename% 已存在于当前文件夹。
+    echo WARNING: %selectedFilename% already exists in the current folder.
     echo.
-	echo 是否覆盖 %selectedFilename%？
+	echo Do you want to overwrite %selectedFilename%?
+	echo.
+    echo [1] Yes
+    echo [2] No
     echo.
-    echo [1] 是
-    echo [2] 否
-    echo.
-	set /p overwriteChoice="请选择 - "
+	set /p overwriteChoice="Waiting - "
     set overwriteChoice=!overwriteChoice: =!
     
     echo.
@@ -217,13 +205,13 @@ if exist %selectedFilename% (
     goto selectFilename
 )
 
-REM Wine 不支持 PowerShell
+REM Wine doesn't support powershell
 :checkWine
 reg query HKEY_CURRENT_USER\Software\Wine\DllOverrides >nul 2>&1
 if %errorlevel%==0 (
     echo.
-    echo 检测到 Wine，跳过伪装检查。
-    echo 如需关闭伪装，可在配置中设置 Dxgi=false
+    echo Using wine, skipping over spoofing checks.
+    echo If you need, you can disable spoofing by setting Dxgi=false in the config
     echo.
     pause
     goto completeSetup
@@ -231,64 +219,64 @@ if %errorlevel%==0 (
 
 if exist %windir%\system32\nvapi64.dll (
     echo.
-    echo 检测到 N 卡驱动文件。
+    echo Nvidia driver files detected.
     set isNvidia=true
 ) else (
     set isNvidia=false
 )
 
-REM 询问用户 GPU 类型
+REM Query user for GPU type
 echo.
-echo 你使用的是 N 卡还是 A 卡/Intel 核显？
+echo Are you using an Nvidia GPU or AMD/Intel GPU?
 echo.
-echo [1] A 卡/Intel
-echo [2] N 卡
+echo [1] AMD/Intel
+echo [2] Nvidia
 echo.
 
 :gpuPrompt
 if "%isNvidia%"=="true" (
-    set /p gpuChoice="请输入 1 或 2（检测到 N 卡）: "
+    set /p gpuChoice="Enter 1 or 2 (Detected Nvidia): "
 ) else (
-    set /p gpuChoice="请输入 1 或 2（检测到 A 卡/Intel）: "
+    set /p gpuChoice="Enter 1 or 2 (Detected AMD/Intel): "
 )
 
 if "%gpuChoice%"=="1" goto gpuValid
 if "%gpuChoice%"=="2" goto gpuValid
-echo 无效输入，请输入 1 或 2。
+echo Invalid input. Please enter 1 or 2.
 echo.
 goto gpuPrompt
 
 :gpuValid
 
-REM N 卡跳过伪装
+REM Skip spoofing if Nvidia
 if "%gpuChoice%"=="2" (
     goto completeSetup
 )
 
-REM 询问 DLSS 输入
+REM Query user for DLSS
 echo.
-echo 是否使用 DLSS 输入替换为 FSR/XeSS？（启用 N 卡伪装，DLSS-FG、Reflex-^>AL2 必需）
-echo 如需更改，可编辑 OptiScaler.ini 设置 Dxgi=false 关闭伪装。
+echo Will you try to use DLSS inputs to replace with FSR/XeSS? (enables Nvidia spoofing, required for DLSS-FG, Reflex-^>AL2)
+echo If you want to change the setting later, edit OptiScaler.ini and set Dxgi=false to disable spoofing and reverse.
 echo.
-echo [1] 是
-echo [2] 否
+echo [1] Yes
+echo [2] No
 echo.
-set /p enablingSpoofing="请输入 1 或 2（回车默认是）: "
+set /p enablingSpoofing="Enter 1 or 2 (or press Enter for Yes): "
 
 set configFile=OptiScaler.ini
 if "%enablingSpoofing%"=="2" (
     if not exist "%configFile%" (
-        echo 未找到配置文件：%configFile%
+        echo Config file not found: %configFile%
         pause
     )
 
     powershell -Command "(Get-Content '%configFile%') -replace 'Dxgi=auto', 'Dxgi=false' | Set-Content '%configFile%'"
 )
 
-REM 决定是否运行 OptiPatcher
+REM Decide whether to run OptiPatcher
 echo.
 if "%gpuChoice%"=="1" (
-    echo 检测到 A 卡/Intel，正在检查 OptiPatcher 兼容性。
+    echo AMD/Intel GPU detected - running OptiPatcher check.
     goto checkExistingOptiPatcher
 )
 
@@ -300,39 +288,39 @@ for %%F in (OptiScaler\plugins\*OptiPatcher*.asi) do (
 
 if defined foundOptiPatcher (
     echo.
-    echo 发现 OptiPatcher：!foundOptiPatcher!
-    echo 如果现有版本工作正常，建议保留。
-	echo 是否重新下载可能更新的版本？
+    echo OptiPatcher found: !foundOptiPatcher!
+    echo If the existing version works properly, might be best to keep it.
+	echo Do you want to re-download a possibly newer version?
+	echo.
+    echo [1] Yes
+    echo [2] No
     echo.
-    echo [1] 是
-    echo [2] 否
-    echo.
-	set /p optiRedownload="请选择 - "
+	set /p optiRedownload="Waiting - "
         
     if /i "!optiRedownload!"=="1" (
         echo.
-        echo 正在删除 !foundOptiPatcher!...
+        echo Deleting !foundOptiPatcher!...
         del "!foundOptiPatcher!"
         goto checkOptiPatcher
     ) else (
         echo.
-        echo 保留现有 OptiPatcher，跳过下载。
+        echo Keeping existing OptiPatcher - skipping download.
         goto completeSetup
     )
 )
 
-REM 未安装，继续下载
+REM Not installed - continue to download
 goto checkOptiPatcher
 
 :checkOptiPatcher
-REM 检查网络连接
+REM Check connectivity
 echo.
-echo 正在检查 OptiPatcher 兼容性...
-echo 如果卡住请按 Ctrl+C 跳过。
+echo Checking for OptiPatcher compatibility...
+echo Press Ctrl+C if this gets stuck to skip to setup completion.
 
 ping -n 1 -w 3000 github.com >nul 2>&1
 if %errorlevel% neq 0 (
-    echo 无法连接 GitHub，跳过 OptiPatcher 检查。
+    echo Offline or GitHub blocked. Skipping OptiPatcher check.
     goto completeSetup
 )
 
@@ -343,40 +331,40 @@ for /f "usebackq tokens=*" %%A in (`powershell -Command "& { $rawUrl = 'https://
 
 if "!OPTI_MATCH!"=="YES" (
     echo.
-    echo 检测到 OptiPatcher 支持！
-    echo 一个用于解锁 DLSS/DLSS-FG 输入的 Opti 插件，可避免伪装和性能开销。
-    echo 更多信息见 OptiPatcher GitHub
+    echo OptiPatcher support detected^^!
+    echo An Opti plugin used for unlocking DLSS/DLSS-FG inputs, avoiding spoofing and performance overhead in supported games.
+    echo More info available on OptiPatcher Github
     echo.
-	echo 下载 OptiPatcher.asi？
+	echo Download OptiPatcher.asi?
     echo.
-	echo [1] 是
-    echo [2] 否
+	echo [1] Yes
+    echo [2] No
     echo.
-	set /p downloadOptiPatcher="请选择 - "
+	set /p downloadOptiPatcher="Waiting - "
     set downloadOptiPatcher=!downloadOptiPatcher: =!
     
     if "!downloadOptiPatcher!"=="1" (
         echo.
-        echo 正在准备 plugins 文件夹...
+        echo Preparing plugins folder...
         if not exist "OptiScaler\plugins" mkdir "OptiScaler\plugins"
         
-        echo 正在下载 OptiPatcher...
-        echo 如果卡住请按 Ctrl+C 跳过。
+        echo Downloading OptiPatcher...
+        echo Press Ctrl+C if this gets stuck to skip to setup completion.
         echo.
         powershell -Command "Invoke-WebRequest -Uri 'https://github.com/optiscaler/OptiPatcher/releases/download/rolling/OptiPatcher.asi' -OutFile 'OptiScaler\plugins\OptiPatcher.asi'"
         if errorlevel 1 goto completeSetup
         
         if exist "OptiScaler\plugins\OptiPatcher.asi" (
-            echo OptiPatcher.asi 下载成功。
-            echo 正在启用 OptiScaler.ini 中的 ASI 加载...
+            echo OptiPatcher.asi downloaded successfully.
+            echo Enabling ASI loading in OptiScaler.ini...
             if exist "%configFile%" (
                 powershell -Command "(Get-Content '%configFile%') -replace 'LoadAsiPlugins=auto', 'LoadAsiPlugins=true' | Set-Content '%configFile%'"
-                echo 已在 OptiScaler.ini 中启用 ASI 加载！
+                echo Successfully enabled ASI loading in OptiScaler.ini^^!
             ) else (
-                echo 警告：未找到 OptiScaler.ini，无法启用 LoadAsiPlugins。
+                echo Warning: OptiScaler.ini not found, could not enable LoadAsiPlugins.
             )
         ) else (
-            echo OptiPatcher.asi 下载失败。
+            echo Failed to download OptiPatcher.asi.
         )
      timeout /t 3
     )
@@ -386,19 +374,19 @@ echo.
 goto completeSetup
 
 :completeSetup
-REM 重命名 OptiScaler 文件
+REM Rename OptiScaler file
 echo.
 if "!overwriteChoice!"=="1" (
-    echo 正在删除旧 %selectedFilename%...
+    echo Removing previous %selectedFilename%...
     del /F %selectedFilename% 
 )
 
-echo 正在将 OptiScaler 文件重命名为 %selectedFilename%...
+echo Renaming OptiScaler file to %selectedFilename%...
 rename "%optiScalerFile%" %selectedFilename%
 if errorlevel 1 (
     echo.
-    echo 错误：重命名失败，很可能是文件夹权限问题。
-    echo 请手动将 OptiScaler.dll 重命名为 %selectedFilename%！之后无需再次运行脚本。
+    echo ERROR: Failed to rename OptiScaler file to %selectedFilename%. Most likely due to folder permissions issues.
+    echo Please rename OptiScaler.dll manually to %selectedFilename%^^! No need to run setup BAT again after that.
     echo.
     goto end
 )
@@ -408,15 +396,12 @@ goto create_uninstaller
 :create_uninstaller_return
 
 cls
-echo  OptiScaler 安装成功！
+echo  OptiScaler setup completed successfully...
 echo.
 echo   ___                 
 echo  (_         '        
 echo  /__  /)   /  () (/  
 echo          _/      /    
-echo.
-echo 按 Insert 可在游戏内打开 OptiScaler 菜单
-echo.
 echo.
 
 set setupSuccess=true
@@ -447,9 +432,9 @@ echo echo #+#    #+# #+#            #+#         #+#     #+#    #+# #+#    #+# #+
 echo echo  ########  ###            ###     ###########  ########   ########  ###     ### ########## ########## ###    ### 
 echo echo.
 echo echo Coping is strong with this one...
-echo echo v3.0-pre1（汉化版）
+echo echo v2.8 - now with OptiPatcher support
 echo echo.
-echo echo REM 检查 OptiScaler 是否已安装
+echo REM Check if OptiScaler installation exists
 echo set "OLD_FILES_FOUND=0"
 echo set "OPTI_DLL_LIST="
 echo if exist OptiScaler.asi set "OLD_FILES_FOUND=1"
@@ -468,18 +453,18 @@ echo     ^)
 echo ^)
 
 echo if "!OLD_FILES_FOUND!"=="1" ^(
-echo     echo 检测到已安装的 OptiScaler！
+echo     echo Existing OptiScaler installation detected^^^^!
 echo     if exist OptiScaler.asi echo   - OptiScaler.asi
-echo     for %%%%F in ^(!OPTI_DLL_LIST!^) do echo   - %%%%F - 原始文件名：OptiScaler.dll
+echo     for %%%%F in ^(!OPTI_DLL_LIST!^) do echo   - %%%%F - original filename: OptiScaler.dll
 echo     echo.
 echo ^)
 
-echo echo 是否卸载 OptiScaler？
+echo echo Do you want to remove OptiScaler?
 echo echo.
-echo echo [1] 是
-echo echo [2] 否
+echo echo [1] Yes
+echo echo [2] No
 echo echo.
-echo set /p removeChoice="请选择 - "
+echo set /p removeChoice="Waiting - "
 echo echo.
 
 echo if "%%removeChoice%%"=="1" ^(
@@ -496,18 +481,18 @@ echo     rd OptiScaler\Streamline
 echo     del /Q OptiScaler\streamline\*
 echo     rd OptiScaler\streamline
 echo     echo.
-echo     echo 删除 OptiPatcher（如果存在）
+echo     echo Deleting OptiPatcher if present
 echo     del /Q OptiScaler\plugins\*
 echo     rd OptiScaler\plugins
 echo     echo.
 echo     del /Q OptiScaler\*
 echo     rd OptiScaler
 echo     echo.
-echo     echo OptiScaler 已卸载！忽略关于缺失文件的警告。
+echo     echo OptiScaler removed^^^^! Ignore the warnings about missing files.
 echo     echo.
 echo ^) else ^(
 echo     echo.
-echo     echo 操作已取消。
+echo     echo Operation cancelled.
 echo     echo.
 echo ^)
 
@@ -520,7 +505,7 @@ echo ^)
 
 endlocal
 echo.
-echo 卸载脚本已生成。
+echo Uninstaller created.
 echo.
 
 goto create_uninstaller_return
