@@ -982,5 +982,12 @@
  "Upscaler Ratio": "UI_Upscaler_Ratio",
  "Render Width": "UI_Render_Width",
  "%08x, %s->%s, Count: %llu, %s": "UI_S_08x_s_s_Count_llu_s",
- "%s - %s %s %s %s": "UI_s_s_s_s_s"
+ "%s - %s %s %s %s": "UI_s_s_s_s_s",
+ "Don't Exist": "UI_Don_t_Exist",
+ "Preset 0": "UI_Preset_0",
+ "Preset 1": "UI_Preset_1",
+ "Preset 2": "UI_Preset_2",
+ "Using upscaler data for FG": "UI_Using_upscaler_data_for_FG",
+ "Select FSR-FG in-game": "UI_Select_FSR_FG_in_game",
+ "Affects both FSR-FG & Upscalers": "UI_Affects_both_FSR_FG_Upscalers"
 }

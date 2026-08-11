@@ -1121,3 +1121,11 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_S_08x_s_s_Count_llu_s)] = "%08x, %s->%s, Count: %llu, %s";
     table[static_cast<int>(LK::UI_s_s_s_s_s)] = "%s - %s %s %s %s";
 }
+    table[static_cast<int>(LK::UI_Don_t_Exist)] = "Don't Exist";
+    table[static_cast<int>(LK::UI_Preset_0)] = "Preset 0";
+    table[static_cast<int>(LK::UI_Preset_1)] = "Preset 1";
+    table[static_cast<int>(LK::UI_Preset_2)] = "Preset 2";
+    table[static_cast<int>(LK::UI_Using_upscaler_data_for_FG)] = "Using upscaler data for FG";
+    table[static_cast<int>(LK::UI_Select_FSR_FG_in_game)] = "Select FSR-FG in-game";
+    table[static_cast<int>(LK::UI_Affects_both_FSR_FG_Upscalers)] = "Affects both FSR-FG & Upscalers";
+}

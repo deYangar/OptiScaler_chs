@@ -1128,6 +1128,13 @@ enum class LK {
     UI_Render_Width,
     UI_S_08x_s_s_Count_llu_s,
     UI_s_s_s_s_s,
+    UI_Don_t_Exist,
+    UI_Preset_0,
+    UI_Preset_1,
+    UI_Preset_2,
+    UI_Using_upscaler_data_for_FG,
+    UI_Select_FSR_FG_in_game,
+    UI_Affects_both_FSR_FG_Upscalers,
     COUNT
 };
 

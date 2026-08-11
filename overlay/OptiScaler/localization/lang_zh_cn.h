@@ -1133,3 +1133,11 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_S_08x_s_s_Count_llu_s)] = "%08x, %s->%s, 计数：%llu, %s";
     table[static_cast<int>(LK::UI_s_s_s_s_s)] = "%s - %s %s %s %s";
 }
+    table[static_cast<int>(LK::UI_Don_t_Exist)] = "不存在";
+    table[static_cast<int>(LK::UI_Preset_0)] = "预设 0";
+    table[static_cast<int>(LK::UI_Preset_1)] = "预设 1";
+    table[static_cast<int>(LK::UI_Preset_2)] = "预设 2";
+    table[static_cast<int>(LK::UI_Using_upscaler_data_for_FG)] = "使用超分辨率数据用于帧生成";
+    table[static_cast<int>(LK::UI_Select_FSR_FG_in_game)] = "在游戏中选择 FSR-FG";
+    table[static_cast<int>(LK::UI_Affects_both_FSR_FG_Upscalers)] = "同时影响 FSR-FG 与超分辨率";
+}
