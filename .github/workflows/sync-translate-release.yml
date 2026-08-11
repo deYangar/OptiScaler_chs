@@ -35,6 +35,7 @@ jobs:
     outputs:
       version_tag: ${{ steps.ver.outputs.tag }}
       release_type: ${{ steps.ver.outputs.type }}
+      build_required: ${{ steps.check.outputs.required }}
     steps:
       - name: 检出本仓库
         uses: actions/checkout@v4
@@ -89,6 +90,7 @@ jobs:
           echo "本次发布: type=$TYPE tag=$TAG"
 
       - name: 同步上游源码到本仓库
+        id: sync_up
         if: github.event.inputs.build_only != 'true' && github.event.inputs.sync_upstream != 'false'
         run: |
           git config user.name "deYangar"
@@ -117,8 +119,10 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m "chore: 同步上游源码 $(date +%Y%m%d) [skip ci]"
             git push origin master
+            echo "changed=true" >> "$GITHUB_OUTPUT"
             echo "✅ 已同步上游并推送"
           else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "ℹ️ 上游无变化，跳过提交"
           fi
 
@@ -149,6 +153,7 @@ jobs:
           git push origin master || echo "push 失败（可忽略）"
 
       - name: 同步汉化文档（ini 增量合并 + md 变更检测）
+        id: docs
         if: github.event.inputs.build_only != 'true'
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
@@ -161,17 +166,40 @@ jobs:
             git add -A
             git commit -m "chore: 同步上游文档更新 $(date +%Y%m%d) [skip ci]" || echo "无变更"
             git push origin master || echo "push 失败（可忽略）"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
             echo "✅ 已同步上游文档更新"
           elif [ $EXIT -eq 0 ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "ℹ️ 上游文档无变化"
           else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "⚠️ sync_docs 异常退出 ($EXIT)，继续流程"
+          fi
+
+      - name: 判断是否需要构建
+        id: check
+        run: |
+          EVENT="${{ github.event_name }}"
+          TYPE="${{ steps.ver.outputs.type }}"
+          if [ "$EVENT" = "workflow_dispatch" ] || [ "$EVENT" = "push" ]; then
+            echo "required=true" >> "$GITHUB_OUTPUT"
+            echo "触发方式: $EVENT，总是构建"
+          elif [ "$TYPE" = "release" ]; then
+            echo "required=true" >> "$GITHUB_OUTPUT"
+            echo "本次为正式版发布，构建"
+          elif [ "${{ steps.sync_up.outputs.changed }}" = "true" ] || [ "${{ steps.scan.outputs.has_new }}" = "true" ] || [ "${{ steps.docs.outputs.changed }}" = "true" ]; then
+            echo "required=true" >> "$GITHUB_OUTPUT"
+            echo "检测到实质变更（上游源码/新字符串/文档），构建"
+          else
+            echo "required=false" >> "$GITHUB_OUTPUT"
+            echo "无任何变更，跳过构建与发布"
           fi
 
   build:
     name: Windows 编译
     needs: sync
     runs-on: windows-latest
+    if: needs.sync.outputs.build_required == 'true'
     steps:
       - name: 检出本仓库（含源码 + submodule）
         uses: actions/checkout@v4
