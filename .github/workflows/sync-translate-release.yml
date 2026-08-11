@@ -61,12 +61,19 @@ jobs:
           echo "上游 HEAD: $(git rev-parse upstream/master)"
 
           # 只同步上游的源码路径，保留我们的 overlay/ scripts/ fonts/ .github/ 等汉化资产
+          # 核心路径（上游必有），缺失即报错
           git checkout upstream/master -- \
-            OptiScaler/ external/ run/ images/ \
+            OptiScaler/ external/ images/ \
             OptiScaler.sln OptiScaler.ini Config.md Changelog.md \
             CONTRIBUTING.md Features.md Issues.md LICENSE README.md Spoofing.md \
             setup_linux.sh setup_windows.bat \
             .clang-format .gitattributes .gitignore .gitmodules
+          # 兼容：上游新出现的目录也同步（存在才拉，避免 pathspec 报错）
+          for d in run overlay_dev; do
+            if git cat-file -e upstream/master:$d 2>/dev/null; then
+              git checkout upstream/master -- $d
+            fi
+          done
 
           git add -A
           if ! git diff --cached --quiet; then
