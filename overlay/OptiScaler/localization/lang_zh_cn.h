@@ -1270,4 +1270,6 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Skip_Dispatch_for_HUDless)] = "Skip Dispatch for HUDless";
     table[static_cast<int>(LK::UI_Do_not_use_HUDless_set_at_ffxDispatch)] = "Do not use HUDless set at ffxDispatch";
     table[static_cast<int>(LK::UI_HUDless_Resources)] = "HUDless Resources";
+    table[static_cast<int>(LK::UI_Allow_Async_2)] = "允许异步##2";
+    table[static_cast<int>(LK::UI_Debug_View_3)] = "调试视图##3";
 }

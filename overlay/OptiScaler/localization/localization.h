@@ -1252,6 +1252,8 @@ enum class LK {
     UI_Skip_Dispatch_for_HUDless,
     UI_Do_not_use_HUDless_set_at_ffxDispatch,
     UI_HUDless_Resources,
+    UI_Allow_Async_2,
+    UI_Debug_View_3,
     COUNT
 };
 
