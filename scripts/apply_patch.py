@@ -16,6 +16,13 @@ import re
 import shutil
 import sys
 
+# Windows 控制台默认 cp1252，强制 UTF-8 输出避免 UnicodeEncodeError
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+else:
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+
 UPSTREAM = os.path.abspath(sys.argv[1])
 HERE = os.path.dirname(os.path.abspath(__file__))
 OVERLAY = os.path.normpath(os.path.join(HERE, '..', 'overlay'))

@@ -1,6 +1,19 @@
 # -*- coding: utf-8 -*-
 """验证：localization.h enum 数 == lang_en.h == lang_zh_cn.h 条目数"""
 import io, re, sys
+import io
+import json
+import os
+import re
+import sys
+
+# Windows 控制台默认 cp1252，强制 UTF-8 输出避免 UnicodeEncodeError
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+else:
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+
 
 repo = r'C:\Users\Yang\.openclaw\workspace\projects\optiscaler-chs-repo'
 loc = io.open(repo + r'\overlay\OptiScaler\localization\localization.h', encoding='utf-8').read()
