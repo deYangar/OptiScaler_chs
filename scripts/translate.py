@@ -63,7 +63,7 @@ def call_deepseek(api_key, texts):
     """批量翻译"""
     prompt = GLOSSARY + '\n请把以下 JSON 数组中的英文 UI 字符串翻译成简体中文（游戏软件风格，保留 %s/%d/%llu 等格式符和 \\n 换行，保留 HTML/技术术语），输出 JSON 数组，一一对应：\n' + json.dumps(texts, ensure_ascii=False)
     body = json.dumps({
-        "model": "deepseek-chat",
+        "model": "deepseek-v4-flash",
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.3,
         "max_tokens": 4096,
