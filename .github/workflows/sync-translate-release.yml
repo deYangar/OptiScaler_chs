@@ -43,13 +43,50 @@ jobs:
 
       - name: 确定发布类型与 tag
         id: ver
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TYPE="${{ github.event.inputs.release_type || 'nightly' }}"
-          DATE=$(date +%Y%m%d)
-          TAG="$TYPE-$DATE"
+          # 手动触发时：尊重 release_type 输入
+          INPUT_TYPE="${{ github.event.inputs.release_type || '' }}"
+          UPSTREAM_REPO="${{ env.UPSTREAM_REPO }}"
+          MINE="${{ github.repository }}"
+
+          # 获取上游最新正式版 tag（如 v0.9.4）
+          UPSTREAM_STABLE=$(gh api repos/$UPSTREAM_REPO/releases/latest --jq '.tag_name' 2>/dev/null || echo "")
+          echo "上游最新正式版: ${UPSTREAM_STABLE:-无}"
+
+          if [ "$INPUT_TYPE" = "nightly" ]; then
+            TYPE="nightly"; TAG="nightly"
+          elif [ "$INPUT_TYPE" = "beta" ]; then
+            TYPE="beta"; TAG="beta"
+          elif [ "$INPUT_TYPE" = "release" ]; then
+            # 手动指定正式版：tag 用上游最新正式版版本号（未发布过则用日期）
+            if [ -n "$UPSTREAM_STABLE" ]; then
+              TYPE="release"; TAG="$UPSTREAM_STABLE"
+            else
+              TYPE="release"; TAG="release-$(date +%Y%m%d)"
+            fi
+          else
+            # 定时/推送触发：自动判断
+            # 上游有新正式版且本仓库未发布过 -> 发正式版；否则 -> nightly
+            ALREADY=""
+            if [ -n "$UPSTREAM_STABLE" ]; then
+              ALREADY=$(gh release view "$UPSTREAM_STABLE" --repo "$MINE" --json tagName --jq '.tagName' 2>/dev/null || echo "")
+            fi
+            if [ -n "$UPSTREAM_STABLE" ] && [ -z "$ALREADY" ]; then
+              TYPE="release"; TAG="$UPSTREAM_STABLE"
+              echo "发现上游新正式版 $TAG，本次发布正式版"
+            else
+              TYPE="nightly"; TAG="nightly"
+              echo "无上游新正式版，本次发布 nightly"
+            fi
+          fi
+
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "type=$TYPE" >> "$GITHUB_OUTPUT"
           echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "TYPE=$TYPE" >> $GITHUB_ENV
+          echo "本次发布: type=$TYPE tag=$TAG"
 
       - name: 同步上游源码到本仓库
         if: github.event.inputs.build_only != 'true' && github.event.inputs.sync_upstream != 'false'
@@ -172,10 +209,11 @@ jobs:
             NOTES="测试版（上游 master + 汉化）"
             PRERELEASE=true
           else
-            TITLE="Release $DATE"
-            NOTES="正式版（上游 master + 汉化）"
+            TITLE="Release $TAG"
+            NOTES="正式版（上游 $TAG + 汉化）"
             PRERELEASE=false
           fi
+          # 固定 tag（nightly/beta/同名版本）需先删除旧 release+tag 再重建，保证链接始终有效
           gh release delete "$TAG" --repo "${{ github.repository }}" --yes --cleanup-tag 2>/dev/null || true
           gh release create "$TAG" "$ZIP" --repo "${{ github.repository }}" --title "$TITLE" --notes "$NOTES" --prerelease="$PRERELEASE"
-          echo "已发布: $TAG"
+          echo "已发布: $TAG (type=$TYPE)"
