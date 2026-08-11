@@ -76,6 +76,9 @@ jobs:
         run: |
           git -C upstream fetch --depth 1 origin "$REF"
           git -C upstream checkout FETCH_HEAD
+          git -C upstream reset --hard FETCH_HEAD
+          git -C upstream clean -fd
+          git -C upstream submodule foreach --recursive git reset --hard 2>/dev/null || true
           git -C upstream submodule update --init --recursive --depth 1 || echo "submodule 增量更新失败，可接受"
           echo "上游 HEAD: $(git -C upstream rev-parse --short HEAD)"
 

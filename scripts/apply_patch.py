@@ -71,18 +71,27 @@ else:
 
 print(f'[4] menu_common.cpp LOC 注入')
 mc = read(MC)
-if '#include <localization/localization.h>' not in mc:
+LOC_INC = '#include <localization/localization.h>'
+if LOC_INC not in mc:
     # 插到 pch.h 之后（预编译头模式下 pch.h 之前的内容会被 MSVC 静默忽略）
     pch_anchor = '#include "pch.h"'
     if pch_anchor in mc:
         idx = mc.find(pch_anchor) + len(pch_anchor)
-        mc = mc[:idx] + '\n#include <localization/localization.h>' + mc[idx:]
+        mc = mc[:idx] + '\n' + LOC_INC + mc[idx:]
         print('    注入 include（pch.h 后）')
     else:
         first_inc = mc.find('#include')
         nl = mc.find('\n', first_inc)
-        mc = mc[:nl + 1] + '#include <localization/localization.h>\n' + mc[nl + 1:]
+        mc = mc[:nl + 1] + LOC_INC + '\n' + mc[nl + 1:]
         print('    注入 include（首个 include 后）')
+elif LOC_INC in mc and mc.find(LOC_INC) < mc.find('#include "pch.h"'):
+    # include 已存在但在 pch.h 之前（旧版注入残留/缓存残留）→ 移到 pch.h 后
+    mc = mc.replace(LOC_INC + '\n', '')
+    mc = mc.replace(LOC_INC, '')
+    pch_anchor = '#include "pch.h"'
+    idx = mc.find(pch_anchor) + len(pch_anchor)
+    mc = mc[:idx] + '\n' + LOC_INC + mc[idx:]
+    print('    修复 include 位置（移到 pch.h 后）')
 
 with io.open(os.path.join(HERE, 'strings_map.json'), encoding='utf-8') as f:
     strings_map = json.load(f)
