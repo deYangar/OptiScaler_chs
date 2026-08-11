@@ -1,6 +1,3 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 *.sh eol=lf
-# setup_windows.bat 必须保持 CRLF 原样存储（cmd 解析 bat 依赖 CRLF，LF 会闪退）
-# -text = 禁止任何行尾转换，保证 GitHub raw 下载与本地一致
-setup_windows.bat -text

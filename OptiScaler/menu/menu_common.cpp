@@ -806,6 +806,9 @@ void MenuCommon::PopulateCombo(const std::string& name, TStorage& currentValue,
     {
         for (const auto& opt : options)
         {
+            if (opt.hidden)
+                continue;
+
             if (opt.disabled)
                 ImGui::BeginDisabled();
 
@@ -1329,14 +1332,8 @@ void MenuCommon::HandleMenuShortcuts(RenderMenuContext& ctx)
                 refreshRate = Util::GetActiveRefreshRate(_handle);
 
                 auto optiPath = std::filesystem::path(Config::Instance()->MainDllPath.value());
-                auto dllPath = optiPath / L"dlss-enabler-headless.dll";
-                state.nvngxFgFilesAvailable = enablerExists.Get(dllPath);
-
-                if (!state.nvngxFgFilesAvailable)
-                {
-                    dllPath = optiPath / L"dlssg_to_fsr3_amd_is_better.dll";
-                    state.nvngxFgFilesAvailable = nukemsExists.Get(dllPath);
-                }
+                state.artursFgFileAvailable = enablerExists.Get(optiPath / L"dlss-enabler-headless.dll");
+                state.nukemsFgFileAvailable = nukemsExists.Get(optiPath / L"dlssg_to_fsr3_amd_is_better.dll");
 
                 if (State::Instance().currentFeature != nullptr)
                 {
@@ -1757,7 +1754,7 @@ void MenuCommon::RenderPerformanceOverlay(RenderMenuContext& ctx)
             auto fgText = (fg != nullptr && fg->IsActive() && !fg->IsPaused()) ? (" (" + std::string(fg->Name()) + ")")
                                                                                : std::string();
 
-            if (state.activeFgOutput == FGOutput::NvngxFG || state.activeFgOutput == FGOutput::DLSSGWithNvngx)
+            if (state.activeFgNvngx != FGNvngxReplacement::None)
             {
                 if (Nvngx_FG::getMaxFakeFramesCount(state.swapchainApi) > 1)
                 {
@@ -2666,7 +2663,7 @@ void MenuCommon::RenderActiveUpscalerSettings(RenderMenuContext& ctx)
                             config->Fsr4EnableWatermark = fsr4wm;
                         }
 
-                        ShowHelpMarker("After changing this option, please Save Settings\n"
+                        ShowHelpMarker("After changing this option, please Save Settings.\n"
                                        "It will be applied on next launch.");
                     }
                 }
@@ -2751,7 +2748,7 @@ void MenuCommon::RenderActiveUpscalerSettings(RenderMenuContext& ctx)
 
                         ShowHelpMarker("Value of 0.0f can improve temporal stability of bright pixels\n"
                                        "Lower values are more stable with ghosting\n"
-                                       "Higher values are more pixelly but less ghosting.");
+                                       "Higher values are more pixelly, but less ghosting");
 
                         if (currentFeature->Version() >= feature_version { 3, 1, 4 })
                         {
@@ -2862,7 +2859,7 @@ void MenuCommon::RenderActiveUpscalerSettings(RenderMenuContext& ctx)
 
                 ShowHelpMarker("Each render preset has it strengths and weaknesses\n"
                                "Override to potentially improve image quality\n"
-                               "Press apply after enable/disable");
+                               "Press Apply after enable/disable");
 
                 /*
                 auto currentPresetIndex = GetPresetIndex(currentFeature, false);
@@ -2918,7 +2915,7 @@ void MenuCommon::RenderActiveUpscalerSettings(RenderMenuContext& ctx)
 
                 ShowHelpMarker("Use generic appid with NGX\n"
                                "Fixes OptiScaler preset override not working with certain games\n"
-                               "Requires a game restart.");
+                               "Requires a game restart");
 
                 ImGui::BeginDisabled(!config->RenderPresetOverride.value_or_default() || overridden);
                 ImGui::Spacing();
@@ -2968,33 +2965,26 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
 
     inputOptions = {
         { FGInput::NoFG, "None" },
-        { FGInput::NvngxFG, "Nukem's/Artur's DLSSG",
-            "Limited to FSR3-FG\n\nSupports Hudless out of the box\n\nUses Streamline swapchain for pacing" },
-        { FGInput::FSRFG, "FSR 3.1 FG",
-            "Can be used with any FG Output\n\nSupports Hudless out of the box" },
-        { FGInput::DLSSG, "DLSSG via Streamline",
-            "Can be used with any FG Output\n\nSupports Hudless out of the box" },
-        { FGInput::XeFG, "XeFG" },
         { FGInput::Upscaler, "OptiFG (Upscaler)",
-            "Upscaler must be enabled\n\nCan be used with any FG Output, but might be imperfect with some\n\nTo prevent UI glitching, HUDfix required" },
+            "Upscaler must be enabled\n\nCan be used with any FG Output, but might be imperfect with some\nTo prevent UI glitching, HUDfix required" },
+        { FGInput::DLSSG, "DLSSG via Streamline",
+            "Can be used with any FG Output\n\nRequires enabling DLSS-FG in game settings\nSupports HUDless out of the box\n\nLimited to games that use Streamline" },
+        { FGInput::NvngxFG, "DLSSG via Nvngx",
+            "Limited to variants of FSR FG\n\nRequires enabling DLSS-FG in game settings\nSupports HUDless out of the box\nUses Streamline swapchain for pacing" },
+        { FGInput::FSRFG, "FSR 3.1 FG",
+            "Can be used with any FG Output\n\nRequires enabling FSR-FG in game settings\nSupports HUDless out of the box" },
         { FGInput::FSRFG30, "FSR 3.0 FG",
-            "Can be used with any FG Output\n\nSupports Hudless out of the box" }
+            "Can be used with any FG Output\n\nRequires enabling FSR-FG in game settings\nSupports HUDless out of the box" },
+        { FGInput::XeFG, "XeFG" }
     };
 
     // clang-format on
 
     auto constexpr nvngxInputIndex = (uint32_t) FGInput::NvngxFG;
-    if (state.activeFgInput == FGInput::NvngxFG)
-    {
-        if (Nvngx_FG::getMaxFakeFramesCount(state.swapchainApi) > 1)
-            inputOptions[nvngxInputIndex].label = "Artur's DLSSG";
-        else
-            inputOptions[nvngxInputIndex].label = "Nukem's DLSSG";
-    }
 
     // XeFG input requirements
     auto constexpr xefgInputIndex = (uint32_t) FGInput::XeFG;
-    inputOptions[xefgInputIndex].set_disabled(true, "Support not implemented");
+    inputOptions[xefgInputIndex].set_disabled(true, "Support not implemented, they meant FG Output");
 
     // OptiFG requirements
     auto constexpr optiFgIndex = (uint32_t) FGInput::Upscaler;
@@ -3039,11 +3029,9 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
 
     outputOptions = {
         { FGOutput::NoFG, "None" },
-        { FGOutput::NvngxFG, "FSR3-FG Nukem/Enabler", "Uses Game's DLSSG implementation.\nEnable DLSS-FG in-game" },
-        { FGOutput::FSRFG, "FSR FG", "FSR3/4 FG" },
-        { FGOutput::DLSSG, "DLSSG", "For 40xx and above" },
-        { FGOutput::XeFG, "XeFG", "XeFG" },
-        { FGOutput::DLSSGWithNvngx, "DLSSG with Nvngx FG", "Uses Opti's own DLSSG instance and adds NvngxFG on top\nDo not use if a game already has DLSSG\n\nIf a game has DLSSG then use the FG Input option:\n\"Nukem's/Artur's DLSSG\"" }
+        { FGOutput::FSRFG, "FSR FG", "FSR3/4-FG, RDNA4 autoupgrades to FSR4-FG\n\nFSR4-FG sometimes better/worse than XeFG" },
+        { FGOutput::DLSSG, "DLSSG", "DLSSG output\ncan be used in conjuction with Nukem's for example" },
+        { FGOutput::XeFG, "XeFG", "XeFG - heaviest, but best universal FG\n\nXeFG 3 overall deals best with HUD\n\nEnable UI Composition if HUD ghosting" },
     };
 
     // clang-format on
@@ -3051,25 +3039,25 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
     // DLSSG output requirements
     auto constexpr dlssgOutputIndex = (uint32_t) FGOutput::DLSSG;
     outputOptions[dlssgOutputIndex].set_disabled(state.swapchainApi == API::Vulkan, "Unsupported API");
-    outputOptions[dlssgOutputIndex].set_disabled(primaryGpu.nvidiaArchInfo.architecture_id < NV_GPU_ARCHITECTURE_AD100,
-                                                 "Unsupported hardware");
+    // outputOptions[dlssgOutputIndex].set_disabled(primaryGpu.nvidiaArchInfo.architecture_id <
+    // NV_GPU_ARCHITECTURE_AD100, "Unsupported hardware");
 
     // Nukem's FG mod requirements
-    auto constexpr nvngxOutputIndex = (uint32_t) FGOutput::NvngxFG;
-    if (state.activeFgOutput == FGOutput::NvngxFG)
-    {
-        if (Nvngx_FG::getMaxFakeFramesCount(state.swapchainApi) > 1)
-            outputOptions[nvngxOutputIndex].label = "FSR3-MFG via DLSS Enabler";
-        else
-            outputOptions[nvngxOutputIndex].label = "FSR3-FG via Nukem's";
-    }
-    if (!state.nvngxFgFilesAvailable)
-    {
-        inputOptions[nvngxInputIndex].set_disabled(
-            true, "Missing dlssg_to_fsr3_amd_is_better.dll\nor dlss-enabler-headless.dll");
-        outputOptions[nvngxOutputIndex].set_disabled(
-            true, "Missing dlssg_to_fsr3_amd_is_better.dll\nor dlss-enabler-headless.dll");
-    }
+    // auto constexpr nvngxOutputIndex = (uint32_t) FGOutput::NvngxFG;
+    // if (state.activeFgOutput == FGOutput::NvngxFG)
+    //{
+    //    if (Nvngx_FG::getMaxFakeFramesCount(state.swapchainApi) > 1)
+    //        outputOptions[nvngxOutputIndex].label = "FSR3-MFG via DLSS Enabler";
+    //    else
+    //        outputOptions[nvngxOutputIndex].label = "FSR3-FG via Nukem's";
+    //}
+    // if (!state.nvngxFgFilesAvailable)
+    //{
+    //    inputOptions[nvngxInputIndex].set_disabled(
+    //        true, "Missing dlssg_to_fsr3_amd_is_better.dll\nor dlss-enabler-headless.dll");
+    //    outputOptions[nvngxOutputIndex].set_disabled(
+    //        true, "Missing dlssg_to_fsr3_amd_is_better.dll\nor dlss-enabler-headless.dll");
+    //}
 
     // For that one case of DX11 DLSSG
     const auto streamlineVersion = state.streamlineVersion;
@@ -3077,14 +3065,6 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
         state.swapchainApi == API::DX11 &&
         (streamlineVersion == feature_version { 0, 0, 0 } || streamlineVersion > feature_version { 2, 0, 1 });
     inputOptions[nvngxInputIndex].set_disabled(nukemsUnsupportedApi, "Unsupported API");
-    outputOptions[nvngxOutputIndex].set_disabled(nukemsUnsupportedApi, "Unsupported API");
-
-    auto constexpr DLSSGWithNvngxOutputIndex = (uint32_t) FGOutput::DLSSGWithNvngx;
-    if (!state.nvngxFgFilesAvailable)
-    {
-        outputOptions[DLSSGWithNvngxOutputIndex].set_disabled(true, "Missing the dlssg_to_fsr3_amd_is_better.dll file");
-    }
-    outputOptions[DLSSGWithNvngxOutputIndex].set_disabled(state.swapchainApi == API::Vulkan, "Unsupported API");
 
     // FSR FG output requirements
     auto constexpr fsrfgOutputIndex = (uint32_t) FGOutput::FSRFG;
@@ -3119,6 +3099,46 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
     if (!config->FGOutput.has_value())
         config->FGOutput = config->FGOutput.value_or_default(); // need to have a value before combo
 
+    /// FG NVNGX REPLACEMENT
+
+    static std::vector<MenuOption<FGNvngxReplacement>> nvngxOptions;
+    nvngxOptions.clear();
+
+    // clang-format off
+
+    nvngxOptions = {
+        { FGNvngxReplacement::None, "None/Real DLSSG", "Real DLSSG, For RTX 40xx and above"},
+        { FGNvngxReplacement::Nukems, "Nukem's", "FSR 3 FG" },
+        { FGNvngxReplacement::Arturs, "Enabler", "FSR 3 MFG" },
+        { FGNvngxReplacement::FFX, "FSR 3/4 FG", "FSR 3/4 FG using the FFX" },
+    };
+
+    // clang-format on
+
+    bool replaceFgOutputWithNvngx = false;
+    bool showNvngxFgDowndown = false;
+
+    if (config->FGInput == FGInput::NvngxFG)
+    {
+        config->FGOutput = FGOutput::NoFG;
+        replaceFgOutputWithNvngx = true;
+    }
+    else if (config->FGOutput == FGOutput::DLSSG)
+    {
+        showNvngxFgDowndown = true;
+    }
+
+    auto constexpr fgNvngxNoneIndex = (uint32_t) FGNvngxReplacement::None;
+    const bool supportsDlssg = primaryGpu.nvidiaArchInfo.architecture_id >= NV_GPU_ARCHITECTURE_AD100;
+    nvngxOptions[fgNvngxNoneIndex].set_disabled(!supportsDlssg, "Unsupported hardware");
+
+    nvngxOptions[fgNvngxNoneIndex].set_hidden(replaceFgOutputWithNvngx);
+
+    // TODO: Automatically switch to any other option
+
+    if (!config->FGNvngxReplacement.has_value())
+        config->FGNvngxReplacement = config->FGNvngxReplacement.value_or_default(); // need to have a value before combo
+
     if (state.activeFgInput != FGInput::ForceXeLL)
     {
         ImGui::SeparatorText("Frame Generation");
@@ -3133,35 +3153,32 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
 
             ImGui::TableNextColumn();
 
-            const bool disableOutputs = config->FGInput.value_or_default() == FGInput::NvngxFG;
-
-            ImGui::BeginDisabled(disableOutputs);
-            PopulateCombo("FG Output", config->FGOutput, outputOptions);
-            ImGui::EndDisabled();
-
-            if (disableOutputs)
-                ShowTooltip("Doesn't matter with the selected FG Source");
+            if (replaceFgOutputWithNvngx)
+            {
+                // Disable None?
+                PopulateCombo("FG Nvngx", config->FGNvngxReplacement, nvngxOptions);
+                ShowTooltip("What backend to use instead of the real DLSSG");
+            }
             else
+            {
+                PopulateCombo("FG Output", config->FGOutput, outputOptions);
                 ShowTooltip("The FG that you will actually be using");
+            }
 
             ImGui::EndTable();
         }
 
-        auto static fgInputOverridden = false;
-
-        if (config->FGOutput == FGOutput::NvngxFG && !fgInputOverridden)
+        // Should be on a new line
+        if (showNvngxFgDowndown)
         {
-            config->FGInput = FGInput::NvngxFG;
-            fgInputOverridden = true;
-        }
-        else if (config->FGInput != FGInput::NvngxFG && fgInputOverridden)
-        {
-            config->FGOutput = FGOutput::NoFG;
-            fgInputOverridden = false;
+            PopulateCombo("FG Nvngx Replacement", config->FGNvngxReplacement, nvngxOptions);
+            ShowTooltip("What backend to use instead of the real DLSSG");
         }
 
+        const bool nvngxFgChanged = (replaceFgOutputWithNvngx || showNvngxFgDowndown) &&
+                                    state.activeFgNvngx != config->FGNvngxReplacement.value_or_default();
         state.fgSettingsChanged = state.activeFgOutput != config->FGOutput.value_or_default() ||
-                                  state.activeFgInput != config->FGInput.value_or_default();
+                                  state.activeFgInput != config->FGInput.value_or_default() || nvngxFgChanged;
 
         if (state.fgSettingsChanged)
         {
@@ -3171,9 +3188,8 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
             ImGui::Spacing();
         }
 
-        const bool dlssgInputOrOutput = state.activeFgOutput == FGOutput::DLSSG ||
-                                        state.activeFgOutput == FGOutput::DLSSGWithNvngx ||
-                                        state.activeFgInput == FGInput::DLSSG;
+        const bool dlssgInputOrOutput =
+            state.activeFgOutput == FGOutput::DLSSG || state.activeFgInput == FGInput::DLSSG;
 
         ImGui::BeginDisabled(state.dlssgGameDMFGSupported && config->FGDLSSGOverrideForceDMFG.value_or_default());
         if (state.dlssgMfgMax.has_value() && state.dlssgMfgMax.value() >= 1 && !dlssgInputOrOutput)
@@ -3195,7 +3211,7 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
 
                 ImGui::PushItemWidth(95.0f * menuResScale);
 
-                if (ImGui::BeginCombo("Override DLSSG", currentIntCount))
+                if (ImGui::BeginCombo("Override DLSSG Ratio", currentIntCount))
                 {
                     for (int i = 0; i <= maxInterpolationCount + 1; i++)
                     {
@@ -3264,7 +3280,7 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
 
         auto fgOutput = reinterpret_cast<IFGFeature_Dx12*>(state.currentFG);
         if (((state.activeFgOutput == FGOutput::FSRFG || state.activeFgOutput == FGOutput::XeFG ||
-              state.activeFgOutput == FGOutput::DLSSG || state.activeFgOutput == FGOutput::DLSSGWithNvngx) &&
+              state.activeFgOutput == FGOutput::DLSSG) &&
              state.activeFgInput != FGInput::NoFG && state.activeFgInput != FGInput::NvngxFG) &&
             fgOutput)
         {
@@ -3304,9 +3320,7 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
                                                   state.activeFgInput == FGInput::FSRFG ||
                                                   state.activeFgInput == FGInput::FSRFG30;
 
-        const bool showHudCutoff = state.activeFgInput == FGInput::NvngxFG ||
-                                   state.activeFgOutput == FGOutput::DLSSGWithNvngx ||
-                                   state.activeFgOutput == FGOutput::FSRFG;
+        const bool showHudCutoff = state.activeFgInput == FGInput::NvngxFG || state.activeFgOutput == FGOutput::FSRFG;
 
         if (showOutputSpecificFGSettings || showHudCutoff)
         {
@@ -3572,7 +3586,7 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
 
             ImGui::Spacing();
 
-            if (auto ch = ScopedCollapsingHeader("Advanced FSR FG Settings"); ch.IsHeaderOpen())
+            if (auto ch = ScopedCollapsingHeader("Extended FSR FG Settings"); ch.IsHeaderOpen())
             {
                 ScopedIndent indent {};
                 ImGui::Spacing();
@@ -3873,7 +3887,7 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
         // ShowHelpMarker("Display only XeFG generated frames");
 
         ImGui::Spacing();
-        if (auto ch = ScopedCollapsingHeader("Advanced XeFG Settings"); ch.IsHeaderOpen())
+        if (auto ch = ScopedCollapsingHeader("Extended XeFG Settings"); ch.IsHeaderOpen())
         {
             ImGui::Spacing();
             if (ImGui::TreeNode("Rectangle Settings"))
@@ -3923,9 +3937,8 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
     }
 
     // DLSSG controls
-    if ((state.activeFgOutput == FGOutput::DLSSG || state.activeFgOutput == FGOutput::DLSSGWithNvngx) &&
-        state.activeFgInput != FGInput::NoFG && state.currentFGSwapchain != nullptr &&
-        StreamlineProxy::LoadStreamline())
+    if (state.activeFgOutput == FGOutput::DLSSG && state.activeFgInput != FGInput::NoFG &&
+        state.currentFGSwapchain != nullptr && StreamlineProxy::LoadStreamline())
     {
 
         ImGui::SeparatorText("Frame Generation (DLSSG)");
@@ -4038,8 +4051,7 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
         if (currentFeature != nullptr && !currentFeature->IsFrozen() &&
             ((state.activeFgOutput == FGOutput::FSRFG && FfxApiProxy::IsFGReady()) ||
              (state.activeFgOutput == FGOutput::XeFG && XeFGProxy::Module() != nullptr) ||
-             ((state.activeFgOutput == FGOutput::DLSSG || state.activeFgOutput == FGOutput::DLSSGWithNvngx) &&
-              StreamlineProxy::Module() != nullptr)))
+             (state.activeFgOutput == FGOutput::DLSSG && StreamlineProxy::Module() != nullptr)))
         {
             if (!Config::Instance()->FGDisableHUDFix.value_or_default() &&
                 state.swapchainInteropApi == SwapchainInteropApi::None)
@@ -4085,7 +4097,7 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
                     LOG_DEBUG("Enabled set FGHUDFixExtended: {}", hudExtended);
                     config->FGHUDFixExtended = hudExtended;
                 }
-                ShowHelpMarker("Extended format checks for possible Hudless\nMight cause crashes and slowdowns!");
+                ShowHelpMarker("Extended format checks for possible HUDless\nMight cause crashes and slowdowns!");
                 ImGui::SameLine(0.0f, 16.0f);
 
                 ImGui::BeginDisabled(!config->FGHUDFix.value_or_default());
@@ -4096,7 +4108,7 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
                     LOG_DEBUG("Enabled set FGImmediateCapture: {}", immediate);
                     config->FGImmediateCapture = immediate;
                 }
-                ShowHelpMarker("Enables capturing of resources before shader execution.\nIncrease Hudless "
+                ShowHelpMarker("Enables capturing of resources before shader execution.\nIncrease HUDless "
                                "capture chances, but might cause capturing of unnecessary resources.");
 
                 ImGui::PopItemWidth();
@@ -4138,7 +4150,7 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
                         config->FGResourceBlocking = rb;
                         LOG_DEBUG("Enabled set FGResourceBlocking: {}", rb);
                     }
-                    ShowHelpMarker("Block rarely used resources from using as Hudless \n"
+                    ShowHelpMarker("Block rarely used resources from using as HUDless \n"
                                    "to prevent flickers and other issues\n\n"
                                    "HUDfix enable/disable will reset the block list!");
 
@@ -4150,7 +4162,7 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
                         config->FGRelaxedResolutionCheck = rrc;
                         LOG_DEBUG("Enabled set FGRelaxedResolutionCheck: {}", rrc);
                     }
-                    ShowHelpMarker("Relax resolution checks for Hudless by 32 pixels \n"
+                    ShowHelpMarker("Relax resolution checks for HUDless by 32 pixels \n"
                                    "Helps games which use black borders for some \n"
                                    "resolutions and screen ratios (e.g. Witcher 3)");
 
@@ -4208,7 +4220,7 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
                         if (ImGui::Checkbox("Disable RTV Tracking", &disableRTV))
                             config->FGHudfixDisableRTV = disableRTV;
                         ShowHelpMarker("Disable tracking of CreateRenderTargetView\n"
-                                       "This might help filtering of wrong hudless resources");
+                                       "This might help filtering of wrong HUDless resources");
 
                         ImGui::SameLine(0.0f, 16.0f);
 
@@ -4216,13 +4228,13 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
                         if (ImGui::Checkbox("Disable SRV Tracking", &disableSRV))
                             config->FGHudfixDisableSRV = disableSRV;
                         ShowHelpMarker("Disable tracking of CreateShaderResourceView\n"
-                                       "This might help filtering of wrong Hudless resources");
+                                       "This might help filtering of wrong HUDless resources");
 
                         auto disableUAV = config->FGHudfixDisableUAV.value_or_default();
                         if (ImGui::Checkbox("Disable UAV Tracking", &disableUAV))
                             config->FGHudfixDisableUAV = disableUAV;
                         ShowHelpMarker("Disable tracking of CreateUnorderedAccessView\n"
-                                       "This might help filtering of wrong Hudless resources");
+                                       "This might help filtering of wrong HUDless resources");
 
                         ImGui::SameLine(0.0f, 16.0f);
 
@@ -4230,13 +4242,13 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
                         if (ImGui::Checkbox("Disable OM Tracking", &disableOM))
                             config->FGHudfixDisableOM = disableOM;
                         ShowHelpMarker("Disable tracking of OMSetRenderTargets\n"
-                                       "This might help filtering of wrong Hudless resources");
+                                       "This might help filtering of wrong HUDless resources");
 
                         auto disableSCR = config->FGHudfixDisableSCR.value_or_default();
                         if (ImGui::Checkbox("Disable SCR Tracking", &disableSCR))
                             config->FGHudfixDisableSCR = disableSCR;
                         ShowHelpMarker("Disable tracking of SetComputeRootDescriptorTable\n"
-                                       "This might help filtering of wrong Hudless resources");
+                                       "This might help filtering of wrong HUDless resources");
 
                         ImGui::SameLine(0.0f, 16.0f);
 
@@ -4244,7 +4256,7 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
                         if (ImGui::Checkbox("Disable SGR Tracking", &disableSGR))
                             config->FGHudfixDisableSGR = disableSGR;
                         ShowHelpMarker("Disable tracking of SetGraphicsRootDescriptorTable\n"
-                                       "This might help filtering of wrong Hudless resources");
+                                       "This might help filtering of wrong HUDless resources");
 
                         ImGui::Spacing();
 
@@ -4252,7 +4264,7 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
                         if (ImGui::Checkbox("Disable DI Tracking", &disableDI))
                             config->FGHudfixDisableDI = disableDI;
                         ShowHelpMarker("Disable tracking of DrawInstanced\n"
-                                       "This might help filtering of wrong Hudless resources");
+                                       "This might help filtering of wrong HUDless resources");
 
                         ImGui::SameLine(0.0f, 16.0f);
 
@@ -4260,13 +4272,13 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
                         if (ImGui::Checkbox("Disable DII Tracking", &disableDII))
                             config->FGHudfixDisableDII = disableDII;
                         ShowHelpMarker("Disable tracking of DrawIndexedInstanced\n"
-                                       "This might help filtering of wrong Hudless resources");
+                                       "This might help filtering of wrong HUDless resources");
 
                         auto disableDispatch = config->FGHudfixDisableDispatch.value_or_default();
                         if (ImGui::Checkbox("Disable Dispatch Tracking", &disableDispatch))
                             config->FGHudfixDisableDispatch = disableDispatch;
                         ShowHelpMarker("Disable tracking of Dispatch\n"
-                                       "This might help filtering of wrong Hudless resources");
+                                       "This might help filtering of wrong HUDless resources");
 
                         ImGui::TreePop();
                     }
@@ -4329,37 +4341,40 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
         }
     }
 
-    // Nvngx FG Mods
-    if ((state.activeFgInput == FGInput::NvngxFG && state.activeFgOutput == FGOutput::NvngxFG) ||
-        state.activeFgOutput == FGOutput::DLSSGWithNvngx)
+    const FGNvngxReplacement activeNvngxFg = state.activeFgNvngx;
+    if (activeNvngxFg != FGNvngxReplacement::None)
     {
-        if (Nvngx_FG::getMaxFakeFramesCount(state.swapchainApi) > 1)
-        {
-            SeparatorWithHelpMarker("Frame Generation (FSR3-MFG via DLSS Enabler)",
-                                    "DLSS Enabler as dlss-enabler-headless.dll\n"
-                                    "Select DLSS-FG in-game");
-        }
-        else
+        if (activeNvngxFg == FGNvngxReplacement::Nukems)
         {
             SeparatorWithHelpMarker("Frame Generation (FSR3-FG via Nukem's DLSSG)",
-                                    "Requires Nukem's dlssg_to_fsr3 dll\n"
-                                    "Select DLSS-FG in-game");
-        }
+                                    "Requires Nukem's dlssg_to_fsr3 dll");
 
-        if (!state.nvngxFgFilesAvailable)
-        {
-            ImGui::TextColored(toneMapColor(ImVec4(1.f, 0.f, 0.f, 1.f)),
-                               "Please put dlssg_to_fsr3_amd_is_better.dll or "
-                               "dlss-enabler-headless.dll next to OptiScaler");
+            if (!state.nukemsFgFileAvailable)
+            {
+                ImGui::TextColored(toneMapColor(ImVec4(1.f, 0.f, 0.f, 1.f)),
+                                   "Please put dlssg_to_fsr3_amd_is_better.dll into OptiScaler folder");
+            }
         }
-
-        if (Nvngx_FG::getMaxFakeFramesCount(state.swapchainApi) > 1)
+        else if (activeNvngxFg == FGNvngxReplacement::Arturs)
         {
+            SeparatorWithHelpMarker("Frame Generation (FSR3-MFG via DLSS Enabler)",
+                                    "DLSS Enabler as dlss-enabler-headless.dll");
+
+            if (!state.artursFgFileAvailable)
+            {
+                ImGui::TextColored(toneMapColor(ImVec4(1.f, 0.f, 0.f, 1.f)),
+                                   "Please put dlss-enabler-headless.dll into OptiScaler folder");
+            }
+
             ImGui::TextColored(toneMapColor(ImVec4(1.f, 0.8f, 0.f, 1.f)),
                                "Using a subset of features from DLSS Enabler");
         }
+        else if (activeNvngxFg == FGNvngxReplacement::FFX)
+        {
+            SeparatorWithHelpMarker("Frame Generation (FSRFG via FFX)", "FFX using the DLSSG swapchain");
+        }
 
-        if (state.activeFgOutput != FGOutput::DLSSGWithNvngx)
+        if (state.activeFgInput == FGInput::NvngxFG)
         {
 
             bool dmfgActive = state.dlssgGameDMFGSupported && config->FGDLSSGOverrideForceDMFG.value_or_default();
@@ -4391,9 +4406,11 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
 
                 // Issue mostly shows up on AMD on Windows on pre-RDNA3 in some non-UE games
                 // Hide to reduce confusion, config is still read
-                bool isUnrealEngine = State::Instance().NVNGX_Engine == NVSDK_NGX_ENGINE_TYPE_UNREAL ||
-                                      State::Instance().gameQuirks & GameQuirk::ForceUnrealEngine;
-                if (!primaryGpu.dlssCapable && primaryGpu.fsr4Support == FSR4Support::None &&
+                const bool isUnrealEngine = State::Instance().NVNGX_Engine == NVSDK_NGX_ENGINE_TYPE_UNREAL ||
+                                            State::Instance().gameQuirks & GameQuirk::ForceUnrealEngine;
+                const bool isDllProxyNvngxType =
+                    activeNvngxFg == FGNvngxReplacement::Nukems || activeNvngxFg == FGNvngxReplacement::Arturs;
+                if (isDllProxyNvngxType && !primaryGpu.dlssCapable && primaryGpu.fsr4Support == FSR4Support::None &&
                     !primaryGpu.usesVkd3dProton && !isUnrealEngine)
                 {
                     if (bool makeDepthCopy = config->NvngxFGMakeDepthCopy.value_or_default();
@@ -4413,16 +4430,22 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
             }
         }
 
-        if (Nvngx_FG::isLoaded(state.swapchainApi))
+        bool isLoaded = false;
+        if (state.swapchainApi == Vulkan)
+            isLoaded = Nvngx_FG::isVulkanAvailable();
+        if (state.swapchainApi == DX12)
+            isLoaded = Nvngx_FG::isDx12Available();
+
+        if (isLoaded)
         {
             if (bool disableHudless = config->NvngxFGDisableHudless.value_or_default();
-                ImGui::Checkbox("Disable Hudless", &disableHudless))
+                ImGui::Checkbox("Disable HUDless", &disableHudless))
             {
                 config->NvngxFGDisableHudless = disableHudless;
             }
             ShowHelpMarker("Might be required for some sets of DispatchFlags");
 
-            if (Nvngx_FG::getMaxFakeFramesCount(state.swapchainApi) > 1)
+            if (activeNvngxFg == FGNvngxReplacement::Arturs)
             {
                 if (bool showDebug = config->NvngxFGShowDebug.value_or_default();
                     ImGui::Checkbox("Show Debug", &showDebug))
@@ -4477,27 +4500,20 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
                     config->NvngxFGDispatchFlags = temp_flags;
                 }
             }
-            else
+            else if (activeNvngxFg == FGNvngxReplacement::Nukems)
             {
-
-                if (Nvngx_FG::is120orNewer())
+                if (ImGui::Checkbox("Enable Debug View", &state.dlssgDebugView))
                 {
-                    if (ImGui::Checkbox("Enable Debug View", &state.dlssgDebugView))
-                    {
-                        Nvngx_FG::setDebugView(state.dlssgDebugView);
-                    }
-                    if (ImGui::Checkbox("Interpolated frames only", &state.dlssgInterpolatedOnly))
-                    {
-                        Nvngx_FG::setInterpolatedOnly(state.dlssgInterpolatedOnly);
-                    }
+                    Nvngx_FG::setDebugView(state.dlssgDebugView);
                 }
-                else if (Nvngx_FG::FSRDebugView() != nullptr)
+                if (ImGui::Checkbox("Interpolated frames only", &state.dlssgInterpolatedOnly))
                 {
-                    if (ImGui::Checkbox("Enable Debug View", &state.dlssgDebugView))
-                    {
-                        Nvngx_FG::FSRDebugView()(state.dlssgDebugView);
-                    }
+                    Nvngx_FG::setInterpolatedOnly(state.dlssgInterpolatedOnly);
                 }
+            }
+            else if (activeNvngxFg == FGNvngxReplacement::FFX)
+            {
+                // TODO: FSR version selection
             }
         }
     }
@@ -4529,18 +4545,18 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
         }
 
         bool skipConfig = config->FSRFGSkipConfigForHudless.value_or_default();
-        if (ImGui::Checkbox("Skip Config for Hudless", &skipConfig))
+        if (ImGui::Checkbox("Skip Config for HUDless", &skipConfig))
             config->FSRFGSkipConfigForHudless = skipConfig;
 
-        ShowHelpMarker("Do not use Hudless set at ffxConfig");
+        ShowHelpMarker("Do not use HUDless set at ffxConfig");
 
         ImGui::SameLine(0.0f, 6.0f);
 
         bool skipDispatch = config->FSRFGSkipDispatchForHudless.value_or_default();
-        if (ImGui::Checkbox("Skip Dispatch for Hudless", &skipDispatch))
+        if (ImGui::Checkbox("Skip Dispatch for HUDless", &skipDispatch))
             config->FSRFGSkipDispatchForHudless = skipDispatch;
 
-        ShowHelpMarker("Do not use Hudless set at ffxDispatch");
+        ShowHelpMarker("Do not use HUDless set at ffxDispatch");
     }
 
     // Streamline FG Inputs
@@ -5352,11 +5368,11 @@ void MenuCommon::RenderActiveImageSettings(RenderMenuContext& ctx)
                         { Scaler::Lanczos2, "Lanczos2",
                             "Lighter and faster than Lanczos3.\nLess prone to ringing artefacts, but slightly blurrier." },
                         { Scaler::Lanczos3, "Lanczos3",
-                            "Heavier version of Lanczos2.\nOffers the sharpest image, but is the most prone to ringing." },
+                            "Heavier version of Lanczos2.\nOffers the sharpest image, but is the most prone to ringing.\nConsidered the best along with Kaiser3." },
                         { Scaler::Kaiser2, "Kaiser2",
                             "Similar to Lanczos2.\nSmoother and less prone to artefacts than Lanczos, but slightly blurrier." },
                         { Scaler::Kaiser3, "Kaiser3",
-                            "Similar to Lanczos3.\nFar less prone to artefacting than Lanczos3, but much heavier on the GPU." },
+                            "Similar to Lanczos3.\nFar less prone to artefacting than Lanczos3, but much heavier on the GPU.\nConsidered the best along with Lanczos3." },
                         { Scaler::Magic, "MAGIC",
                             "Specialised to prevent artifacts.\nEliminates harsh halos for a natural look, but can appear slightly soft." }
                     };
@@ -7090,14 +7106,14 @@ void MenuCommon::RenderHudlessResourcesWindow(RenderMenuContext& ctx, ImGuiWindo
         ImGui::SetNextWindowPos(ImVec2 { posX, posY }, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2 { 400.0f, 300.0f });
 
-        if (ImGui::Begin("Hudless Resources", nullptr, flags))
+        if (ImGui::Begin("HUDless Resources", nullptr, flags))
         {
             if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow))
                 ImGui::SetWindowFocus();
 
             int btnCount = 100;
 
-            if (ImGui::BeginTable("HudlessTable", 2, ImGuiTableFlags_SizingFixedFit))
+            if (ImGui::BeginTable("HUDlessTable", 2, ImGuiTableFlags_SizingFixedFit))
             {
                 ImGui::TableSetupColumn("##1", ImGuiTableColumnFlags_WidthStretch);
                 ImGui::TableSetupColumn("##2", ImGuiTableColumnFlags_WidthFixed);
@@ -7127,7 +7143,7 @@ void MenuCommon::RenderHudlessResourcesWindow(RenderMenuContext& ctx, ImGuiWindo
 
                     if (ImGui::Button(text.c_str()))
                     {
-                        LOG_DEBUG("Hudless {:X}: {}", (size_t) it->first,
+                        LOG_DEBUG("HUDless {:X}: {}", (size_t) it->first,
                                   it->second.enabled ? "Disabling" : "Enabling");
                         it->second.enabled = !it->second.enabled;
                     }
@@ -7138,7 +7154,7 @@ void MenuCommon::RenderHudlessResourcesWindow(RenderMenuContext& ctx, ImGuiWindo
 
             if (ImGui::Button("Clear##4"))
             {
-                LOG_DEBUG("Clearing captured hudless resources");
+                LOG_DEBUG("Clearing captured HUDless resources");
                 state.clearCapturedHudlesses = true;
             }
 
