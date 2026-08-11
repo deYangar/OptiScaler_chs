@@ -6,10 +6,10 @@ on:
   workflow_dispatch:
     inputs:
       release_type:
-        description: '发布类型'
+        description: '发布类型（auto=自动判断：上游有新正式版则发正式版，否则 nightly）'
         type: choice
-        options: [nightly, beta, release]
-        default: nightly
+        options: [auto, nightly, beta, release]
+        default: auto
       sync_upstream:
         description: '先同步上游最新源码到本仓库'
         type: boolean
@@ -67,7 +67,7 @@ jobs:
               TYPE="release"; TAG="release-$(date +%Y%m%d)"
             fi
           else
-            # 定时/推送触发：自动判断
+            # auto / 定时 / 推送触发：自动判断
             # 上游有新正式版且本仓库未发布过 -> 发正式版；否则 -> nightly
             ALREADY=""
             if [ -n "$UPSTREAM_STABLE" ]; then
