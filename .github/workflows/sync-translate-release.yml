@@ -148,6 +148,26 @@ jobs:
           git commit -m "chore: 自动翻译新增字符串 $(date +%Y%m%d) [skip ci]" || echo "无变更"
           git push origin master || echo "push 失败（可忽略）"
 
+      - name: 同步汉化文档（ini 增量合并 + md 变更检测）
+        if: github.event.inputs.build_only != 'true'
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          python scripts/sync_docs.py --repo "$GITHUB_WORKSPACE" --api-key "$DEEPSEEK_API_KEY"
+          EXIT=$?
+          if [ $EXIT -eq 2 ]; then
+            git config user.name "deYangar"
+            git config user.email "70438628+deYangar@users.noreply.github.com"
+            git add -A
+            git commit -m "chore: 同步上游文档更新 $(date +%Y%m%d) [skip ci]" || echo "无变更"
+            git push origin master || echo "push 失败（可忽略）"
+            echo "✅ 已同步上游文档更新"
+          elif [ $EXIT -eq 0 ]; then
+            echo "ℹ️ 上游文档无变化"
+          else
+            echo "⚠️ sync_docs 异常退出 ($EXIT)，继续流程"
+          fi
+
   build:
     name: Windows 编译
     needs: sync
