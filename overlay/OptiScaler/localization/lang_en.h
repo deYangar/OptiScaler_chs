@@ -1232,4 +1232,30 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Simple)] = "Simple";
 
     table[static_cast<int>(LK::UI_Detailed)] = "Detailed";
+    table[static_cast<int>(LK::UI_DLSSG_via_Nvngx)] = "DLSSG via Nvngx";
+    table[static_cast<int>(LK::UI_Support_not_implemented_they_meant_FG_Output)] = "Support not implemented, they meant FG Output";
+    table[static_cast<int>(LK::UI_FSR3_4_FG_RDNA4_autoupgrades_to_FSR4_FG_n_nFSR4_FG_sometimes)] = "FSR3/4-FG, RDNA4 autoupgrades to FSR4-FG\n\nFSR4-FG sometimes better/worse than XeFG";
+    table[static_cast<int>(LK::UI_DLSSG_output_ncan_be_used_in_conjuction_with_Nukem_s_for_exa)] = "DLSSG output\ncan be used in conjuction with Nukem's for example";
+    table[static_cast<int>(LK::UI_XeFG_heaviest_but_best_universal_FG_n_nXeFG_3_overall_deals_)] = "XeFG - heaviest, but best universal FG\n\nXeFG 3 overall deals best with HUD\n\nEnable UI Composition if HUD ghosting";
+    table[static_cast<int>(LK::UI_None_Real_DLSSG)] = "None/Real DLSSG";
+    table[static_cast<int>(LK::UI_Real_DLSSG_For_RTX_40xx_and_above)] = "Real DLSSG, For RTX 40xx and above";
+    table[static_cast<int>(LK::UI_Nukem_s)] = "Nukem's";
+    table[static_cast<int>(LK::UI_FSR_3_FG)] = "FSR 3 FG";
+    table[static_cast<int>(LK::UI_FSR_3_MFG)] = "FSR 3 MFG";
+    table[static_cast<int>(LK::UI_FSR_3_4_FG)] = "FSR 3/4 FG";
+    table[static_cast<int>(LK::UI_FSR_3_4_FG_using_the_FFX)] = "FSR 3/4 FG using the FFX";
+    table[static_cast<int>(LK::UI_FG_Nvngx)] = "FG Nvngx";
+    table[static_cast<int>(LK::UI_What_backend_to_use_instead_of_the_real_DLSSG)] = "What backend to use instead of the real DLSSG";
+    table[static_cast<int>(LK::UI_FG_Nvngx_Replacement)] = "FG Nvngx Replacement";
+    table[static_cast<int>(LK::UI_Override_DLSSG_Ratio)] = "Override DLSSG Ratio";
+    table[static_cast<int>(LK::UI_Extended_FSR_FG_Settings)] = "Extended FSR FG Settings";
+    table[static_cast<int>(LK::UI_Extended_XeFG_Settings)] = "Extended XeFG Settings";
+    table[static_cast<int>(LK::UI_Extended_format_checks_for_possible_HUDless_nMight_cause_cra)] = "Extended format checks for possible HUDless\nMight cause crashes and slowdowns!";
+    table[static_cast<int>(LK::UI_Frame_Generation_FSRFG_via_FFX)] = "Frame Generation (FSRFG via FFX)";
+    table[static_cast<int>(LK::UI_FFX_using_the_DLSSG_swapchain)] = "FFX using the DLSSG swapchain";
+    table[static_cast<int>(LK::UI_Skip_Config_for_HUDless)] = "Skip Config for HUDless";
+    table[static_cast<int>(LK::UI_Do_not_use_HUDless_set_at_ffxConfig)] = "Do not use HUDless set at ffxConfig";
+    table[static_cast<int>(LK::UI_Skip_Dispatch_for_HUDless)] = "Skip Dispatch for HUDless";
+    table[static_cast<int>(LK::UI_Do_not_use_HUDless_set_at_ffxDispatch)] = "Do not use HUDless set at ffxDispatch";
+    table[static_cast<int>(LK::UI_HUDless_Resources)] = "HUDless Resources";
 }
