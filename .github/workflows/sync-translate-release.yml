@@ -10,10 +10,14 @@ on:
         type: choice
         options: [nightly, beta, release]
         default: nightly
-      upstream_ref:
-        description: '上游分支或 tag（默认 master）'
-        type: string
-        default: 'master'
+      sync_upstream:
+        description: '先同步上游最新源码到本仓库'
+        type: boolean
+        default: true
+      build_only:
+        description: '只构建（跳过同步，直接用仓库现有代码编译）'
+        type: boolean
+        default: false
   push:
     paths: ['overlay/**', 'scripts/**']
 
@@ -26,7 +30,7 @@ env:
 
 jobs:
   sync:
-    name: 拉上游 + 注入汉化 + 自动翻译
+    name: 同步上游 + 自动翻译
     runs-on: ubuntu-latest
     outputs:
       version_tag: ${{ steps.ver.outputs.tag }}
@@ -35,61 +39,49 @@ jobs:
       - name: 检出本仓库
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: 确定发布类型与 tag
         id: ver
         run: |
           TYPE="${{ github.event.inputs.release_type || 'nightly' }}"
-          REF="${{ github.event.inputs.upstream_ref || 'master' }}"
-          echo "REF=$REF" >> $GITHUB_ENV
-          echo "type=$TYPE" >> "$GITHUB_OUTPUT"
           DATE=$(date +%Y%m%d)
           TAG="$TYPE-$DATE"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "type=$TYPE" >> "$GITHUB_OUTPUT"
+          echo "TAG=$TAG" >> $GITHUB_ENV
 
-      - name: 获取上游最新 commit（用于缓存 key）
-        id: up
+      - name: 同步上游源码到本仓库
+        if: github.event.inputs.build_only != 'true' && github.event.inputs.sync_upstream != 'false'
         run: |
-          HASH=$(git ls-remote https://github.com/${{ env.UPSTREAM_REPO }}.git "refs/heads/${{ github.event.inputs.upstream_ref || 'master' }}" | cut -f1)
-          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
-          echo "上游 commit: $HASH"
+          git config user.name "deYangar"
+          git config user.email "70438628+deYangar@users.noreply.github.com"
+          git remote add upstream https://github.com/${{ env.UPSTREAM_REPO }}.git || true
+          git fetch upstream master --depth 50
+          echo "上游 HEAD: $(git rev-parse upstream/master)"
 
-      - name: 缓存上游源码
-        id: cache-up
-        uses: actions/cache@v4
-        with:
-          path: upstream
-          key: upstream-src-${{ steps.up.outputs.hash }}
-          restore-keys: |
-            upstream-src-
+          # 只同步上游的源码路径，保留我们的 overlay/ scripts/ fonts/ .github/ 等汉化资产
+          git checkout upstream/master -- \
+            OptiScaler/ external/ run/ images/ \
+            OptiScaler.sln OptiScaler.ini Config.md Changelog.md \
+            CONTRIBUTING.md Features.md Issues.md LICENSE README.md Spoofing.md \
+            setup_linux.sh setup_windows.bat \
+            .clang-format .gitattributes .gitignore .gitmodules
 
-      - name: 克隆上游源码（缓存未命中时）
-        if: steps.cache-up.outputs.cache-hit != 'true'
-        run: |
-          git clone --depth 1 -b "$REF" --recurse-submodules \
-            https://github.com/${{ env.UPSTREAM_REPO }}.git upstream
-          echo "上游 HEAD: $(git -C upstream rev-parse --short HEAD)"
-
-      - name: 上游源码增量更新（缓存命中时）
-        if: steps.cache-up.outputs.cache-hit == 'true'
-        run: |
-          git -C upstream fetch --depth 1 origin "$REF"
-          git -C upstream checkout FETCH_HEAD
-          git -C upstream reset --hard FETCH_HEAD
-          git -C upstream clean -fd
-          git -C upstream submodule foreach --recursive git reset --hard 2>/dev/null || true
-          git -C upstream submodule update --init --recursive --depth 1 || echo "submodule 增量更新失败，可接受"
-          echo "上游 HEAD: $(git -C upstream rev-parse --short HEAD)"
-
-      - name: 注入汉化补丁
-        run: |
-          python scripts/apply_patch.py "$GITHUB_WORKSPACE/upstream"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: 同步上游源码 $(date +%Y%m%d) [skip ci]"
+            git push origin master
+            echo "✅ 已同步上游并推送"
+          else
+            echo "ℹ️ 上游无变化，跳过提交"
+          fi
 
       - name: 扫描新字符串
         id: scan
+        if: github.event.inputs.build_only != 'true'
         run: |
-          python scripts/scan_strings.py "$GITHUB_WORKSPACE/upstream" --output pending.json || true
+          python scripts/scan_strings.py "$GITHUB_WORKSPACE" --output pending.json || true
           if [ -s pending.json ]; then
             CNT=$(python -c "import json;print(len(json.load(open('pending.json'))))")
             echo "has_new=true" >> "$GITHUB_OUTPUT"
@@ -100,55 +92,36 @@ jobs:
           fi
 
       - name: 自动翻译（DeepSeek）
-        if: steps.scan.outputs.has_new == 'true' && env.DEEPSEEK_API_KEY != ''
+        if: steps.scan.outputs.has_new == 'true' && env.DEEPSEEK_API_KEY != '' && github.event.inputs.build_only != 'true'
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
           python scripts/translate.py --input pending.json
-          # 重新注入，让新翻译的串也进入源码
-          python scripts/apply_patch.py "$GITHUB_WORKSPACE/upstream"
-          git config user.name "CHS Bot"
-          git config user.email "chs-bot@users.noreply.github.com"
+          git config user.name "deYangar"
+          git config user.email "70438628+deYangar@users.noreply.github.com"
           git add overlay/ scripts/strings_map.json
           git commit -m "chore: 自动翻译新增字符串 $(date +%Y%m%d) [skip ci]" || echo "无变更"
           git push origin master || echo "push 失败（可忽略）"
-
-      - name: 下载中文字体（文泉驿微米黑）
-        run: |
-          curl -L -o wqy.deb "${{ env.FONT_DEB }}"
-          dpkg-deb -x wqy.deb font-extract
-          mkdir -p upstream/font
-          find font-extract -name "*.ttc" -exec cp {} upstream/font/ \;
-          ls -la upstream/font/
-
-      - name: 上传处理后的源码
-        uses: actions/upload-artifact@v4
-        with:
-          name: upstream-source
-          path: upstream/
-          retention-days: 3
 
   build:
     name: Windows 编译
     needs: sync
     runs-on: windows-latest
     steps:
-      - name: 检出本仓库脚本
+      - name: 检出本仓库（含源码 + submodule）
         uses: actions/checkout@v4
         with:
-          path: chs
           fetch-depth: 1
+          submodules: 'true'
 
-      - name: 下载源码
-        uses: actions/download-artifact@v4
-        with:
-          name: upstream-source
-          path: source
+      - name: 注入汉化补丁
+        run: |
+          python scripts/apply_patch.py "$env:GITHUB_WORKSPACE"
 
       - name: 构建
         shell: pwsh
         run: |
-          & "$env:GITHUB_WORKSPACE/chs/scripts/build.ps1" -SourceDir "$env:GITHUB_WORKSPACE/source" -OutDir "$env:GITHUB_WORKSPACE/dist/CHS"
+          & "$env:GITHUB_WORKSPACE/scripts/build.ps1" -SourceDir "$env:GITHUB_WORKSPACE" -OutDir "$env:GITHUB_WORKSPACE/dist/CHS"
 
       - name: 打包 zip
         shell: pwsh
@@ -184,15 +157,15 @@ jobs:
           DATE=$(date +%Y-%m-%d)
           if [ "$TYPE" = "nightly" ]; then
             TITLE="Nightly $DATE"
-            NOTES="自动构建的每日预览版（上游 dev + 汉化）"
+            NOTES="自动构建的每日预览版（上游 master + 汉化）"
             PRERELEASE=true
           elif [ "$TYPE" = "beta" ]; then
             TITLE="Beta $DATE"
-            NOTES="测试版（上游 dev + 汉化）"
+            NOTES="测试版（上游 master + 汉化）"
             PRERELEASE=true
           else
             TITLE="Release $DATE"
-            NOTES="正式版（上游 dev + 汉化）"
+            NOTES="正式版（上游 master + 汉化）"
             PRERELEASE=false
           fi
           gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
