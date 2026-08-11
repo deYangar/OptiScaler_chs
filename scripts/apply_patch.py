@@ -81,11 +81,19 @@ with io.open(os.path.join(HERE, 'strings_map.json'), encoding='utf-8') as f:
     strings_map = json.load(f)
 
 injected = 0
-for en, key in strings_map.items():
-    old = '"' + en + '"'
-    if old in mc:
-        mc = mc.replace(old, 'LOC(' + key + ')')
-        injected += 1
+# 按行注入：跳过 #include 行，防止把 include 文件名误替换成 LOC()
+new_lines = []
+for line in mc.split('\n'):
+    if line.lstrip().startswith('#include'):
+        new_lines.append(line)
+        continue
+    for en, key in strings_map.items():
+        old = '"' + en + '"'
+        if old in line:
+            line = line.replace(old, 'LOC(' + key + ')')
+            injected += 1
+    new_lines.append(line)
+mc = '\n'.join(new_lines)
 write(MC, mc)
 print(f'    LOC 注入 {injected} 处')
 

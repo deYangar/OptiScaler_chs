@@ -46,6 +46,9 @@ def scan_file(path, strings_map):
             # 单个标识符/单词（无空格、无格式符）→ 跳过（技术名/变量）
             if ' ' not in raw and '%' not in raw and re.fullmatch(r'[A-Za-z0-9_.-]+', raw):
                 continue
+            # 文件路径/include 文件名（含 / 或 \ 的路径，或 .h/.cpp 等文件后缀）→ 跳过
+            if re.fullmatch(r'[A-Za-z0-9_./\\\-]+', raw) and ('.h' in raw or '.cpp' in raw or '.c' in raw or '.ttf' in raw or '.ttc' in raw or '.ini' in raw or '.json' in raw or '.png' in raw or '/' in raw or '\\' in raw):
+                continue
             # 已翻译过的串
             if raw in strings_map:
                 continue
