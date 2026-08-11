@@ -2,7 +2,7 @@ name: CHS Sync & Release
 
 on:
   schedule:
-    - cron: '0 4 * * *'          # 每天 04:00 UTC (12:00 北京) 自动 Nightly
+    - cron: '0 20 * * *'         # 每天 20:00 UTC (04:00 北京) 自动 Nightly
   workflow_dispatch:
     inputs:
       release_type:
