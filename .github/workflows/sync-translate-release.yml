@@ -216,16 +216,16 @@ jobs:
         run: |
           & "$env:GITHUB_WORKSPACE/scripts/build.ps1" -SourceDir "$env:GITHUB_WORKSPACE" -OutDir "$env:GITHUB_WORKSPACE/dist/CHS"
 
-      - name: 打包 zip
+      - name: 打包 7z
         shell: pwsh
         run: |
-          Compress-Archive -Path "$env:GITHUB_WORKSPACE/dist/CHS/*" -DestinationPath "$env:GITHUB_WORKSPACE/dist/OptiScaler_CHS_${{ needs.sync.outputs.version_tag }}.zip" -Force
+          7z a -t7z -mx=9 "$env:GITHUB_WORKSPACE/dist/OptiScaler_CHS_${{ needs.sync.outputs.version_tag }}.7z" "$env:GITHUB_WORKSPACE/dist/CHS/*"
 
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
         with:
-          name: release-zip
-          path: dist/*.zip
+          name: release-7z
+          path: dist/*.7z
           retention-days: 7
 
   release:
@@ -234,10 +234,10 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.build.result == 'success'
     steps:
-      - name: 下载 zip
+      - name: 下载 7z
         uses: actions/download-artifact@v4
         with:
-          name: release-zip
+          name: release-7z
           path: dist
 
       - name: 创建 Release
@@ -246,7 +246,7 @@ jobs:
           TAG: ${{ needs.sync.outputs.version_tag }}
           TYPE: ${{ needs.sync.outputs.release_type }}
         run: |
-          ZIP=$(ls dist/*.zip | head -1)
+          ZIP=$(ls dist/*.7z | head -1)
           DATE=$(date +%Y-%m-%d)
           if [ "$TYPE" = "nightly" ]; then
             TITLE="Nightly $DATE"

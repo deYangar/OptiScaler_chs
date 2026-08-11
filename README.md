@@ -174,8 +174,8 @@
 
 > [!TIP]
 > **汉化版快速使用：**
-> 1. 从本仓库 Releases 下载最新 `OptiScaler_CHS_*.zip`
-> 2. 将 `dxgi.dll`（或 `nvngx.dll`）放到游戏可执行文件旁边（与上游使用方法完全一致）
+> 1. 从本仓库 Releases 下载最新 `OptiScaler_CHS_*.zip`，解压到游戏可执行文件所在文件夹
+> 2. 运行 `setup_windows.bat`，按提示选择注入文件名（默认 `dxgi.dll`，最通用），脚本会自动完成安装与配置
 > 3. 中文字体已内置（`font/wqy-microhei.ttc`），游戏内菜单直接显示简体中文
 > 4. 按 `Insert` 打开菜单，可在 **语言** 选项中切换中文/英文
 
