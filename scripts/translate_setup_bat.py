@@ -104,6 +104,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--repo', required=True)
     ap.add_argument('--dry-run', action='store_true')
+    ap.add_argument('--force', action='store_true', help='忽略基线对比，强制重新汉化')
     args = ap.parse_args()
 
     repo = os.path.abspath(args.repo)
@@ -116,7 +117,7 @@ def main():
 
     # 2. 对比基线
     baseline = read_file(os.path.join(repo, REF_PATH))
-    if baseline is not None and baseline == upstream:
+    if not args.force and baseline is not None and baseline == upstream:
         print('ℹ️ 上游 setup_windows.bat 无变化，跳过汉化')
         return 0
 

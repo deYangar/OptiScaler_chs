@@ -3,6 +3,10 @@
 
 MAPPING = {
     'echo Coping is strong with this one...': 'echo Coping is strong with this one...',  # 梗，有意保留英文
+    # ===== 网络超时增强（上游原版无超时，网络不通会卡死；汉化版加超时兜底）=====
+    'for /f "usebackq tokens=*" %%A in (`powershell -Command "& { $rawUrl = \'https://raw.githubusercontent.com/optiscaler/OptiPatcher/main/OptiPatcher/dllmain.cpp\'; try { $code = (Invoke-WebRequest -Uri $rawUrl -UseBasicParsing).Content } catch { return \'ERR\' }; $supported = @(); $ueMatches = [Regex]::Matches($code, \'CHECK_UE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\)\'); foreach ($m in $ueMatches) { $base = $m.Groups[1].Value; $supported += ($base + \'-win64-shipping.exe\').ToLower(); $supported += ($base + \'-wingdk-shipping.exe\').ToLower(); }; $directMatches = [Regex]::Matches($code, \'exeName\\s*==\\s*[\\x22\\x27]([^\\x22\\x27]+)[\\x22\\x27]\'); foreach ($m in $directMatches) { $supported += $m.Groups[1].Value.ToLower(); }; $localFiles = Get-ChildItem *.exe | Select-Object -ExpandProperty Name; foreach ($file in $localFiles) { if ($supported -contains $file.ToLower()) { Write-Output \'YES\'; exit; } }; Write-Output \'NO\'; }"`) do (': 'for /f "usebackq tokens=*" %%A in (`powershell -Command "& { $rawUrl = \'https://raw.githubusercontent.com/optiscaler/OptiPatcher/main/OptiPatcher/dllmain.cpp\'; try { $code = (Invoke-WebRequest -Uri $rawUrl -UseBasicParsing -TimeoutSec 15).Content } catch { try { $code = (Invoke-WebRequest -Uri \'https://cdn.jsdelivr.net/gh/optiscaler/OptiPatcher@main/OptiPatcher/dllmain.cpp\' -UseBasicParsing -TimeoutSec 15).Content } catch { return \'ERR\' } }; $supported = @(); $ueMatches = [Regex]::Matches($code, \'CHECK_UE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\)\'); foreach ($m in $ueMatches) { $base = $m.Groups[1].Value; $supported += ($base + \'-win64-shipping.exe\').ToLower(); $supported += ($base + \'-wingdk-shipping.exe\').ToLower(); }; $directMatches = [Regex]::Matches($code, \'exeName\\s*==\\s*[\\x22\\x27]([^\\x22\\x27]+)[\\x22\\x27]\'); foreach ($m in $directMatches) { $supported += $m.Groups[1].Value.ToLower(); }; $localFiles = Get-ChildItem *.exe | Select-Object -ExpandProperty Name; foreach ($file in $localFiles) { if ($supported -contains $file.ToLower()) { Write-Output \'YES\'; exit; } }; Write-Output \'NO\'; }"`) do (',
+    '        powershell -Command "Invoke-WebRequest -Uri \'https://github.com/optiscaler/OptiPatcher/releases/download/rolling/OptiPatcher.asi\' -OutFile \'OptiScaler\\plugins\\OptiPatcher.asi\'"': '        powershell -Command "$url=\'https://github.com/optiscaler/OptiPatcher/releases/download/rolling/OptiPatcher.asi\'; try { Invoke-WebRequest -Uri $url -OutFile \'OptiScaler\\plugins\\OptiPatcher.asi\' -TimeoutSec 60 } catch { try { Invoke-WebRequest -Uri (\'https://ghfast.top/\'+$url) -OutFile \'OptiScaler\\plugins\\OptiPatcher.asi\' -TimeoutSec 60 } catch { try { Invoke-WebRequest -Uri (\'https://gh-proxy.com/\'+$url) -OutFile \'OptiScaler\\plugins\\OptiPatcher.asi\' -TimeoutSec 60 } catch { try { Invoke-WebRequest -Uri (\'https://ghproxy.net/\'+$url) -OutFile \'OptiScaler\\plugins\\OptiPatcher.asi\' -TimeoutSec 60 } catch {} } } }',
+    'ping -n 1 -w 3000 github.com >nul 2>&1': 'ping -n 1 -w 3000 github.com >nul 2>&1 || ping -n 1 -w 3000 ghfast.top >nul 2>&1',
     'echo v3.0-pre1': 'echo v3.0-pre1（汉化版）',
     '    echo Detected OptiScaler.sln or .git files^^!': '    echo 检测到 OptiScaler.sln 或 .git 文件！',
     '    echo If .sln or .git files are in the folder, congratz, you have the source code.': '    echo 如果文件夹里有 .sln 或 .git 文件，恭喜你，这是源码目录。',
@@ -78,8 +82,8 @@ MAPPING = {
     'REM Not installed - continue to download': 'REM 未安装，继续下载',
     'REM Check connectivity': 'REM 检查网络连接',
     'echo Checking for OptiPatcher compatibility...': 'echo 正在检查 OptiPatcher 兼容性...',
-    'echo Press Ctrl+C if this gets stuck to skip to setup completion.': 'echo 如果卡住请按 Ctrl+C 跳过。',
-    '    echo Offline or GitHub blocked. Skipping OptiPatcher check.': '    echo 无法连接 GitHub，跳过 OptiPatcher 检查。',
+    'echo Press Ctrl+C if this gets stuck to skip to setup completion.': 'echo 网络不通时最多等待 15 秒后自动跳过。',
+    '    echo Offline or GitHub blocked. Skipping OptiPatcher check.': '    echo 无法连接 GitHub 与 CDN 加速通道，跳过 OptiPatcher 检查。',
     '    echo OptiPatcher support detected^^!': '    echo 检测到 OptiPatcher 支持！',
     '    echo An Opti plugin used for unlocking DLSS/DLSS-FG inputs, avoiding spoofing and performance overhead in supported games.': '    echo 一个用于解锁 DLSS/DLSS-FG 输入的 Opti 插件，可避免伪装和性能开销。',
     '    echo More info available on OptiPatcher Github': '    echo 更多信息见 OptiPatcher GitHub',
@@ -87,7 +91,7 @@ MAPPING = {
     '\tset /p downloadOptiPatcher="Waiting - "': '\tset /p downloadOptiPatcher="请选择 - "',
     '        echo Preparing plugins folder...': '        echo 正在准备 plugins 文件夹...',
     '        echo Downloading OptiPatcher...': '        echo 正在下载 OptiPatcher...',
-    '        echo Press Ctrl+C if this gets stuck to skip to setup completion.': '        echo 如果卡住请按 Ctrl+C 跳过。',
+    '        echo Press Ctrl+C if this gets stuck to skip to setup completion.': '        echo 下载超时限制 60 秒，失败自动跳过。',
     '            echo OptiPatcher.asi downloaded successfully.': '            echo OptiPatcher.asi 下载成功。',
     '            echo Enabling ASI loading in OptiScaler.ini...': '            echo 正在启用 OptiScaler.ini 中的 ASI 加载...',
     '                echo Successfully enabled ASI loading in OptiScaler.ini^^!': '                echo 已在 OptiScaler.ini 中启用 ASI 加载！',

@@ -174,10 +174,12 @@
 
 > [!TIP]
 > **汉化版快速使用：**
-> 1. 从本仓库 Releases 下载最新 `OptiScaler_CHS_*.zip`，解压到游戏可执行文件所在文件夹
+> 1. 从本仓库 Releases 下载最新 `OptiScaler_CHS_*.7z`，解压到游戏可执行文件所在文件夹
 > 2. 运行 `setup_windows.bat`，按提示选择注入文件名（默认 `dxgi.dll`，最通用），脚本会自动完成安装与配置
 > 3. 中文字体已内置（`font/wqy-microhei.ttc`），游戏内菜单直接显示简体中文
 > 4. 按 `Insert` 打开菜单，可在 **语言** 选项中切换中文/英文
+>
+> ⚠️ **注意**：`setup_windows.bat` 请务必**从压缩包内解压后使用**，不要单独从 GitHub 网页下载（raw 下载会破坏文件行尾，导致脚本无法运行）。
 
 ## 配置
 请查看 [Config.md](Config.md)（中文）了解配置参数和说明。如果你的显卡不是 Nvidia 的，请查看 [GPU 伪装选项](Spoofing.md)（中文）_（持续更新中）_

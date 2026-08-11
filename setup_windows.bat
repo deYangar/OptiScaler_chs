@@ -328,16 +328,16 @@ goto checkOptiPatcher
 REM 检查网络连接
 echo.
 echo 正在检查 OptiPatcher 兼容性...
-echo 如果卡住请按 Ctrl+C 跳过。
+echo 网络不通时最多等待 15 秒后自动跳过。
 
-ping -n 1 -w 3000 github.com >nul 2>&1
+ping -n 1 -w 3000 github.com >nul 2>&1 || ping -n 1 -w 3000 ghfast.top >nul 2>&1
 if %errorlevel% neq 0 (
-    echo 无法连接 GitHub，跳过 OptiPatcher 检查。
+    echo 无法连接 GitHub 与 CDN 加速通道，跳过 OptiPatcher 检查。
     goto completeSetup
 )
 
 set "OPTI_MATCH=NO"
-for /f "usebackq tokens=*" %%A in (`powershell -Command "& { $rawUrl = 'https://raw.githubusercontent.com/optiscaler/OptiPatcher/main/OptiPatcher/dllmain.cpp'; try { $code = (Invoke-WebRequest -Uri $rawUrl -UseBasicParsing).Content } catch { return 'ERR' }; $supported = @(); $ueMatches = [Regex]::Matches($code, 'CHECK_UE\s*\(\s*([a-zA-Z0-9_]+)\s*\)'); foreach ($m in $ueMatches) { $base = $m.Groups[1].Value; $supported += ($base + '-win64-shipping.exe').ToLower(); $supported += ($base + '-wingdk-shipping.exe').ToLower(); }; $directMatches = [Regex]::Matches($code, 'exeName\s*==\s*[\x22\x27]([^\x22\x27]+)[\x22\x27]'); foreach ($m in $directMatches) { $supported += $m.Groups[1].Value.ToLower(); }; $localFiles = Get-ChildItem *.exe | Select-Object -ExpandProperty Name; foreach ($file in $localFiles) { if ($supported -contains $file.ToLower()) { Write-Output 'YES'; exit; } }; Write-Output 'NO'; }"`) do (
+for /f "usebackq tokens=*" %%A in (`powershell -Command "& { $rawUrl = 'https://raw.githubusercontent.com/optiscaler/OptiPatcher/main/OptiPatcher/dllmain.cpp'; try { $code = (Invoke-WebRequest -Uri $rawUrl -UseBasicParsing -TimeoutSec 15).Content } catch { try { $code = (Invoke-WebRequest -Uri 'https://cdn.jsdelivr.net/gh/optiscaler/OptiPatcher@main/OptiPatcher/dllmain.cpp' -UseBasicParsing -TimeoutSec 15).Content } catch { return 'ERR' } }; $supported = @(); $ueMatches = [Regex]::Matches($code, 'CHECK_UE\s*\(\s*([a-zA-Z0-9_]+)\s*\)'); foreach ($m in $ueMatches) { $base = $m.Groups[1].Value; $supported += ($base + '-win64-shipping.exe').ToLower(); $supported += ($base + '-wingdk-shipping.exe').ToLower(); }; $directMatches = [Regex]::Matches($code, 'exeName\s*==\s*[\x22\x27]([^\x22\x27]+)[\x22\x27]'); foreach ($m in $directMatches) { $supported += $m.Groups[1].Value.ToLower(); }; $localFiles = Get-ChildItem *.exe | Select-Object -ExpandProperty Name; foreach ($file in $localFiles) { if ($supported -contains $file.ToLower()) { Write-Output 'YES'; exit; } }; Write-Output 'NO'; }"`) do (
     set "OPTI_MATCH=%%A"
 )
 
@@ -361,9 +361,9 @@ if "!OPTI_MATCH!"=="YES" (
         if not exist "OptiScaler\plugins" mkdir "OptiScaler\plugins"
         
         echo 正在下载 OptiPatcher...
-        echo 如果卡住请按 Ctrl+C 跳过。
+        echo 下载超时限制 60 秒，失败自动跳过。
         echo.
-        powershell -Command "Invoke-WebRequest -Uri 'https://github.com/optiscaler/OptiPatcher/releases/download/rolling/OptiPatcher.asi' -OutFile 'OptiScaler\plugins\OptiPatcher.asi'"
+        powershell -Command "$url='https://github.com/optiscaler/OptiPatcher/releases/download/rolling/OptiPatcher.asi'; try { Invoke-WebRequest -Uri $url -OutFile 'OptiScaler\plugins\OptiPatcher.asi' -TimeoutSec 60 } catch { try { Invoke-WebRequest -Uri ('https://ghfast.top/'+$url) -OutFile 'OptiScaler\plugins\OptiPatcher.asi' -TimeoutSec 60 } catch { try { Invoke-WebRequest -Uri ('https://gh-proxy.com/'+$url) -OutFile 'OptiScaler\plugins\OptiPatcher.asi' -TimeoutSec 60 } catch { try { Invoke-WebRequest -Uri ('https://ghproxy.net/'+$url) -OutFile 'OptiScaler\plugins\OptiPatcher.asi' -TimeoutSec 60 } catch {} } } }
         if errorlevel 1 goto completeSetup
         
         if exist "OptiScaler\plugins\OptiPatcher.asi" (
