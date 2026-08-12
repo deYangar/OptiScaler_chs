@@ -12,6 +12,11 @@ struct Nvngx_FFX_Handle
     uint32_t swapchainWidth = 0;
     uint32_t swapchainHeight = 0;
     uint64_t lastFrameId = 0;
+
+    // for HDR
+    bool hdrRangeSet = false;
+    float hdrMinLuminance = 0.0001f;
+    float hdrMaxLuminance = 1000.0f;
 };
 
 class Nvngx_FFX : public IFGNvngx
@@ -59,6 +64,6 @@ class Nvngx_FFX : public IFGNvngx
 
     NVSDK_NGX_Result D3D12_PopulateParameters_Impl(NVSDK_NGX_Parameter* InParameters) override;
 
-    int getMaxFakeFramesCount(API api) override { return 1; }
+    int getMaxFakeFramesCount() override { return 1; }
     FGNvngxReplacement getType() override { return FGNvngxReplacement::FFX; }
 };
