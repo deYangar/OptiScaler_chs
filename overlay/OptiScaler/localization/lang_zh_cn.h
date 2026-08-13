@@ -1272,4 +1272,8 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_HUDless_Resources)] = "HUDless Resources";
     table[static_cast<int>(LK::UI_Allow_Async_2)] = "允许异步##2";
     table[static_cast<int>(LK::UI_Debug_View_3)] = "调试视图##3";
+    table[static_cast<int>(LK::UI_None_Real_DLSSG_2)] = "无（真实 DLSSG）";
+    table[static_cast<int>(LK::UI_Missing_dlss_enabler_headless_dll)] = "缺少 dlss-enabler-headless.dll";
+    table[static_cast<int>(LK::UI_Frame_Generation_Enabler_FFX)] = "帧生成（Enabler + FFX）";
+    table[static_cast<int>(LK::UI_DE_Ver_d_d_d_d_GB_Ver_d_d)] = "DE 版本：%d.%d.%d.%d   GB 版本：%d.%d";
 }

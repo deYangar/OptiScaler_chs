@@ -1090,5 +1090,9 @@
  "Do not use HUDless set at ffxDispatch": "UI_Do_not_use_HUDless_set_at_ffxDispatch",
  "HUDless Resources": "UI_HUDless_Resources",
  "Allow Async##2": "UI_Allow_Async_2",
- "Debug View##3": "UI_Debug_View_3"
+ "Debug View##3": "UI_Debug_View_3",
+ "None (Real DLSSG)": "UI_None_Real_DLSSG_2",
+ "Missing dlss-enabler-headless.dll": "UI_Missing_dlss_enabler_headless_dll",
+ "Frame Generation (Enabler + FFX)": "UI_Frame_Generation_Enabler_FFX",
+ "DE Ver: %d.%d.%d.%d   GB Ver: %d.%d": "UI_DE_Ver_d_d_d_d_GB_Ver_d_d"
 }

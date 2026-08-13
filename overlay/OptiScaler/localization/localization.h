@@ -1254,6 +1254,10 @@ enum class LK {
     UI_HUDless_Resources,
     UI_Allow_Async_2,
     UI_Debug_View_3,
+    UI_None_Real_DLSSG_2,
+    UI_Missing_dlss_enabler_headless_dll,
+    UI_Frame_Generation_Enabler_FFX,
+    UI_DE_Ver_d_d_d_d_GB_Ver_d_d,
     COUNT
 };
 

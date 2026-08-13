@@ -1260,4 +1260,8 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_HUDless_Resources)] = "HUDless Resources";
     table[static_cast<int>(LK::UI_Allow_Async_2)] = "Allow Async##2";
     table[static_cast<int>(LK::UI_Debug_View_3)] = "Debug View##3";
+    table[static_cast<int>(LK::UI_None_Real_DLSSG_2)] = "None (Real DLSSG)";
+    table[static_cast<int>(LK::UI_Missing_dlss_enabler_headless_dll)] = "Missing dlss-enabler-headless.dll";
+    table[static_cast<int>(LK::UI_Frame_Generation_Enabler_FFX)] = "Frame Generation (Enabler + FFX)";
+    table[static_cast<int>(LK::UI_DE_Ver_d_d_d_d_GB_Ver_d_d)] = "DE Ver: %d.%d.%d.%d   GB Ver: %d.%d";
 }
