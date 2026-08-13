@@ -115,6 +115,8 @@ bool Config::Reload(std::filesystem::path iniPath)
                     FGNvngxReplacement.set_from_config(FGNvngxReplacement::Arturs);
                 else if (lstrcmpiA(FGNvngxReplacementString.value().c_str(), "ffx") == 0)
                     FGNvngxReplacement.set_from_config(FGNvngxReplacement::FFX);
+                else if (lstrcmpiA(FGNvngxReplacementString.value().c_str(), "combo") == 0)
+                    FGNvngxReplacement.set_from_config(FGNvngxReplacement::Combo);
             }
 
             if (auto forceXell = readBool("fakenvapi", "ForceXeLL"); forceXell.has_value() && forceXell.value())
@@ -235,6 +237,7 @@ bool Config::Reload(std::filesystem::path iniPath)
 
             FGDLSSGFramerateTargetDMFG.set_from_config(readFloat("DLSSG", "FramerateTargetDMFG"));
             FGDLSSGOverrideForceDMFG.set_from_config(readBool("DLSSG", "OverrideForceDMFG"));
+            FGDLSSGForceDMFG.set_from_config(readBool("DLSSG", "ForceDMFG"));
         }
 
         // FSR FG Inputs
@@ -908,6 +911,8 @@ bool Config::SaveIni()
                 FGNvngxReplacementString = "Arturs";
             else if (FGNvngxReplacementHeld.value() == FGNvngxReplacement::FFX)
                 FGNvngxReplacementString = "FFX";
+            else if (FGNvngxReplacementHeld.value() == FGNvngxReplacement::Combo)
+                FGNvngxReplacementString = "Combo";
         }
         ini.SetValue("FrameGen", "FGNvngxReplacement", FGNvngxReplacementString.c_str());
 
@@ -998,6 +1003,7 @@ bool Config::SaveIni()
                      GetFloatValue(Instance()->FGDLSSGFramerateTargetDMFG.value_for_config()).c_str());
         ini.SetValue("DLSSG", "OverrideForceDMFG",
                      GetBoolValue(Instance()->FGDLSSGOverrideForceDMFG.value_for_config()).c_str());
+        ini.SetValue("DLSSG", "ForceDMFG", GetBoolValue(Instance()->FGDLSSGForceDMFG.value_for_config()).c_str());
     }
 
     // OptiFG

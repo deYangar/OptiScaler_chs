@@ -1,6 +1,39 @@
 #include "pch.h"
 #include "Nvngx_Arturs.h"
 
+void Nvngx_Arturs::QueryVersions()
+{
+    if (!_DLSSG_D3D12_PopulateParameters_Impl)
+        return;
+
+    // Main version
+    HMODULE hModule;
+    GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                       (LPCSTR) _DLSSG_D3D12_PopulateParameters_Impl, &hModule);
+
+    wchar_t dllPath[MAX_PATH] = { 0 };
+    GetModuleFileNameW(hModule, dllPath, MAX_PATH);
+
+    version_t tempVersion {};
+    Util::GetFileVersion(dllPath, &tempVersion);
+    _version = tempVersion;
+
+    // Antighosting version
+    NVNGX_Parameters tempParams(API::DX12, false);
+
+    if (_DLSSG_D3D12_PopulateParameters_Impl(&tempParams) == NVSDK_NGX_Result_Success)
+    {
+        auto result = tempParams.Get("FrameInterpolation.GhostbusterVersionMajor", &ghostbusterVersion.major);
+        tempParams.Get("FrameInterpolation.GhostbusterVersionMinor", &ghostbusterVersion.minor);
+
+        if (result != NVSDK_NGX_Result_Success)
+            LOG_WARN("Couldn't query version");
+    }
+
+    LOG_INFO("DE Ver: {}.{}.{}.{}, GB Ver: {}.{}", _version.major, _version.minor, _version.patch, _version.reserved,
+             ghostbusterVersion.major, ghostbusterVersion.minor);
+}
+
 void Nvngx_Arturs::LoadLibraries()
 {
     HMODULE memModule = nullptr;
@@ -29,6 +62,8 @@ void Nvngx_Arturs::LoadLibraries()
         _DLSSG_D3D12_PopulateParameters_Impl =
             (PFN_D3D12_PopulateParameters_Impl) GetProcAddress(dll, "DLSSG_NVSDK_NGX_D3D12_PopulateParameters_Impl");
 
+        QueryVersions();
+
         LOG_INFO("Artur's initialized");
     }
     else
@@ -36,3 +71,5 @@ void Nvngx_Arturs::LoadLibraries()
         LOG_WARN("Artur's enabled but cannot be loaded");
     }
 }
+
+feature_version Nvngx_Arturs::extraVersion() { return ghostbusterVersion; }
