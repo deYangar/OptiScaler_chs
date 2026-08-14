@@ -1094,5 +1094,7 @@
  "None (Real DLSSG)": "UI_None_Real_DLSSG_2",
  "Missing dlss-enabler-headless.dll": "UI_Missing_dlss_enabler_headless_dll",
  "Frame Generation (Enabler + FFX)": "UI_Frame_Generation_Enabler_FFX",
- "DE Ver: %d.%d.%d.%d   GB Ver: %d.%d": "UI_DE_Ver_d_d_d_d_GB_Ver_d_d"
+ "DE Ver: %d.%d.%d.%d   GB Ver: %d.%d": "UI_DE_Ver_d_d_d_d_GB_Ver_d_d",
+ "%6.1f/%5.1f ": "UI_S_6_1f_5_1f",
+ "%6.1f ": "UI_S_6_1f"
 }

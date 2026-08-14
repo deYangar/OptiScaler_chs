@@ -1258,6 +1258,8 @@ enum class LK {
     UI_Missing_dlss_enabler_headless_dll,
     UI_Frame_Generation_Enabler_FFX,
     UI_DE_Ver_d_d_d_d_GB_Ver_d_d,
+    UI_S_6_1f_5_1f,
+    UI_S_6_1f,
     COUNT
 };
 
