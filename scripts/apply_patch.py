@@ -136,9 +136,9 @@ else:
     print('    !! splashText 声明未找到，跳过')
     sys.exit(5)
 mc = mc.replace('splashText[std::rand() % splashText.size()]',
-                'LOC(splashKeys[std::rand() % splashKeys.size()])')
+                'LocalizationManager::Instance().Get(splashKeys[std::rand() % splashKeys.size()])')
 write(MC, mc)
-print('    splashText 引用已替换为 splashKeys + LOC()')
+print('    splashText 引用已替换为 splashKeys + Get()')
 
 print(f'[4.2] 多段拼接字符串链整体 LOC 化（结构体数组/跨行拼接，整链命中 strings_map 才替换）')
 mc = read(MC)
