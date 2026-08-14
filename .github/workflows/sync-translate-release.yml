@@ -57,9 +57,9 @@ jobs:
           echo "上游最新正式版: ${UPSTREAM_STABLE:-无}"
 
           if [ "$INPUT_TYPE" = "nightly" ]; then
-            TYPE="nightly"; TAG="nightly"
+            TYPE="nightly"; TAG="nightly-$(date +%Y%m%d)"
           elif [ "$INPUT_TYPE" = "beta" ]; then
-            TYPE="beta"; TAG="beta"
+            TYPE="beta"; TAG="beta-$(date +%Y%m%d)"
           elif [ "$INPUT_TYPE" = "release" ]; then
             # 手动指定正式版：tag 用上游最新正式版版本号（未发布过则用日期）
             if [ -n "$UPSTREAM_STABLE" ]; then
@@ -78,8 +78,8 @@ jobs:
               TYPE="release"; TAG="$UPSTREAM_STABLE"
               echo "发现上游新正式版 $TAG，本次发布正式版"
             else
-              TYPE="nightly"; TAG="nightly"
-              echo "无上游新正式版，本次发布 nightly"
+              TYPE="nightly"; TAG="nightly-$(date +%Y%m%d)"
+              echo "无上游新正式版，本次发布 nightly ($TAG)"
             fi
           fi
 
@@ -292,7 +292,14 @@ jobs:
             NOTES="正式版（上游 $TAG + 汉化）"
             PRERELEASE=false
           fi
-          # 固定 tag（nightly/beta/同名版本）需先删除旧 release+tag 再重建，保证链接始终有效
-          gh release delete "$TAG" --repo "${{ github.repository }}" --yes --cleanup-tag 2>/dev/null || true
+          # nightly/beta: 每次带日期新建，保留历史
+          # 正式版: 必须新建，已存在则报错退出（绝不覆盖）
+          if [ "$TYPE" = "release" ]; then
+            EXISTING=$(gh release view "$TAG" --repo "${{ github.repository }}" --json tagName --jq '.tagName' 2>/dev/null || echo "")
+            if [ -n "$EXISTING" ]; then
+              echo "⚠️ 正式版 $TAG 已存在，拒绝覆盖！如需重新发布请先手动删除。"
+              exit 1
+            fi
+          fi
           gh release create "$TAG" "$ZIP" --repo "${{ github.repository }}" --title "$TITLE" --notes "$NOTES" --prerelease="$PRERELEASE"
           echo "已发布: $TAG (type=$TYPE)"

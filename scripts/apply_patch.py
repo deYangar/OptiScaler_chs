@@ -92,6 +92,54 @@ else:
 with io.open(os.path.join(HERE, 'strings_map.json'), encoding='utf-8') as f:
     strings_map = json.load(f)
 
+print(f'[4.1] menu_common.cpp splashText -> splashKeys (LK 枚举) 转换')
+mc = read(MC)
+# splashText 是文件作用域 static，在 main() 之前初始化，此时 LocalizationManager::Init() 尚未调用
+# -> LOC() 全部返回 [MISSING]。改为存 LK 枚举，显示时才调 LOC()。
+# 必须在 4.2/4.5/5 之前执行，否则字符串被替换成 LOC() 后无法匹配原始文本
+splash_decl_pat = re.compile(
+    r'(static\s+std::vector<std::string>\s+splashText\s*=\s*\{)(.*?)(\};)',
+    re.DOTALL
+)
+m = splash_decl_pat.search(mc)
+if m:
+    block = m.group(2)
+    strs = re.findall(r'"((?:[^"\\]|\\.)*)"', block)
+    # strings_map 里转义不匹配的 3 个，手动补
+    splash_override = {
+        "MFG totally works with Nukem's 100%% no scam": "Splash_279",
+        'Even supports \\"software\\" XeSS!': 'Splash_282',
+        '\\"Framegen really attracts some strange clientelle\\"': 'Splash_329',
+    }
+    lk_list = []
+    missing_count = 0
+    for s in strs:
+        raw = s.replace('\\"', '"').replace("\\'", "'").replace('%%', '%')
+        if raw in strings_map:
+            lk_list.append('LK::' + strings_map[raw])
+        elif s in strings_map:
+            lk_list.append('LK::' + strings_map[s])
+        elif s in splash_override:
+            lk_list.append('LK::' + splash_override[s])
+        elif raw in splash_override:
+            lk_list.append('LK::' + splash_override[raw])
+        else:
+            missing_count += 1
+            print(f'    !! 未找到映射: {repr(s)} / {repr(raw)}')
+            lk_list.append('LK::Splash_253')
+    new_block = '\n' + ',\n'.join('        ' + x for x in lk_list) + '\n    '
+    mc = mc[:m.start()] + 'static std::vector<LK> splashKeys = {' + new_block + '};' + mc[m.end():]
+    print(f'    转换 {len(lk_list)} 个 splash 字符串为 LK 枚举')
+    if missing_count:
+        print(f'    !! {missing_count} 个未找到映射，已用 fallback')
+else:
+    print('    !! splashText 声明未找到，跳过')
+    sys.exit(5)
+mc = mc.replace('splashText[std::rand() % splashText.size()]',
+                'LOC(splashKeys[std::rand() % splashKeys.size()])')
+write(MC, mc)
+print('    splashText 引用已替换为 splashKeys + LOC()')
+
 print(f'[4.2] 多段拼接字符串链整体 LOC 化（结构体数组/跨行拼接，整链命中 strings_map 才替换）')
 mc = read(MC)
 chain_pat = re.compile(r'"((?:[^"\\]|\\.)*)"(?:\s*"((?:[^"\\]|\\.)*)")+')

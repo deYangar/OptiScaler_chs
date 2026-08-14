@@ -167,7 +167,8 @@ def parse_ini(text):
     for line in text.splitlines():
         stripped = line.strip()
         if stripped.startswith('[') and stripped.endswith(']'):
-            entries.append({'type': 'section', 'name': stripped})
+            # section 前的注释（装饰线等）也保留，merge 时输出，避免格式缩水
+            entries.append({'type': 'section', 'name': stripped, 'comments': cur_comments})
             cur_comments = []
         elif stripped.startswith(';'):
             cur_comments.append(line)
@@ -191,9 +192,12 @@ def merge_ini(upstream_text, local_text, api_key):
     local = parse_ini(local_text)
 
     local_by_key = {}
+    local_by_section = {}
     for e in local:
         if e['type'] == 'entry':
             local_by_key[e['key']] = e
+        elif e['type'] == 'section':
+            local_by_section[e['name']] = e
 
     up_keys = [e['key'] for e in up if e['type'] == 'entry']
 
@@ -218,6 +222,12 @@ def merge_ini(upstream_text, local_text, api_key):
         if e['type'] == 'section':
             if prev_type == 'entry':
                 out_lines.append('')
+            # section 前的装饰注释：优先用本地版，本地没有则用上游版
+            sec_comments = local_by_section.get(e['name'], {}).get('comments')
+            if sec_comments:
+                out_lines.extend(sec_comments)
+            elif e.get('comments'):
+                out_lines.extend(e['comments'])
             out_lines.append(e['name'])
             prev_type = 'section'
         elif e['type'] == 'entry':

@@ -117,5 +117,14 @@ if (-not $opDownloaded) {
     Write-Host "警告: OptiPatcher 下载失败（网络受限？），产物将不含 OptiPatcher，不影响核心功能"
 }
 
+# 汉化版 OptiScaler.ini 兜底强制覆盖（最后一步，防 checkout 竞态/上游覆盖，确保产物一定是中文注释版）
+$iniSrc = Join-Path $SourceDir "OptiScaler.ini"
+if (Test-Path $iniSrc) {
+    Copy-Item $iniSrc (Join-Path $OutDir "OptiScaler.ini") -Force
+    Write-Host "已强制覆盖汉化版 OptiScaler.ini"
+} else {
+    Write-Host "警告: 仓库根目录无 OptiScaler.ini，产物将保留 MSBuild 拷贝的版本"
+}
+
 Write-Host "产物目录: $OutDir"
 Get-ChildItem $OutDir -Recurse -File | Select-Object FullName, Length | Format-Table -AutoSize
