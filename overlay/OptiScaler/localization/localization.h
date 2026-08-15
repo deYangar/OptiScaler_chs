@@ -1260,6 +1260,7 @@ enum class LK {
     UI_DE_Ver_d_d_d_d_GB_Ver_d_d,
     UI_S_6_1f_5_1f,
     UI_S_6_1f,
+    UI_DLSSG_only_supports_HDR10,
     COUNT
 };
 

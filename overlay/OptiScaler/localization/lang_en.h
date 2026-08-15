@@ -1266,4 +1266,5 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_DE_Ver_d_d_d_d_GB_Ver_d_d)] = "DE Ver: %d.%d.%d.%d   GB Ver: %d.%d";
     table[static_cast<int>(LK::UI_S_6_1f_5_1f)] = "%6.1f/%5.1f ";
     table[static_cast<int>(LK::UI_S_6_1f)] = "%6.1f ";
+    table[static_cast<int>(LK::UI_DLSSG_only_supports_HDR10)] = "DLSSG only supports HDR10";
 }
