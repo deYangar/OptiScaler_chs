@@ -1261,6 +1261,7 @@ enum class LK {
     UI_S_6_1f_5_1f,
     UI_S_6_1f,
     UI_DLSSG_only_supports_HDR10,
+    UI_Game_doesn_t_use_streamline,
     COUNT
 };
 

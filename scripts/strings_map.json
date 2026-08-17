@@ -1097,5 +1097,6 @@
  "DE Ver: %d.%d.%d.%d   GB Ver: %d.%d": "UI_DE_Ver_d_d_d_d_GB_Ver_d_d",
  "%6.1f/%5.1f ": "UI_S_6_1f_5_1f",
  "%6.1f ": "UI_S_6_1f",
- "DLSSG only supports HDR10": "UI_DLSSG_only_supports_HDR10"
+ "DLSSG only supports HDR10": "UI_DLSSG_only_supports_HDR10",
+ "Game doesn't use streamline": "UI_Game_doesn_t_use_streamline"
 }

@@ -1279,4 +1279,5 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_S_6_1f_5_1f)] = "%6.1f/%5.1f ";
     table[static_cast<int>(LK::UI_S_6_1f)] = "%6.1f ";
     table[static_cast<int>(LK::UI_DLSSG_only_supports_HDR10)] = "DLSSG 仅支持 HDR10";
+    table[static_cast<int>(LK::UI_Game_doesn_t_use_streamline)] = "游戏不使用 streamline";
 }
