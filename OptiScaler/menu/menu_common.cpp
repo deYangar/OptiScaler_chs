@@ -3014,7 +3014,7 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
 
     // DLSSG inputs requirements
     auto constexpr dlssgInputIndex = (uint32_t) FGInput::DLSSG;
-    inputOptions[dlssgInputIndex].set_disabled(state.streamlineVersion.major == 0, "Game doesn't use streamline");
+    // inputOptions[dlssgInputIndex].set_disabled(state.streamlineVersion.major == 0, "Game doesn't use streamline");
     inputOptions[dlssgInputIndex].set_disabled(state.swapchainApi == API::DX11, "Unsupported API");
 
     // FSRFG inputs requirements
@@ -3195,6 +3195,20 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
         {
             PopulateCombo("FG Nvngx Replacement", config->FGNvngxReplacement, nvngxOptions);
             ShowTooltip("What backend to use instead of the real DLSSG");
+        }
+
+        // Try to avoid having None selected when the gpu doesn't support DLSSG + some fallbacks
+        if (!supportsDlssg && (replaceFgOutputWithNvngx || showNvngxFgDowndown) &&
+            config->FGNvngxReplacement.value_or_default() == FGNvngxReplacement::None)
+        {
+            if (state.nukemsFgFileAvailable)
+                config->FGNvngxReplacement.set_volatile_value(FGNvngxReplacement::Nukems);
+
+            else if (state.artursFgFileAvailable)
+                config->FGNvngxReplacement.set_volatile_value(FGNvngxReplacement::Arturs);
+
+            else if (FfxApiProxy::IsFGReady(false))
+                config->FGNvngxReplacement.set_volatile_value(FGNvngxReplacement::FFX);
         }
 
         const bool nvngxFgChanged = (replaceFgOutputWithNvngx || showNvngxFgDowndown) &&

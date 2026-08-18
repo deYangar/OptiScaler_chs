@@ -13,8 +13,6 @@ using Microsoft::WRL::ComPtr;
 
 bool Nvngx_FFX::Init()
 {
-    LOG_FUNC();
-
     if (inited)
         return true;
 
@@ -563,8 +561,8 @@ NVSDK_NGX_Result Nvngx_FFX::D3D12_EvaluateFeature(ID3D12GraphicsCommandList* InC
     dispatchPrepareDesc.cameraFar = cameraFar;
     dispatchPrepareDesc.cameraFovAngleVertical = cameraFovAngleVertical;
 
-    dispatchPrepareDesc.motionVectors = ffxApiGetResourceDX12(motionVectors, FFX_API_RESOURCE_STATE_COPY_DEST);
-    dispatchPrepareDesc.depth = ffxApiGetResourceDX12(depth, FFX_API_RESOURCE_STATE_COPY_DEST);
+    dispatchPrepareDesc.motionVectors = ffxApiGetResourceDX12(motionVectors, FFX_API_RESOURCE_STATE_UNORDERED_ACCESS);
+    dispatchPrepareDesc.depth = ffxApiGetResourceDX12(depth, FFX_API_RESOURCE_STATE_COMPUTE_READ);
 
     retCode = FfxApiProxy::D3D12_Dispatch(&InOurHandle->fgContext, &dispatchPrepareDesc.header);
 
@@ -600,7 +598,7 @@ NVSDK_NGX_Result Nvngx_FFX::D3D12_EvaluateFeature(ID3D12GraphicsCommandList* InC
 
     if (retCode != FFX_API_RETURN_OK)
     {
-        LOG_ERROR("Failed to create FFX context");
+        LOG_ERROR("Failed to dispatch FFX");
         return NVSDK_NGX_Result_Fail;
     }
 
