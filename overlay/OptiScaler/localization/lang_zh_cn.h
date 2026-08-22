@@ -1280,4 +1280,19 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_S_6_1f)] = "%6.1f ";
     table[static_cast<int>(LK::UI_DLSSG_only_supports_HDR10)] = "DLSSG 仅支持 HDR10";
     table[static_cast<int>(LK::UI_Game_doesn_t_use_streamline)] = "游戏不使用 streamline";
+    table[static_cast<int>(LK::UI_Antighosting_GB)] = "防拖影（GB）";
+    table[static_cast<int>(LK::UI_Temporal_HUD_pin)] = "时域 HUD 固定";
+    table[static_cast<int>(LK::UI_HUD_interpolation)] = "HUD 插值";
+    table[static_cast<int>(LK::UI_Ignore_UI_texture)] = "忽略 UI 纹理";
+    table[static_cast<int>(LK::UI_Pin_backbuffer)] = "固定后缓冲";
+    table[static_cast<int>(LK::UI_Antighosting_red_tint)] = "防拖影红色色调";
+    table[static_cast<int>(LK::UI_Antighosting_split_screen)] = "防拖影分屏";
+    table[static_cast<int>(LK::UI_Frame_index_line)] = "帧索引线";
+    table[static_cast<int>(LK::UI_HUD_detection)] = "HUD 检测";
+    table[static_cast<int>(LK::UI_Disocclusion_tint)] = "去遮挡色调";
+    table[static_cast<int>(LK::UI_Artifacts_detection)] = "伪影检测";
+    table[static_cast<int>(LK::UI_Camera_MV_debug)] = "相机运动矢量调试";
+    table[static_cast<int>(LK::UI_Generic_visualization)] = "通用可视化";
+    table[static_cast<int>(LK::UI_Current_sharpness_3f)] = "（当前锐化：%.3f）";
+    table[static_cast<int>(LK::UI_Current_sharpness_disabled)] = "（当前锐化：已禁用）";
 }

@@ -1262,6 +1262,21 @@ enum class LK {
     UI_S_6_1f,
     UI_DLSSG_only_supports_HDR10,
     UI_Game_doesn_t_use_streamline,
+    UI_Antighosting_GB,
+    UI_Temporal_HUD_pin,
+    UI_HUD_interpolation,
+    UI_Ignore_UI_texture,
+    UI_Pin_backbuffer,
+    UI_Antighosting_red_tint,
+    UI_Antighosting_split_screen,
+    UI_Frame_index_line,
+    UI_HUD_detection,
+    UI_Disocclusion_tint,
+    UI_Artifacts_detection,
+    UI_Camera_MV_debug,
+    UI_Generic_visualization,
+    UI_Current_sharpness_3f,
+    UI_Current_sharpness_disabled,
     COUNT
 };
 

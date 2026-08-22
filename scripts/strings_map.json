@@ -1098,5 +1098,20 @@
  "%6.1f/%5.1f ": "UI_S_6_1f_5_1f",
  "%6.1f ": "UI_S_6_1f",
  "DLSSG only supports HDR10": "UI_DLSSG_only_supports_HDR10",
- "Game doesn't use streamline": "UI_Game_doesn_t_use_streamline"
+ "Game doesn't use streamline": "UI_Game_doesn_t_use_streamline",
+ "Antighosting (GB)": "UI_Antighosting_GB",
+ "Temporal HUD pin": "UI_Temporal_HUD_pin",
+ "HUD interpolation": "UI_HUD_interpolation",
+ "Ignore UI texture": "UI_Ignore_UI_texture",
+ "Pin backbuffer": "UI_Pin_backbuffer",
+ "Antighosting red tint": "UI_Antighosting_red_tint",
+ "Antighosting split screen": "UI_Antighosting_split_screen",
+ "Frame index line": "UI_Frame_index_line",
+ "HUD detection": "UI_HUD_detection",
+ "Disocclusion tint": "UI_Disocclusion_tint",
+ "Artifacts detection": "UI_Artifacts_detection",
+ "Camera MV debug": "UI_Camera_MV_debug",
+ "Generic visualization": "UI_Generic_visualization",
+ "(Current sharpness: %.3f)": "UI_Current_sharpness_3f",
+ "(Current sharpness: disabled)": "UI_Current_sharpness_disabled"
 }

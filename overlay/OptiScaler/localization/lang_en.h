@@ -1268,4 +1268,19 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_S_6_1f)] = "%6.1f ";
     table[static_cast<int>(LK::UI_DLSSG_only_supports_HDR10)] = "DLSSG only supports HDR10";
     table[static_cast<int>(LK::UI_Game_doesn_t_use_streamline)] = "Game doesn't use streamline";
+    table[static_cast<int>(LK::UI_Antighosting_GB)] = "Antighosting (GB)";
+    table[static_cast<int>(LK::UI_Temporal_HUD_pin)] = "Temporal HUD pin";
+    table[static_cast<int>(LK::UI_HUD_interpolation)] = "HUD interpolation";
+    table[static_cast<int>(LK::UI_Ignore_UI_texture)] = "Ignore UI texture";
+    table[static_cast<int>(LK::UI_Pin_backbuffer)] = "Pin backbuffer";
+    table[static_cast<int>(LK::UI_Antighosting_red_tint)] = "Antighosting red tint";
+    table[static_cast<int>(LK::UI_Antighosting_split_screen)] = "Antighosting split screen";
+    table[static_cast<int>(LK::UI_Frame_index_line)] = "Frame index line";
+    table[static_cast<int>(LK::UI_HUD_detection)] = "HUD detection";
+    table[static_cast<int>(LK::UI_Disocclusion_tint)] = "Disocclusion tint";
+    table[static_cast<int>(LK::UI_Artifacts_detection)] = "Artifacts detection";
+    table[static_cast<int>(LK::UI_Camera_MV_debug)] = "Camera MV debug";
+    table[static_cast<int>(LK::UI_Generic_visualization)] = "Generic visualization";
+    table[static_cast<int>(LK::UI_Current_sharpness_3f)] = "(Current sharpness: %.3f)";
+    table[static_cast<int>(LK::UI_Current_sharpness_disabled)] = "(Current sharpness: disabled)";
 }
