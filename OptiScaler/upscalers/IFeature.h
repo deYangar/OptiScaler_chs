@@ -21,6 +21,14 @@ struct InitFlags
     bool JitteredMV;
 };
 
+static auto sumOpts(const auto&... opts) { return (opts.value_or(0.0) + ... + 0.0); }
+struct DetailedGpuTime
+{
+    std::string name;
+    double time = 0.0;
+    bool includedInUpscalerTime = false;
+};
+
 class IFeature
 {
   private:
@@ -77,6 +85,10 @@ class IFeature
     bool _featureFrozen = false;
     bool _moduleLoaded = false;
 
+    std::optional<double> lastUpscalerTime {};
+    std::optional<double> lastRcasTime {};
+    std::optional<double> lastOutputScalingTime {};
+
     void SetHandle(unsigned int InHandleId);
     bool SetInitParameters(NVSDK_NGX_Parameter* InParameters);
     void GetRenderResolution(const NVSDK_NGX_Parameter* InParameters, unsigned int* OutWidth, unsigned int* OutHeight);
@@ -96,6 +108,8 @@ class IFeature
     virtual API Api() const = 0;
     std::string Name() const { return UpscalerDisplayName(GetUpscalerType()); };
     std::string ShortName() const { return UpscalerShortName(GetUpscalerType()); }; // Without the version
+    virtual std::optional<double> ReadUpscalerTime(void* commandQueue) { return std::nullopt; }
+    virtual void ReadDetailedGpuTimes(void* commandQueue, std::vector<DetailedGpuTime>& detailedGpuTimes) {};
 
     virtual size_t JitterCount() { return _jitterInfo.size(); }
 

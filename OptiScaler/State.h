@@ -215,12 +215,9 @@ class State
     float lastMipBias = 100.0f;
     float lastMipBiasMax = -100.0f;
 
-    int xefgMaxInterpolationCount = 1;
     bool WAR_xefgRequestFGToggle = false;
 
-    int dlssgMaxInterpolationCount = 1;
     bool dlssgGameDMFGSupported = false;
-    bool dlssgOptiDMFGSupported = false;
     sl::DLSSGMode dlssgLastSetMode = sl::DLSSGMode::eOff;
     int dlssgDetectedInterpolationCount = 0;
 
@@ -276,6 +273,7 @@ class State
     // Framegraph
     std::deque<double> upscaleTimes;
     std::deque<double> frameTimes;
+    std::vector<DetailedGpuTime> detailedGpuTimes;
     double lastFGFrameTime = 0.0;
     double presentFrameTime = 0.0;
     std::mutex frameTimeMutex;
