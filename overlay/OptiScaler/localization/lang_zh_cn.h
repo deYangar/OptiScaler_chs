@@ -1295,4 +1295,7 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Generic_visualization)] = "通用可视化";
     table[static_cast<int>(LK::UI_Current_sharpness_3f)] = "（当前锐化：%.3f）";
     table[static_cast<int>(LK::UI_Current_sharpness_disabled)] = "（当前锐化：已禁用）";
+    table[static_cast<int>(LK::UI_Per_shader_breakdown)] = "各着色器细分：";
+    table[static_cast<int>(LK::UI_S_2f_ms)] = "%.2f ms";
+    table[static_cast<int>(LK::UI_Extra_shaders)] = "额外着色器：";
 }

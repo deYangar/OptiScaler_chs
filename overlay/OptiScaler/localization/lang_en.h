@@ -1283,4 +1283,7 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Generic_visualization)] = "Generic visualization";
     table[static_cast<int>(LK::UI_Current_sharpness_3f)] = "(Current sharpness: %.3f)";
     table[static_cast<int>(LK::UI_Current_sharpness_disabled)] = "(Current sharpness: disabled)";
+    table[static_cast<int>(LK::UI_Per_shader_breakdown)] = "Per shader breakdown:";
+    table[static_cast<int>(LK::UI_S_2f_ms)] = "%.2f ms";
+    table[static_cast<int>(LK::UI_Extra_shaders)] = "Extra shaders:";
 }

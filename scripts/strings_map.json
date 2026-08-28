@@ -1113,5 +1113,8 @@
  "Camera MV debug": "UI_Camera_MV_debug",
  "Generic visualization": "UI_Generic_visualization",
  "(Current sharpness: %.3f)": "UI_Current_sharpness_3f",
- "(Current sharpness: disabled)": "UI_Current_sharpness_disabled"
+ "(Current sharpness: disabled)": "UI_Current_sharpness_disabled",
+ "Per shader breakdown:": "UI_Per_shader_breakdown",
+ "%.2f ms": "UI_S_2f_ms",
+ "Extra shaders:": "UI_Extra_shaders"
 }

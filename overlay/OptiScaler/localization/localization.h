@@ -1277,6 +1277,9 @@ enum class LK {
     UI_Generic_visualization,
     UI_Current_sharpness_3f,
     UI_Current_sharpness_disabled,
+    UI_Per_shader_breakdown,
+    UI_S_2f_ms,
+    UI_Extra_shaders,
     COUNT
 };
 
