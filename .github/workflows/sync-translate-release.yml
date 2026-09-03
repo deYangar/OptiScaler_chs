@@ -49,23 +49,41 @@ jobs:
         run: |
           # 手动触发时：尊重 release_type 输入
           INPUT_TYPE="${{ github.event.inputs.release_type || '' }}"
+          EVENT_TYPE="${{ github.event_name }}"
           UPSTREAM_REPO="${{ env.UPSTREAM_REPO }}"
           MINE="${{ github.repository }}"
+
+          # tag 日期源：push 触发（汉化/overlay 更新）用本仓库 HEAD 日期；
+          # schedule / 手动触发用上游 master 最新提交日期（对应"哪天的代码"），
+          # 避免 GitHub Actions schedule 延迟跨天后 tag 错位/撞车（2026-08-29 nightly 撞 tag 事故）
+          if [ "$EVENT_TYPE" = "push" ]; then
+            TAG_DATE=$(git log -1 --format=%cs HEAD | tr -d '-')
+            echo "触发方式 push，tag 日期用本仓库 HEAD: $TAG_DATE"
+          else
+            git remote add upstream https://github.com/$UPSTREAM_REPO.git || true
+            if git fetch upstream master --depth 50 2>/dev/null; then
+              TAG_DATE=$(git log -1 --format=%cs FETCH_HEAD | tr -d '-')
+              echo "上游 master 最新提交日期: $TAG_DATE"
+            else
+              TAG_DATE=$(date +%Y%m%d)
+              echo "⚠️ 上游 fetch 失败，tag 日期退回运行日期: $TAG_DATE"
+            fi
+          fi
 
           # 获取上游最新正式版 tag（如 v0.9.4）
           UPSTREAM_STABLE=$(gh api repos/$UPSTREAM_REPO/releases/latest --jq '.tag_name' 2>/dev/null || echo "")
           echo "上游最新正式版: ${UPSTREAM_STABLE:-无}"
 
           if [ "$INPUT_TYPE" = "nightly" ]; then
-            TYPE="nightly"; TAG="nightly-$(date +%Y%m%d)"
+            TYPE="nightly"; TAG="nightly-$TAG_DATE"
           elif [ "$INPUT_TYPE" = "beta" ]; then
-            TYPE="beta"; TAG="beta-$(date +%Y%m%d)"
+            TYPE="beta"; TAG="beta-$TAG_DATE"
           elif [ "$INPUT_TYPE" = "release" ]; then
             # 手动指定正式版：tag 用上游最新正式版版本号（未发布过则用日期）
             if [ -n "$UPSTREAM_STABLE" ]; then
               TYPE="release"; TAG="$UPSTREAM_STABLE"
             else
-              TYPE="release"; TAG="release-$(date +%Y%m%d)"
+              TYPE="release"; TAG="release-$TAG_DATE"
             fi
           else
             # auto / 定时 / 推送触发：自动判断
@@ -78,7 +96,7 @@ jobs:
               TYPE="release"; TAG="$UPSTREAM_STABLE"
               echo "发现上游新正式版 $TAG，本次发布正式版"
             else
-              TYPE="nightly"; TAG="nightly-$(date +%Y%m%d)"
+              TYPE="nightly"; TAG="nightly-$TAG_DATE"
               echo "无上游新正式版，本次发布 nightly ($TAG)"
             fi
           fi
@@ -117,7 +135,9 @@ jobs:
 
           git add -A
           if ! git diff --cached --quiet; then
-            git commit -m "chore: 同步上游源码 $(date +%Y%m%d) [skip ci]"
+            # commit 日期用上游代码日期（%cs），延迟 run 时避免 message 日期与代码日期错位
+            UPSTREAM_DATE=$(git log -1 --format=%cs upstream/master | tr -d '-')
+            git commit -m "chore: 同步上游源码 ${UPSTREAM_DATE:-$(date +%Y%m%d)} [skip ci]"
             git push origin master
             echo "changed=true" >> "$GITHUB_OUTPUT"
             echo "✅ 已同步上游并推送"
@@ -131,8 +151,10 @@ jobs:
         if: github.event.inputs.build_only != 'true'
         run: |
           python scripts/scan_strings.py "$GITHUB_WORKSPACE" --output pending.json || true
-          if [ -s pending.json ]; then
-            CNT=$(python -c "import json;print(len(json.load(open('pending.json'))))")
+          # ⚠️ 无新字符串时 pending.json 也是非空文件（空数组 []），`-s` 文件判断会永远误报 has_new=true
+          # （2026-08-23 上游零提交仍发 nightly 事故根因），必须按 JSON 数组长度判断
+          CNT=$(python -c "import json;print(len(json.load(open('pending.json'))))" 2>/dev/null || echo 0)
+          if [ "${CNT:-0}" -gt 0 ] 2>/dev/null; then
             echo "has_new=true" >> "$GITHUB_OUTPUT"
             echo "新增待翻译字符串: $CNT"
           else
@@ -167,10 +189,15 @@ jobs:
             git config user.name "deYangar"
             git config user.email "70438628+deYangar@users.noreply.github.com"
             git add -A
-            git commit -m "chore: 同步上游文档更新 $(date +%Y%m%d) [skip ci]" || echo "无变更"
-            git push origin master || echo "push 失败（可忽略）"
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "✅ 已同步上游文档更新"
+            # changed 信号必须与实际产生 commit 绑定，避免脚本误报 exit 2 但 git 无实际 diff 时假阳性
+            if git commit -m "chore: 同步上游文档更新 $(date +%Y%m%d) [skip ci]"; then
+              git push origin master || echo "push 失败（可忽略）"
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+              echo "✅ 已同步上游文档更新"
+            else
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              echo "ℹ️ sync_docs 要求提交但无实际 diff，按无变化处理"
+            fi
           elif [ $EXIT -eq 0 ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "ℹ️ 上游文档无变化"
@@ -192,10 +219,15 @@ jobs:
             git config user.name "deYangar"
             git config user.email "70438628+deYangar@users.noreply.github.com"
             git add setup_windows.bat docs/upstream_ref/setup_windows.bat
-            git commit -m "chore: 同步上游 setup_windows.bat 更新并重新汉化 $(date +%Y%m%d) [skip ci]" || echo "无变更"
-            git push origin master || echo "push 失败（可忽略）"
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "✅ 已同步并汉化 setup_windows.bat"
+            # changed 信号必须与实际产生 commit 绑定（同 docs 步骤）
+            if git commit -m "chore: 同步上游 setup_windows.bat 更新并重新汉化 $(date +%Y%m%d) [skip ci]"; then
+              git push origin master || echo "push 失败（可忽略）"
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+              echo "✅ 已同步并汉化 setup_windows.bat"
+            else
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              echo "ℹ️ translate_setup_bat 要求提交但无实际 diff，按无变化处理"
+            fi
           elif [ $EXIT -eq 0 ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "ℹ️ 上游 setup_windows.bat 无变化"
@@ -278,13 +310,14 @@ jobs:
           TYPE: ${{ needs.sync.outputs.release_type }}
         run: |
           ZIP=$(ls dist/*.7z | head -1)
-          DATE=$(date +%Y-%m-%d)
+          # TITLE 日期从 TAG 派生（tag 用上游代码日期，与运行日期可能不一致）
+          DATE_DISP=$(echo "$TAG" | sed -E 's/^(nightly|beta)-([0-9]{4})([0-9]{2})([0-9]{2})(-[0-9]+)?$/\2-\3-\4/')
           if [ "$TYPE" = "nightly" ]; then
-            TITLE="Nightly $DATE"
+            TITLE="Nightly $DATE_DISP"
             NOTES="自动构建的每日预览版（上游 master + 汉化）"
             PRERELEASE=true
           elif [ "$TYPE" = "beta" ]; then
-            TITLE="Beta $DATE"
+            TITLE="Beta $DATE_DISP"
             NOTES="测试版（上游 master + 汉化）"
             PRERELEASE=true
           else
@@ -292,13 +325,31 @@ jobs:
             NOTES="正式版（上游 $TAG + 汉化）"
             PRERELEASE=false
           fi
-          # nightly/beta: 每次带日期新建，保留历史
+          # nightly/beta: 每次带日期新建，保留历史；同 tag 已存在（同日重复触发/上游同日多轮提交）
+          # 则加 -2/-3 序号重试，全占用则跳过（不标红失败）
           # 正式版: 必须新建，已存在则报错退出（绝不覆盖）
           if [ "$TYPE" = "release" ]; then
             EXISTING=$(gh release view "$TAG" --repo "${{ github.repository }}" --json tagName --jq '.tagName' 2>/dev/null || echo "")
             if [ -n "$EXISTING" ]; then
               echo "⚠️ 正式版 $TAG 已存在，拒绝覆盖！如需重新发布请先手动删除。"
               exit 1
+            fi
+          else
+            FOUND=""
+            for SUFFIX in "" "-2" "-3" "-4" "-5"; do
+              CAND="$TAG$SUFFIX"
+              if ! gh release view "$CAND" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+                if [ -n "$SUFFIX" ]; then
+                  echo "ℹ️ $TAG 已存在，改用 $CAND 发布"
+                  TAG="$CAND"
+                fi
+                FOUND=1
+                break
+              fi
+            done
+            if [ -z "$FOUND" ]; then
+              echo "⚠️ $TAG 及 -2~-5 均已被占用，本次跳过发布"
+              exit 0
             fi
           fi
           gh release create "$TAG" "$ZIP" --repo "${{ github.repository }}" --title "$TITLE" --notes "$NOTES" --prerelease="$PRERELEASE"
