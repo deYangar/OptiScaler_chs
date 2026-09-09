@@ -496,7 +496,7 @@ static const QuirkEntry quirkTable[] = {
 
     // Disable FSR2/3 inputs due to crashing/custom implementations
     //
-    // Forgive Me Father 2, Revenge of the Savage Planet, F1 22, Metal Eden, Until Dawn, Bloomand Rage, 171, Microsoft
+    // Forgive Me Father 2, Revenge of the Savage Planet, F1 22, Metal Eden, Until Dawn, Bloom and Rage, 171, Microsoft
     // Flight Simulator (2020) - MSFS2020, Banishers: Ghosts of New Eden,Rune Factory Guardians of Azuma, Supraworld, F1
     // Manager 2024, Keeper (+ WinGDK PaganIdol version), Assetto Corsa Rally
     QUIRK_ENTRY_UE(fmf2, GameQuirk::DisableFSR2Inputs, GameQuirk::DisableFSR3Inputs),
