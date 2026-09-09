@@ -1298,4 +1298,7 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Per_shader_breakdown)] = "各着色器细分：";
     table[static_cast<int>(LK::UI_S_2f_ms)] = "%.2f ms";
     table[static_cast<int>(LK::UI_Extra_shaders)] = "额外着色器：";
+    table[static_cast<int>(LK::UI_DLSSG_output_nCan_be_used_in_conjuction_with_Nukem_s_for_exa)] = "DLSSG 输出
+例如可搭配 Nukem's 使用";
+    table[static_cast<int>(LK::UI_FSR_3_MFG_mod)] = "FSR 3 MFG 模组";
 }

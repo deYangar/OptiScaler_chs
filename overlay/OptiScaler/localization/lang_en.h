@@ -1286,4 +1286,6 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Per_shader_breakdown)] = "Per shader breakdown:";
     table[static_cast<int>(LK::UI_S_2f_ms)] = "%.2f ms";
     table[static_cast<int>(LK::UI_Extra_shaders)] = "Extra shaders:";
+    table[static_cast<int>(LK::UI_DLSSG_output_nCan_be_used_in_conjuction_with_Nukem_s_for_exa)] = "DLSSG output\nCan be used in conjuction with Nukem's for example";
+    table[static_cast<int>(LK::UI_FSR_3_MFG_mod)] = "FSR 3 MFG mod";
 }

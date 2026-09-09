@@ -1116,5 +1116,7 @@
  "(Current sharpness: disabled)": "UI_Current_sharpness_disabled",
  "Per shader breakdown:": "UI_Per_shader_breakdown",
  "%.2f ms": "UI_S_2f_ms",
- "Extra shaders:": "UI_Extra_shaders"
+ "Extra shaders:": "UI_Extra_shaders",
+ "DLSSG output\\nCan be used in conjuction with Nukem's for example": "UI_DLSSG_output_nCan_be_used_in_conjuction_with_Nukem_s_for_exa",
+ "FSR 3 MFG mod": "UI_FSR_3_MFG_mod"
 }

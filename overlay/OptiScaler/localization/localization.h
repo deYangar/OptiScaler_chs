@@ -1280,6 +1280,8 @@ enum class LK {
     UI_Per_shader_breakdown,
     UI_S_2f_ms,
     UI_Extra_shaders,
+    UI_DLSSG_output_nCan_be_used_in_conjuction_with_Nukem_s_for_exa,
+    UI_FSR_3_MFG_mod,
     COUNT
 };
 
