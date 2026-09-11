@@ -342,6 +342,8 @@ jobs:
                 if [ -n "$SUFFIX" ]; then
                   echo "ℹ️ $TAG 已存在，改用 $CAND 发布"
                   TAG="$CAND"
+                  # 标题同步带序号，否则同日多轮发布会出现两个同名 Nightly（nightly-20260905-2 事故）
+                  TITLE="$TITLE ($(echo "$SUFFIX" | tr -d '-'))"
                 fi
                 FOUND=1
                 break

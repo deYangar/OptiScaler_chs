@@ -119,6 +119,19 @@ def key_from_en(en):
         name = 'S_' + name
     return f'UI_{name}'
 
+def c_lit(s):
+    """译文 → C 字符串字面量内容。
+    DeepSeek 的 JSON 响应经 json.loads 后 \\n 会变成真实换行，直接写进
+    头文件会让字符串常量跨行断掉（C2001，2026-09-10 nightly 编译事故）。
+    模型也可能输出字面 \\n，先归一成真实换行再统一转义。
+    仅用于 zh 侧：en 侧字符串本身就是上游 C 源码的字面量片段，透传即可。"""
+    s = s.replace('\\n', '\n').replace('\\t', '\t')
+    return (s.replace('\\', '\\\\')
+             .replace('"', '\\"')
+             .replace('\n', '\\n')
+             .replace('\r', '\\r')
+             .replace('\t', '\\t'))
+
 def main():
     args = sys.argv[1:]
     inp = None
@@ -179,7 +192,7 @@ def main():
             c = f.read()
         lines = []
         for k, en, zh in new_entries:
-            v = zh if is_zh else en
+            v = c_lit(zh) if is_zh else en
             lines.append(f'    table[static_cast<int>(LK::{k})] = "{v}";')
         # 先剥掉已有的结尾 '}'（防止重复运行导致结构错乱：'}' 被夹在中间）
         c = c.rstrip()
