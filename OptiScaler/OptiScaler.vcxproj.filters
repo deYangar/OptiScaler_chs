@@ -407,7 +407,13 @@
     <ClInclude Include="framegen\IFGFeature_Dx12.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="hudfix\Hudfix_Dx11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="hudfix\Hudfix_Dx12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource_tracking\ResTrack_dx11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource_tracking\ResTrack_dx12.h">
@@ -1187,7 +1193,13 @@
     <ClCompile Include="framegen\IFGFeature_Dx12.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="hudfix\Hudfix_Dx11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="hudfix\Hudfix_Dx12.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="resource_tracking\ResTrack_dx11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="resource_tracking\ResTrack_dx12.cpp">

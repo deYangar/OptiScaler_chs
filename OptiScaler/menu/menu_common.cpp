@@ -1085,6 +1085,8 @@ inline static std::string GetSourceString(UINT source)
         return "SCR";
     case 64:
         return "SGR";
+    case 128:
+        return "OMUAV";
     default:
         return std::format("{}", source);
     }
@@ -1094,6 +1096,8 @@ inline static std::string GetDispatchString(UINT source)
 {
     switch (source)
     {
+    case 0:
+        return "-";
     case 512:
         return "DI";
     case 1024:
@@ -3390,8 +3394,6 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
 
             if (maxInterpolationCount >= 1)
             {
-                const char* intModes[] = { "Default", "Off", "2X", "3X", "4X", "5X", "6X" };
-
                 // Map config value to UI index
                 int currentSet = 0;
                 if (config->FGDLSSGOverrideInterpolationCount.has_value())
@@ -3399,15 +3401,29 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
                     currentSet = config->FGDLSSGOverrideInterpolationCount.value() + 1;
                 }
 
-                const char* currentIntCount = intModes[currentSet];
+                std::string currentIntCountStr;
+                if (currentSet == 0)
+                    currentIntCountStr = "Default";
+                else if (currentSet == 1)
+                    currentIntCountStr = "Off";
+                else
+                    currentIntCountStr = std::to_string(currentSet) + "X";
 
                 ImGui::PushItemWidth(95.0f * menuResScale);
 
-                if (ImGui::BeginCombo("Override DLSSG Ratio", currentIntCount))
+                if (ImGui::BeginCombo("Override DLSSG Ratio", currentIntCountStr.c_str()))
                 {
                     for (int i = 0; i <= maxInterpolationCount + 1; i++)
                     {
-                        if (ImGui::Selectable(intModes[i], (currentSet == i)))
+                        std::string modeStr;
+                        if (i == 0)
+                            modeStr = "Default";
+                        else if (i == 1)
+                            modeStr = "Off";
+                        else
+                            modeStr = std::to_string(i) + "X";
+
+                        if (ImGui::Selectable(modeStr.c_str(), (currentSet == i)))
                         {
                             if (i == 0)
                             {
@@ -4013,17 +4029,19 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
         {
             ImGui::SameLine(0.0f, 16.0f);
 
-            const char* intModes[] = { "2X", "3X", "4X", "5X", "6X" };
             auto currentSet = fgOutput->GetInterpolatedFrameCount() - 1;
-            auto currentIntCount = intModes[currentSet];
+
+            std::string currentIntCountStr = std::to_string(currentSet + 2) + "X";
 
             ImGui::PushItemWidth(95.0f * menuResScale);
 
-            if (ImGui::BeginCombo("MFG", currentIntCount))
+            if (ImGui::BeginCombo("MFG", currentIntCountStr.c_str()))
             {
                 for (int i = 0; i < maxInterpolationCount; i++)
                 {
-                    if (ImGui::Selectable(intModes[i], (currentSet == i)))
+                    std::string modeStr = std::to_string(i + 2) + "X";
+
+                    if (ImGui::Selectable(modeStr.c_str(), (currentSet == i)))
                     {
                         LOG_DEBUG("XeFG Interpolation Count set to: {}", i + 1);
                         state.fgChanged = true;
@@ -4177,17 +4195,19 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
 
             ImGui::BeginDisabled(config->FGDLSSGForceDMFG.value_or_default());
 
-            const char* intModes[] = { "2X", "3X", "4X", "5X", "6X" };
             auto currentSet = fgOutput->GetInterpolatedFrameCount() - 1;
-            auto currentIntCount = intModes[currentSet];
+
+            std::string currentIntCountStr = std::to_string(currentSet + 2) + "X";
 
             ImGui::PushItemWidth(95.0f * menuResScale);
 
-            if (ImGui::BeginCombo("MFG", currentIntCount))
+            if (ImGui::BeginCombo("MFG", currentIntCountStr.c_str()))
             {
                 for (int i = 0; i < maxInterpolationCount; i++)
                 {
-                    if (ImGui::Selectable(intModes[i], (currentSet == i)))
+                    std::string modeStr = std::to_string(i + 2) + "X";
+
+                    if (ImGui::Selectable(modeStr.c_str(), (currentSet == i)))
                     {
                         LOG_DEBUG("DLSSG Interpolation Count set to: {}", i + 1);
                         config->FGDLSSGInterpolationCount = i + 1;
@@ -4256,8 +4276,12 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
              (state.activeFgOutput == FGOutput::XeFG && XeFGProxy::Module() != nullptr) ||
              (state.activeFgOutput == FGOutput::DLSSG && StreamlineProxy::Module() != nullptr)))
         {
-            if (!Config::Instance()->FGDisableHUDFix.value_or_default() &&
-                state.swapchainInteropApi == SwapchainInteropApi::None)
+            const bool dx11HudfixTracking = state.swapchainInteropApi == SwapchainInteropApi::Dx11wDx12;
+            const bool hudfixTrackingSupported =
+                !Config::Instance()->FGDisableHUDFix.value_or_default() &&
+                (state.swapchainInteropApi == SwapchainInteropApi::None || dx11HudfixTracking);
+
+            if (hudfixTrackingSupported)
             {
                 bool fgHudfix = config->FGHUDFix.value_or_default();
 
@@ -4342,8 +4366,7 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
             {
                 ScopedIndent indent {};
 
-                if (!Config::Instance()->FGDisableHUDFix.value_or_default() &&
-                    state.swapchainInteropApi == SwapchainInteropApi::None)
+                if (hudfixTrackingSupported)
                 {
                     ImGui::Spacing();
 
@@ -4410,14 +4433,20 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
                     ImGui::Spacing();
                     if (ImGui::TreeNode("Tracking Settings"))
                     {
+                        ImGui::BeginDisabled(dx11HudfixTracking);
+
                         auto ath = config->FGAlwaysTrackHeaps.value_or_default();
                         if (ImGui::Checkbox("Always Track Heaps", &ath))
                         {
                             config->FGAlwaysTrackHeaps = ath;
                             LOG_DEBUG("Enabled set FGAlwaysTrackHeaps: {}", ath);
                         }
-                        ShowHelpMarker("Always track resources, might cause performance issues\n, but also might "
-                                       "fix HUDFix related crashes!");
+                        ImGui::EndDisabled();
+
+                        ShowHelpMarker(dx11HudfixTracking
+                                           ? "D3D12 only; not applicable to DX11."
+                                           : "Always track resources, might cause performance issues\n, but also might "
+                                             "fix HUDFix related crashes!");
 
                         auto disableRTV = config->FGHudfixDisableRTV.value_or_default();
                         if (ImGui::Checkbox("Disable RTV Tracking", &disableRTV))

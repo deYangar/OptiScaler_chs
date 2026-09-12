@@ -1,9 +1,12 @@
 #include "pch.h"
 
 #include "FSRFG_Dx12.h"
+
 #include <State.h>
 
+#include <hudfix/Hudfix_Dx11.h>
 #include <hudfix/Hudfix_Dx12.h>
+
 #include <menu/menu_overlay_dx.h>
 
 #include <magic_enum.hpp>
@@ -712,11 +715,27 @@ ffxReturnCode_t FSRFG_Dx12::DispatchCallback(ffxDispatchDescFrameGeneration* par
         {
             auto cmdList = (ID3D12GraphicsCommandList*) params->commandList;
 
+            // Do not blindly trust the cached _device for callback helper creation
+            ID3D12Device* callbackDevice = nullptr;
+            HRESULT callbackDeviceResult = E_POINTER;
+
+            if (cmdList != nullptr)
+                callbackDeviceResult = cmdList->GetDevice(IID_PPV_ARGS(&callbackDevice));
+
+            if (callbackDevice == nullptr && presentWithHud != nullptr)
+                callbackDeviceResult = presentWithHud->GetDevice(IID_PPV_ARGS(&callbackDevice));
+
+            if (callbackDevice == nullptr)
+            {
+                LOG_ERROR("FSRFG HUD helper failed to resolve callback D3D12 device: {:X}",
+                          (UINT) callbackDeviceResult);
+            }
+
             if (applyHudCutoff)
             {
-                if (_hudCopy[fIndex].get() == nullptr)
+                if (_hudCopy[fIndex].get() == nullptr && callbackDevice != nullptr)
                 {
-                    _hudCopy[fIndex] = std::make_unique<HudCopy_Dx12>("HudCopy", _device);
+                    _hudCopy[fIndex] = std::make_unique<HudCopy_Dx12>("HudCopy", callbackDevice);
                 }
 
                 if (auto hudCopy = _hudCopy[fIndex].get(); hudCopy && hudCopy->IsInit())
@@ -742,9 +761,12 @@ ffxReturnCode_t FSRFG_Dx12::DispatchCallback(ffxDispatchDescFrameGeneration* par
             {
                 if (hudlessResource != nullptr)
                 {
-                    if (_hudlessCompareCompute[fIndex].get() == nullptr)
+                    if (_hudlessCompareCompute[fIndex].get() == nullptr && callbackDevice != nullptr)
                     {
-                        _hudlessCompareCompute[fIndex] = std::make_unique<HCC_Dx12>("HudlessCompareCompute", _device);
+                        LOG_DEBUG("Creating HudlessCompareCompute on callback device {:X} (cached {:X})",
+                                  (size_t) callbackDevice, (size_t) _device);
+                        _hudlessCompareCompute[fIndex] =
+                            std::make_unique<HCC_Dx12>("HudlessCompareCompute", callbackDevice);
                     }
 
                     if (auto hudlessCompareCompute = _hudlessCompareCompute[fIndex].get();
@@ -756,6 +778,8 @@ ffxReturnCode_t FSRFG_Dx12::DispatchCallback(ffxDispatchDescFrameGeneration* par
                     }
                 }
             }
+
+            SAFE_RELEASE(callbackDevice);
         }
     }
 
@@ -1342,6 +1366,7 @@ void FSRFG_Dx12::EvaluateState(ID3D12Device* device, FG_Constants& fgConstants)
 
         State::Instance().clearCapturedHudlesses = true;
         Hudfix_Dx12::ResetCounters();
+        Hudfix_Dx11::ResetCounters();
     }
 
     if (State::Instance().fgChanged)
@@ -1351,6 +1376,7 @@ void FSRFG_Dx12::EvaluateState(ID3D12Device* device, FG_Constants& fgConstants)
         State::Instance().fgChanged = false;
 
         Hudfix_Dx12::ResetCounters();
+        Hudfix_Dx11::ResetCounters();
 
         // Pause for 10 frames
         UpdateTarget();
@@ -1367,6 +1393,9 @@ void FSRFG_Dx12::ReleaseObjects()
 {
     for (size_t i = 0; i < BUFFER_COUNT; i++)
     {
+        _hudCopy[i].reset();
+        _hudlessCompareCompute[i].reset();
+
         SAFE_RELEASE(_fgCommandAllocator[i]);
         SAFE_RELEASE(_fgCommandList[i]);
         SAFE_RELEASE(_uiCommandAllocator[i]);

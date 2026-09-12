@@ -4,6 +4,8 @@
 #include "MathUtils.h"
 
 #include <with_dx12/with_dx12.h>
+#include <hudfix/Hudfix_Dx11.h>
+#include <resource_tracking/ResTrack_dx11.h>
 #include "shaders/depth_scale/DS_Dx12.h"
 
 using namespace OptiMath;
@@ -63,14 +65,26 @@ void UpscalerInputsDx11wDx12::Init(ID3D11Device* dx11Device, ID3D11DeviceContext
     _dx12CommandQueue = WithDx12::GetD3D12CommandQueue();
 
     Dx11WithDx12::Init(dx11Device, dx11Context);
+
+    if (dx11Device != nullptr && !Config::Instance()->FGDisableHUDFix.value_or_default())
+        ResTrack_Dx11::HookDevice(dx11Device);
 }
 
-void UpscalerInputsDx11wDx12::Reset() {}
+void UpscalerInputsDx11wDx12::Reset()
+{
+    ResTrack_Dx11::ClearPossibleHudless();
+    Hudfix_Dx11::ResetCounters();
+}
 
 void UpscalerInputsDx11wDx12::UpscaleStart(NVSDK_NGX_Parameter* InParameters, IFeature_Dx11* feature)
 {
+    Hudfix_Dx11::SetSkipStatus(true);
+
     if (InParameters == nullptr || feature == nullptr)
+    {
+        Hudfix_Dx11::SetSkipStatus(false);
         return;
+    }
 
     // FSR Camera values
     float cameraNear = 0.0f;
@@ -191,6 +205,8 @@ void UpscalerInputsDx11wDx12::UpscaleStart(NVSDK_NGX_Parameter* InParameters, IF
     fg->SetReset(reset);
     fg->SetInterpolationRect(feature->DisplayWidth(), feature->DisplayHeight());
 
+    Hudfix_Dx11::UpscaleStart();
+
     if (State::Instance().isShuttingDown || !fg->IsActive() || !Config::Instance()->FGEnabled.value_or_default() ||
         State::Instance().currentSwapchain == nullptr)
     {
@@ -292,6 +308,8 @@ void UpscalerInputsDx11wDx12::UpscaleStart(NVSDK_NGX_Parameter* InParameters, IF
 
 void UpscalerInputsDx11wDx12::UpscaleEnd(NVSDK_NGX_Parameter* InParameters, IFeature_Dx11* feature)
 {
+    Hudfix_Dx11::SetSkipStatus(false);
+
     if (InParameters == nullptr || feature == nullptr)
         return;
 
@@ -302,5 +320,34 @@ void UpscalerInputsDx11wDx12::UpscaleEnd(NVSDK_NGX_Parameter* InParameters, IFea
 
     if (fg->IsActive() && Config::Instance()->FGEnabled.value_or_default() &&
         State::Instance().currentSwapchain != nullptr)
-        LOG_DEBUG("(FG Dx11wDx12) running, frame: {}", feature->FrameCount());
+    {
+        if (Config::Instance()->FGHUDFix.value_or_default())
+        {
+            Hudfix_Dx11::UpscaleEnd(feature->FrameCount(), State::Instance().lastFGFrameTime);
+
+            ID3D11Resource* output = nullptr;
+            if (InParameters->Get(NVSDK_NGX_Parameter_Output, &output) != NVSDK_NGX_Result_Success)
+                InParameters->Get(NVSDK_NGX_Parameter_Output, (void**) &output);
+
+            if (output != nullptr)
+            {
+                ID3D11Texture2D* outputTexture = nullptr;
+                if (SUCCEEDED(output->QueryInterface(IID_PPV_ARGS(&outputTexture))) && outputTexture != nullptr)
+                {
+                    Dx11ResourceInfo info = {};
+                    if (Hudfix_Dx11::FillResourceInfo(outputTexture, Dx11ResourceType::UAV, Dx11CaptureInfo::Upscaler,
+                                                      &info))
+                    {
+                        Hudfix_Dx11::CheckForHudless(Dx11WithDx12::GetD3D11DeviceContext(), &info, true);
+                    }
+
+                    outputTexture->Release();
+                }
+            }
+        }
+        else
+        {
+            LOG_DEBUG("(FG Dx11wDx12) running, frame: {}", feature->FrameCount());
+        }
+    }
 }

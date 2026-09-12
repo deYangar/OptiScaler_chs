@@ -8,6 +8,8 @@
 
 #include <wrapped/wrapped_swapchain.h>
 
+#include <resource_tracking/ResTrack_dx11.h>
+
 #include <detours/detours.h>
 
 #include <d3d11_4.h>
@@ -88,7 +90,15 @@ static inline D3D11_FILTER UpgradeToAF(D3D11_FILTER f)
 
 static void HookToDeviceLocal(ID3D11Device* InDevice)
 {
-    if (o_CreateSamplerState != nullptr || InDevice == nullptr)
+    if (InDevice == nullptr)
+        return;
+
+    if (State::Instance().activeFgInput == FGInput::Upscaler && !Config::Instance()->FGDisableHUDFix.value_or_default())
+    {
+        ResTrack_Dx11::HookDevice(InDevice);
+    }
+
+    if (o_CreateSamplerState != nullptr)
         return;
 
     LOG_DEBUG("Dx11");
@@ -564,6 +574,8 @@ void D3D11Hooks::Hook(HMODULE dx11Module)
 
 void D3D11Hooks::Unhook()
 {
+    ResTrack_Dx11::ReleaseHooks();
+
     DetourTransactionBegin();
     DetourUpdateThread(GetCurrentThread());
 

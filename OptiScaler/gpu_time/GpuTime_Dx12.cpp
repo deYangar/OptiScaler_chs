@@ -7,6 +7,12 @@
 
 GpuTime_Dx12::GpuTime_Dx12(ID3D12Device* device)
 {
+    if (device == nullptr)
+    {
+        LOG_ERROR("GpuTime_Dx12 created with nullptr device");
+        return;
+    }
+
     // Create query heap for Start and End timestamps per buffer
     D3D12_QUERY_HEAP_DESC queryHeapDesc = {};
     queryHeapDesc.Count = QUERY_BUFFER_COUNT * 2;
