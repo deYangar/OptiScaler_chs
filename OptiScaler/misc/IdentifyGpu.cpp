@@ -124,9 +124,10 @@ std::vector<GpuInformation> IdentifyGpu::checkGpuInfo()
                         if (!pvkGetProps)
                         {
                             HMODULE hVulkan = GetModuleHandleA("vulkan-1.dll");
-                            pvkGetProps = hVulkan ? (PFN_vkGetPhysicalDeviceProperties) GetProcAddress(
-                                                        hVulkan, "vkGetPhysicalDeviceProperties")
-                                                  : nullptr;
+                            pvkGetProps = hVulkan
+                                              ? (PFN_vkGetPhysicalDeviceProperties) KernelBaseProxy::GetProcAddress_()(
+                                                    hVulkan, "vkGetPhysicalDeviceProperties")
+                                              : nullptr;
                         }
 
                         if (pvkGetProps)
@@ -189,6 +190,16 @@ std::vector<GpuInformation> IdentifyGpu::checkGpuInfo()
         if (gpuInfo.vendorId == VendorId::Nvidia)
         {
             queryNvapi(gpuInfo);
+
+            // Attempt to use real DLSSG by default on Ada+
+            if (gpuInfo.nvidiaArchInfo.architecture_id >= NV_GPU_ARCHITECTURE_AD100 &&
+                !Config::Instance()->FGNvngxReplacement.has_value())
+            {
+                Config::Instance()->FGNvngxReplacement = FGNvngxReplacement::None;
+
+                if (State::Instance().activeFgOutput == FGOutput::DLSSG)
+                    State::Instance().activeFgNvngx = FGNvngxReplacement::None;
+            }
         }
     }
 
