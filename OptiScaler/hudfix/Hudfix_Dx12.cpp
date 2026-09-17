@@ -79,76 +79,7 @@ inline static bool CompareResourceFormats(DXGI_FORMAT sc, DXGI_FORMAT hudless)
 
     auto scGroup = GetFormatGroup(sc);
     auto hudlessGroup = GetFormatGroup(hudless);
-    return scGroup == hudlessGroup;
-}
-
-bool Hudfix_Dx12::CreateObjects()
-{
-    if (_commandQueue != nullptr)
-        return true;
-
-    do
-    {
-        HRESULT result;
-
-        for (size_t i = 0; i < BUFFER_COUNT; i++)
-        {
-            result = State::Instance().currentD3D12Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                                                                  IID_PPV_ARGS(&_commandAllocator[i]));
-            if (result != S_OK)
-            {
-                LOG_ERROR("CreateCommandAllocator: {:X}", (unsigned long) result);
-                break;
-            }
-            _commandAllocator[i]->SetName(L"Hudfix CommandAllocator");
-
-            result = State::Instance().currentD3D12Device->CreateCommandList(
-                0, D3D12_COMMAND_LIST_TYPE_DIRECT, _commandAllocator[i], NULL, IID_PPV_ARGS(&_commandList[i]));
-            if (result != S_OK)
-            {
-                LOG_ERROR("CreateCommandList: {:X}", (unsigned long) result);
-                break;
-            }
-
-            _commandList[i]->SetName(L"Hudfix CommandList");
-
-            result = _commandList[i]->Close();
-            if (result != S_OK)
-            {
-                LOG_ERROR("_hudlessCommandList->Close: {:X}", (unsigned long) result);
-                break;
-            }
-
-            result =
-                State::Instance().currentD3D12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&_fence[i]));
-            if (result != S_OK)
-            {
-                LOG_ERROR("CreateFence: {0:X}", (unsigned long) result);
-                break;
-            }
-        }
-
-        // Create a command queue for frame generation
-        D3D12_COMMAND_QUEUE_DESC queueDesc = {};
-        queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-        queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-        queueDesc.NodeMask = 0;
-        queueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_HIGH;
-
-        HRESULT hr = State::Instance().currentD3D12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&_commandQueue));
-        if (hr != S_OK)
-        {
-            LOG_ERROR("CreateCommandQueue: {:X}", (unsigned long) hr);
-            break;
-        }
-
-        _commandQueue->SetName(L"Hudfix CommandQueue");
-
-        return true;
-
-    } while (false);
-
-    return false;
+    return scGroup >= 0 && scGroup == hudlessGroup;
 }
 
 bool Hudfix_Dx12::CreateBufferResource(ID3D12Device* InDevice, ResourceInfo* InSource, D3D12_RESOURCE_STATES InState,
@@ -342,8 +273,8 @@ bool Hudfix_Dx12::CheckResource(ResourceInfo* resource)
 
     if (State::Instance().fgOnlyUseCapturedResources)
     {
-        auto result = _captureList.find(resource->buffer) != _captureList.end();
-        return result;
+        std::lock_guard<std::mutex> lock(_captureMutex);
+        return _captureList.find(resource->buffer) != _captureList.end();
     }
 
     auto& s = State::Instance();
@@ -358,8 +289,11 @@ bool Hudfix_Dx12::CheckResource(ResourceInfo* resource)
         return false;
     }
 
-    // Get resource info
-    auto resDesc = resource->buffer->GetDesc();
+    D3D12_RESOURCE_DESC resDesc = {};
+    resDesc.Width = resource->width;
+    resDesc.Height = resource->height;
+    resDesc.Format = resource->format;
+    resDesc.Flags = resource->flags;
 
     // dimensions not match
     uint32_t width = s.currentSwapchainDesc.BufferDesc.Width;
@@ -473,6 +407,8 @@ void Hudfix_Dx12::UpscaleStart()
 
     if (State::Instance().clearCapturedHudlesses)
     {
+        std::lock_guard<std::mutex> lock(_checkMutex);
+
         LOG_DEBUG("ClearCapturedHudlesses");
         State::Instance().clearCapturedHudlesses = false;
         State::Instance().capturedHudlesses.clear();
@@ -563,6 +499,9 @@ bool Hudfix_Dx12::CheckForHudless(ID3D12GraphicsCommandList* cmdList, ResourceIn
             break;
         }
 
+        LOG_DEBUG("Waiting _checkMutex");
+        std::lock_guard<std::mutex> lock(_checkMutex);
+
         CapturedHudlessInfo* capturedHudlessInfo = nullptr;
         auto it = s.capturedHudlesses.find(resource->buffer);
         if (it != s.capturedHudlesses.end())
@@ -575,10 +514,6 @@ bool Hudfix_Dx12::CheckForHudless(ID3D12GraphicsCommandList* cmdList, ResourceIn
                 break;
             }
         }
-
-        // Prevent double capture
-        LOG_DEBUG("Waiting _checkMutex");
-        std::lock_guard<std::mutex> lock(_checkMutex);
 
         if (!ignoreBlocked && Config::Instance()->FGResourceBlocking.value_or_default())
         {
@@ -680,12 +615,6 @@ bool Hudfix_Dx12::CheckForHudless(ID3D12GraphicsCommandList* cmdList, ResourceIn
 
         LOG_TRACE("Capture resource: {:X}, index: {}", (size_t) resource->buffer, fIndex);
 
-        if (_commandQueue == nullptr && !CreateObjects())
-        {
-            LOG_WARN("Can't create command queue!");
-            return false;
-        }
-
         auto scWidth = s.currentSwapchainDesc.BufferDesc.Width;
         auto scHeight = s.currentSwapchainDesc.BufferDesc.Height;
 
@@ -699,13 +628,13 @@ bool Hudfix_Dx12::CheckForHudless(ID3D12GraphicsCommandList* cmdList, ResourceIn
 
                 // Using state D3D12_RESOURCE_STATE_VIDEO_ENCODE_WRITE as skip flag
                 if (state != D3D12_RESOURCE_STATE_VIDEO_ENCODE_WRITE)
-                    ResourceBarrier(cmdList, resource->buffer, resource->state, D3D12_RESOURCE_STATE_COPY_SOURCE);
+                    ResourceBarrier(cmdList, resource->buffer, state, D3D12_RESOURCE_STATE_COPY_SOURCE);
 
                 cmdList->CopyResource(_captureBuffer[fIndex], resource->buffer);
 
                 // Using state D3D12_RESOURCE_STATE_VIDEO_ENCODE_WRITE as skip flag
                 if (state != D3D12_RESOURCE_STATE_VIDEO_ENCODE_WRITE)
-                    ResourceBarrier(cmdList, resource->buffer, D3D12_RESOURCE_STATE_COPY_SOURCE, resource->state);
+                    ResourceBarrier(cmdList, resource->buffer, D3D12_RESOURCE_STATE_COPY_SOURCE, state);
 
                 LOG_DEBUG("Copy created");
             }
@@ -744,22 +673,14 @@ bool Hudfix_Dx12::CheckForHudless(ID3D12GraphicsCommandList* cmdList, ResourceIn
                 srcBox.front = 0;
                 srcBox.back = 1;
 
-                if (scWidth > resource->width || scHeight > resource->height)
-                {
-                    srcBox.right = static_cast<UINT>(resource->width);
-                    srcBox.bottom = resource->height;
-                    UINT top = (scHeight - resource->height) / 2;
-                    UINT left = static_cast<UINT>((scWidth - resource->width) / 2);
+                const UINT copyWidth = static_cast<UINT>(resource->width < scWidth ? resource->width : scWidth);
+                const UINT copyHeight = resource->height < scHeight ? resource->height : scHeight;
+                srcBox.right = copyWidth;
+                srcBox.bottom = copyHeight;
 
-                    cmdList->CopyTextureRegion(&dstLocation, left, top, 0, &srcLocation, &srcBox);
-                }
-                else
-                {
-                    srcBox.right = scWidth;
-                    srcBox.bottom = scHeight;
-
-                    cmdList->CopyTextureRegion(&dstLocation, 0, 0, 0, &srcLocation, &srcBox);
-                }
+                const UINT left = (scWidth - copyWidth) / 2;
+                const UINT top = (scHeight - copyHeight) / 2;
+                cmdList->CopyTextureRegion(&dstLocation, left, top, 0, &srcLocation, &srcBox);
 
                 // Using state D3D12_RESOURCE_STATE_VIDEO_ENCODE_WRITE as skip flag
                 if (state != D3D12_RESOURCE_STATE_VIDEO_ENCODE_WRITE)
@@ -911,6 +832,9 @@ bool Hudfix_Dx12::CheckForHudless(ID3D12GraphicsCommandList* cmdList, ResourceIn
 
 void Hudfix_Dx12::ResetCounters()
 {
+    std::lock_guard<std::mutex> checkLock(_checkMutex);
+    std::lock_guard<std::mutex> counterLock(_counterMutex);
+
     _fgCounter = 0;
     _upscaleCounter = 0;
 
