@@ -141,6 +141,38 @@ inline SpinLock _trackedResourcesMutex;
 inline std::mutex _trackedResourcesMutex;
 #endif
 
+// Smaller info for descriptor tracking
+struct DescriptorResourceInfo
+{
+    ID3D12Resource* buffer = nullptr;
+    UINT64 width = 0;
+    UINT height = 0;
+    DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN;
+    D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
+    ResourceType type = SRV;
+
+    void Store(const ResourceInfo& source) noexcept
+    {
+        buffer = source.buffer;
+        width = source.width;
+        height = source.height;
+        format = source.format;
+        flags = source.flags;
+        type = source.type;
+    }
+
+    void Load(ResourceInfo& target) const noexcept
+    {
+        target = {};
+        target.buffer = buffer;
+        target.width = width;
+        target.height = height;
+        target.format = format;
+        target.flags = flags;
+        target.type = type;
+    }
+};
+
 struct HeapInfo : public std::enable_shared_from_this<HeapInfo>
 {
     // Avoiding one lock object per descriptor
@@ -157,7 +189,7 @@ struct HeapInfo : public std::enable_shared_from_this<HeapInfo>
     UINT numDescriptors = 0;
     UINT increment = 0;
     UINT type = 0;
-    std::shared_ptr<ResourceInfo[]> info;
+    std::shared_ptr<DescriptorResourceInfo[]> info;
     UINT lastOffset = 0;
     std::atomic<bool> active { true };
     std::atomic<uint64_t> version { 0 };
@@ -165,13 +197,10 @@ struct HeapInfo : public std::enable_shared_from_this<HeapInfo>
     HeapInfo(ID3D12DescriptorHeap* heap, SIZE_T cpuStart, SIZE_T cpuEnd, SIZE_T gpuStart, SIZE_T gpuEnd,
              UINT numResources, UINT increment, UINT type)
         : heap(heap), cpuStart(cpuStart), cpuEnd(cpuEnd), gpuStart(gpuStart), gpuEnd(gpuEnd),
-          numDescriptors(numResources), increment(increment), type(type), info(new ResourceInfo[numResources])
+          numDescriptors(numResources), increment(increment), type(type), info(new DescriptorResourceInfo[numResources])
     {
         static std::atomic<uint64_t> globalHeapVersion { 1 };
         version.store(globalHeapVersion.fetch_add(1, std::memory_order_relaxed), std::memory_order_relaxed);
-
-        for (size_t i = 0; i < numDescriptors; i++)
-            info[i].buffer = nullptr;
     }
 
     bool GetCpuIndex(SIZE_T cpuHandle, UINT& index) const
@@ -256,7 +285,7 @@ struct HeapInfo : public std::enable_shared_from_this<HeapInfo>
         if (!active.load(std::memory_order_acquire) || info[index].buffer == nullptr)
             return false;
 
-        outInfo = info[index];
+        info[index].Load(outInfo);
 
 #ifdef DEBUG_TRACKING
         TestResource(&outInfo);
@@ -278,7 +307,7 @@ struct HeapInfo : public std::enable_shared_from_this<HeapInfo>
         if (!active.load(std::memory_order_acquire) || info[index].buffer == nullptr)
             return false;
 
-        outInfo = info[index];
+        info[index].Load(outInfo);
 
 #ifdef DEBUG_TRACKING
         TestResource(&outInfo);
@@ -307,12 +336,12 @@ struct HeapInfo : public std::enable_shared_from_this<HeapInfo>
         if (info[index].buffer != setInfo.buffer)
         {
             DetachFromOldResourceLocked(index);
-            info[index] = setInfo;
+            info[index].Store(setInfo);
             AttachToNewResourceLocked(index);
         }
         else
         {
-            info[index] = setInfo;
+            info[index].Store(setInfo);
         }
     }
 
@@ -336,12 +365,12 @@ struct HeapInfo : public std::enable_shared_from_this<HeapInfo>
         if (info[index].buffer != setInfo.buffer)
         {
             DetachFromOldResourceLocked(index);
-            info[index] = setInfo;
+            info[index].Store(setInfo);
             AttachToNewResourceLocked(index);
         }
         else
         {
-            info[index] = setInfo;
+            info[index].Store(setInfo);
         }
     }
 
@@ -387,7 +416,6 @@ struct HeapInfo : public std::enable_shared_from_this<HeapInfo>
             return;
 
         info[index].buffer = nullptr;
-        info[index].lastUsedFrame = 0;
     }
 
     bool DeactivateAndClear()
@@ -419,7 +447,6 @@ struct HeapInfo : public std::enable_shared_from_this<HeapInfo>
             }
 
             info[index].buffer = nullptr;
-            info[index].lastUsedFrame = 0;
         }
 
         info.reset();
@@ -445,7 +472,6 @@ struct HeapInfo : public std::enable_shared_from_this<HeapInfo>
         }
 
         info[index].buffer = nullptr;
-        info[index].lastUsedFrame = 0;
     }
 };
 
@@ -482,11 +508,7 @@ class ResTrack_Dx12
 {
   private:
     inline static bool _presentDone = true;
-    inline static std::mutex _drawMutex;
     inline static bool _useShards = false;
-
-    inline static std::mutex _resourceCommandListMutex;
-    inline static std::unordered_map<FG_ResourceType, ID3D12GraphicsCommandList*> _resourceCommandList[BUFFER_COUNT];
 
     inline static ULONG64 _lastHudlessFrame = 0;
     inline static std::mutex _hudlessMutex;
@@ -522,10 +544,6 @@ class ResTrack_Dx12
     static void hkDispatch(ID3D12GraphicsCommandList* This, UINT ThreadGroupCountX, UINT ThreadGroupCountY,
                            UINT ThreadGroupCountZ);
 
-    static void hkExecuteBundle(ID3D12GraphicsCommandList* This, ID3D12GraphicsCommandList* pCommandList);
-
-    static HRESULT hkClose(ID3D12GraphicsCommandList* This);
-
     static void hkCreateRenderTargetView(ID3D12Device* This, ID3D12Resource* pResource,
                                          D3D12_RENDER_TARGET_VIEW_DESC* pDesc,
                                          D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor);
@@ -536,19 +554,15 @@ class ResTrack_Dx12
                                             ID3D12Resource* pCounterResource, D3D12_UNORDERED_ACCESS_VIEW_DESC* pDesc,
                                             D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor);
 
-    static void hkExecuteCommandLists(ID3D12CommandQueue* This, UINT NumCommandLists,
-                                      ID3D12CommandList* const* ppCommandLists);
-
     static HRESULT hkCreateDescriptorHeap(ID3D12Device* This, D3D12_DESCRIPTOR_HEAP_DESC* pDescriptorHeapDesc,
                                           REFIID riid, void** ppvHeap);
 
     static ULONG hkRelease(ID3D12Resource* This);
 
     static void HookCommandList(ID3D12Device* InDevice);
-    static void HookToQueue(ID3D12Device* InDevice);
     static void HookResource(ID3D12Device* InDevice);
 
-    static bool CheckResource(ID3D12Resource* resource);
+    static bool CheckResource(ID3D12Resource* resource, ResourceInfo* outInfo = nullptr);
 
     static bool CheckForRealObject(const std::string functionName, IUnknown* pObject, IUnknown** ppRealObject);
 
@@ -569,8 +583,6 @@ class ResTrack_Dx12
     static std::shared_ptr<HeapInfo> GetHeapByGpuHandleGR(SIZE_T gpuHandle);
     static std::shared_ptr<HeapInfo> GetHeapByGpuHandleCR(SIZE_T gpuHandle);
 
-    static void FillResourceInfo(ID3D12Resource* resource, ResourceInfo* info);
-
     // Sharding
     inline static constexpr size_t SHARD_COUNT = 16;
     inline static CommandListShard _hudlessShards[BUFFER_COUNT][SHARD_COUNT];
@@ -586,5 +598,4 @@ class ResTrack_Dx12
     static void ReleaseHooks();
     static void ReleaseDeviceHooks();
     static void ClearPossibleHudless();
-    static void SetResourceCmdList(FG_ResourceType type, ID3D12GraphicsCommandList* cmdList);
 };
