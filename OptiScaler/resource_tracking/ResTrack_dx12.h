@@ -135,11 +135,8 @@ struct TrackedResourceSlot
 };
 
 inline ankerl::unordered_dense::map<ID3D12Resource*, std::vector<TrackedResourceSlot>> _trackedResources;
-#ifdef USE_SPINLOCK_MUTEX
-inline SpinLock _trackedResourcesMutex;
-#else
 inline std::mutex _trackedResourcesMutex;
-#endif
+inline std::mutex _resourceLifetimeMutex;
 
 // Smaller info for descriptor tracking
 struct DescriptorResourceInfo
@@ -170,6 +167,7 @@ struct DescriptorResourceInfo
         target.format = format;
         target.flags = flags;
         target.type = type;
+        target.lifetimeTracked = true;
     }
 };
 
@@ -229,6 +227,61 @@ struct HeapInfo : public std::enable_shared_from_this<HeapInfo>
         return true;
     }
 
+    bool GetByIndex(UINT index, ResourceInfo& outInfo) const
+    {
+        if (!active.load(std::memory_order_acquire) || index >= numDescriptors)
+            return false;
+
+        std::shared_lock lock(GetDescriptorLock(index));
+        if (!active.load(std::memory_order_acquire) || info[index].buffer == nullptr)
+            return false;
+
+        info[index].Load(outInfo);
+
+#ifdef DEBUG_TRACKING
+        TestResource(&outInfo);
+#endif
+
+        return true;
+    }
+
+    void SetByIndex(UINT index, const ResourceInfo& setInfo)
+    {
+        if (!active.load(std::memory_order_acquire) || index >= numDescriptors)
+            return;
+
+        std::unique_lock lock(GetDescriptorLock(index));
+        if (!active.load(std::memory_order_acquire))
+            return;
+
+#ifdef DEBUG_TRACKING
+        TestResource(&setInfo);
+#endif
+
+        if (info[index].buffer != setInfo.buffer)
+        {
+            DetachFromOldResourceLocked(index);
+            info[index].Store(setInfo);
+            AttachToNewResourceLocked(index);
+        }
+        else
+        {
+            info[index].Store(setInfo);
+        }
+    }
+
+    void ClearByIndex(UINT index)
+    {
+        if (!active.load(std::memory_order_acquire) || index >= numDescriptors)
+            return;
+
+        std::unique_lock lock(GetDescriptorLock(index));
+        if (!active.load(std::memory_order_acquire))
+            return;
+
+        ClearSlotLocked(index, true);
+    }
+
     // Caller must hold the descriptor stripe exclusively.
     void DetachFromOldResourceLocked(UINT index)
     {
@@ -249,8 +302,6 @@ struct HeapInfo : public std::enable_shared_from_this<HeapInfo>
         vec.erase(std::remove_if(vec.begin(), vec.end(), [currentVersion, index](const TrackedResourceSlot& slot)
                                  { return slot.heapVersion == currentVersion && slot.index == index; }),
                   vec.end());
-        if (vec.empty())
-            _trackedResources.erase(it);
     }
 
     void AttachToNewResourceLocked(UINT index)
@@ -264,7 +315,14 @@ struct HeapInfo : public std::enable_shared_from_this<HeapInfo>
                   (size_t) newResource, info[index].width, info[index].height, (UINT) info[index].format);
 
         const auto currentVersion = version.load(std::memory_order_relaxed);
-        auto& vec = _trackedResources[newResource];
+        auto it = _trackedResources.find(newResource);
+        if (it == _trackedResources.end())
+        {
+            info[index].buffer = nullptr;
+            return;
+        }
+
+        auto& vec = it->second;
         auto found = std::find_if(vec.begin(), vec.end(), [currentVersion, index](const TrackedResourceSlot& slot)
                                   { return slot.heapVersion == currentVersion && slot.index == index; });
 
@@ -442,8 +500,6 @@ struct HeapInfo : public std::enable_shared_from_this<HeapInfo>
                                          [currentVersion, index](const TrackedResourceSlot& slot)
                                          { return slot.heapVersion == currentVersion && slot.index == index; }),
                           vec.end());
-                if (vec.empty())
-                    _trackedResources.erase(it);
             }
 
             info[index].buffer = nullptr;
@@ -481,6 +537,63 @@ struct ResourceHeapInfo
     SIZE_T gpuStart = NULL;
 };
 
+// Command list info
+struct RootSignatureInfo;
+
+struct CommandListBindingState
+{
+    static constexpr size_t MAX_ROOT_PARAMETERS = 64;
+
+    std::array<SIZE_T, MAX_ROOT_PARAMETERS> graphicsTables {};
+    std::array<SIZE_T, MAX_ROOT_PARAMETERS> computeTables {};
+    uint64_t graphicsTableMask = 0;
+    uint64_t computeTableMask = 0;
+
+    std::array<SIZE_T, D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT> renderTargets {};
+    UINT renderTargetCount = 0;
+    bool renderTargetsContiguous = false;
+
+    ID3D12RootSignature* graphicsRootSignature = nullptr;
+    ID3D12RootSignature* computeRootSignature = nullptr;
+    std::shared_ptr<RootSignatureInfo> graphicsRootSignatureInfo;
+    std::shared_ptr<RootSignatureInfo> computeRootSignatureInfo;
+    ID3D12DescriptorHeap* cbvSrvUavHeap = nullptr;
+    std::shared_ptr<HeapInfo> cbvSrvUavHeapInfo;
+};
+
+struct RootDescriptorRangeInfo
+{
+    UINT offset = 0;
+    UINT count = 0;
+    D3D12_DESCRIPTOR_RANGE_TYPE type = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+};
+
+struct RootParameterTableInfo
+{
+    UINT firstRange = 0;
+    UINT rangeCount = 0;
+    D3D12_SHADER_VISIBILITY visibility = D3D12_SHADER_VISIBILITY_ALL;
+};
+
+struct RootSignatureInfo
+{
+    std::array<RootParameterTableInfo, CommandListBindingState::MAX_ROOT_PARAMETERS> parameters {};
+    std::vector<RootDescriptorRangeInfo> ranges;
+    bool pixelShaderRootAccess = true;
+};
+
+#ifdef USE_SPINLOCK_MUTEX
+using BindingStateMutex = SpinLock;
+#else
+using BindingStateMutex = std::mutex;
+#endif
+
+struct alignas(CACHE_LINE_SIZE) BindingStateShard
+{
+    BindingStateMutex mutex;
+    ankerl::unordered_dense::map<ID3D12GraphicsCommandList*, std::unique_ptr<CommandListBindingState>> map;
+};
+
 #ifdef USE_SPINLOCK_MUTEX
 // Force each struct to start on a new cache line
 struct alignas(CACHE_LINE_SIZE) CommandListShard
@@ -509,6 +622,15 @@ class ResTrack_Dx12
   private:
     inline static bool _presentDone = true;
     inline static bool _useShards = false;
+    inline static std::atomic<bool> _bindingTrackingEnabled { false };
+
+    inline static std::mutex _bindingStateMutex;
+    inline static ankerl::unordered_dense::map<ID3D12GraphicsCommandList*, std::unique_ptr<CommandListBindingState>>
+        _bindingStates;
+
+    inline static std::mutex _rootSignatureInfoMutex;
+    inline static ankerl::unordered_dense::map<ID3D12RootSignature*, std::shared_ptr<RootSignatureInfo>>
+        _rootSignatureInfos;
 
     inline static ULONG64 _lastHudlessFrame = 0;
     inline static std::mutex _hudlessMutex;
@@ -516,7 +638,23 @@ class ResTrack_Dx12
 
     static bool IsHudFixActive();
 
-    // static bool IsFGCommandList(IUnknown* cmdList);
+    static CommandListBindingState* GetOrCreateBindingState(ID3D12GraphicsCommandList* commandList);
+    static CommandListBindingState* FindBindingState(ID3D12GraphicsCommandList* commandList);
+    static void ResetBindingState(ID3D12GraphicsCommandList* commandList);
+    static void RemoveBindingState(ID3D12GraphicsCommandList* commandList);
+    static void ClearBindingStates();
+    static void __stdcall CommandListDestroyed(void* data);
+    static std::shared_ptr<RootSignatureInfo> FindRootSignatureInfo(ID3D12RootSignature* rootSignature);
+    static void __stdcall RootSignatureDestroyed(void* data);
+
+    static bool ResolveGraphicsBinding(const HeapInfo* boundHeap, SIZE_T gpuHandle, ResourceInfo& outInfo);
+    static bool ResolveComputeBinding(const HeapInfo* boundHeap, SIZE_T gpuHandle, ResourceInfo& outInfo);
+    static bool ResolveRenderTargetBinding(SIZE_T cpuHandle, ResourceInfo& outInfo);
+    static bool ProcessDescriptorTableBinding(ID3D12GraphicsCommandList* commandList, const RootSignatureInfo* rootInfo,
+                                              UINT rootParameterIndex, const HeapInfo* boundHeap, SIZE_T baseHandle,
+                                              UINT captureInfo, bool graphics);
+    static bool ProcessGraphicsBindings(ID3D12GraphicsCommandList* commandList, UINT captureInfo);
+    static bool ProcessComputeBindings(ID3D12GraphicsCommandList* commandList, UINT captureInfo);
 
     static void hkCopyDescriptors(ID3D12Device* This, UINT NumDestDescriptorRanges,
                                   D3D12_CPU_DESCRIPTOR_HANDLE* pDestDescriptorRangeStarts,
@@ -536,6 +674,9 @@ class ResTrack_Dx12
                                      D3D12_CPU_DESCRIPTOR_HANDLE* pDepthStencilDescriptor);
     static void hkSetComputeRootDescriptorTable(ID3D12GraphicsCommandList* This, UINT RootParameterIndex,
                                                 D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor);
+    static HRESULT hkReset(ID3D12GraphicsCommandList* This, ID3D12CommandAllocator* pAllocator,
+                           ID3D12PipelineState* pInitialState);
+    static void hkClearState(ID3D12GraphicsCommandList* This, ID3D12PipelineState* pPipelineState);
 
     static void hkDrawInstanced(ID3D12GraphicsCommandList* This, UINT VertexCountPerInstance, UINT InstanceCount,
                                 UINT StartVertexLocation, UINT StartInstanceLocation);
@@ -557,10 +698,9 @@ class ResTrack_Dx12
     static HRESULT hkCreateDescriptorHeap(ID3D12Device* This, D3D12_DESCRIPTOR_HEAP_DESC* pDescriptorHeapDesc,
                                           REFIID riid, void** ppvHeap);
 
-    static ULONG hkRelease(ID3D12Resource* This);
+    static void __stdcall ResourceDestroyed(void* data);
 
     static void HookCommandList(ID3D12Device* InDevice);
-    static void HookResource(ID3D12Device* InDevice);
 
     static bool CheckResource(ID3D12Resource* resource, ResourceInfo* outInfo = nullptr);
 
@@ -586,6 +726,7 @@ class ResTrack_Dx12
     // Sharding
     inline static constexpr size_t SHARD_COUNT = 16;
     inline static CommandListShard _hudlessShards[BUFFER_COUNT][SHARD_COUNT];
+    inline static BindingStateShard _bindingShards[SHARD_COUNT];
 
     inline static size_t GetShardIndex(ID3D12GraphicsCommandList* ptr)
     {
@@ -594,8 +735,16 @@ class ResTrack_Dx12
     }
 
   public:
+    static void RegisterRootSignature(ID3D12RootSignature* rootSignature,
+                                      const D3D12_VERSIONED_ROOT_SIGNATURE_DESC* desc);
+    static void OnSetDescriptorHeaps(ID3D12GraphicsCommandList* commandList, UINT numDescriptorHeaps,
+                                     ID3D12DescriptorHeap* const* descriptorHeaps);
+    static void OnSetGraphicsRootSignature(ID3D12GraphicsCommandList* commandList, ID3D12RootSignature* rootSignature);
+    static void OnSetComputeRootSignature(ID3D12GraphicsCommandList* commandList, ID3D12RootSignature* rootSignature);
+
     static void HookDevice(ID3D12Device* device);
     static void ReleaseHooks();
     static void ReleaseDeviceHooks();
     static void ClearPossibleHudless();
+    static bool TrackResourceRelease(ID3D12Resource* resource);
 };
