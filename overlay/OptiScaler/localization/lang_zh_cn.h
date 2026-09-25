@@ -1300,4 +1300,14 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Extra_shaders)] = "额外着色器：";
     table[static_cast<int>(LK::UI_DLSSG_output_nCan_be_used_in_conjuction_with_Nukem_s_for_exa)] = "DLSSG 输出\n例如可搭配 Nukem's 使用";
     table[static_cast<int>(LK::UI_FSR_3_MFG_mod)] = "FSR 3 MFG 模组";
+    table[static_cast<int>(LK::UI_Reprojection_WIP)] = "重投影（开发中）";
+    table[static_cast<int>(LK::UI_Reprojects_the_game_image_using_new_mouse_data_nKinda_like_R)] = "使用新的鼠标数据重投影游戏画面\n有点像 Reflex 2，可改善感知延迟\n\n- 要求通过 Streamline 将 DLSSG 作为输入\n- 仅适用于第一人称视角游戏\n- 仅支持鼠标，不支持手柄\n- 如果可能，请禁用游戏中的任何鼠标/镜头平滑\n";
+    table[static_cast<int>(LK::UI_Updated_camera_position_by_1fms)] = "相机位置已更新：%.1fms";
+    table[static_cast<int>(LK::UI_Not_updating_camera_position)] = "未更新相机位置";
+    table[static_cast<int>(LK::UI_Enable_reprojection)] = "启用重投影";
+    table[static_cast<int>(LK::UI_Show_static_elements)] = "显示静态元素";
+    table[static_cast<int>(LK::UI_Strech_edge)] = "拉伸边缘";
+    table[static_cast<int>(LK::UI_Edge_fill_mode)] = "边缘填充模式";
+    table[static_cast<int>(LK::UI_Depth_cutoff)] = "深度截止";
+    table[static_cast<int>(LK::UI_Cutoff_expand)] = "截止扩展";
 }

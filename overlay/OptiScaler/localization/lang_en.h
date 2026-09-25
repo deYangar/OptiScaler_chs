@@ -1288,4 +1288,14 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Extra_shaders)] = "Extra shaders:";
     table[static_cast<int>(LK::UI_DLSSG_output_nCan_be_used_in_conjuction_with_Nukem_s_for_exa)] = "DLSSG output\nCan be used in conjuction with Nukem's for example";
     table[static_cast<int>(LK::UI_FSR_3_MFG_mod)] = "FSR 3 MFG mod";
+    table[static_cast<int>(LK::UI_Reprojection_WIP)] = "Reprojection (WIP)";
+    table[static_cast<int>(LK::UI_Reprojects_the_game_image_using_new_mouse_data_nKinda_like_R)] = "Reprojects the game image using new mouse data\nKinda like Reflex 2, perceived latency improvement\n\n- REQUIRES DLSSG VIA STREAMLINE AS INPUT\n- Only works with first person perspective games\n- Only mouse, no controller\n- If possible, disable any mouse/camera smoothing in the game\n";
+    table[static_cast<int>(LK::UI_Updated_camera_position_by_1fms)] = "Updated camera position by: %.1fms";
+    table[static_cast<int>(LK::UI_Not_updating_camera_position)] = "Not updating camera position";
+    table[static_cast<int>(LK::UI_Enable_reprojection)] = "Enable reprojection";
+    table[static_cast<int>(LK::UI_Show_static_elements)] = "Show static elements";
+    table[static_cast<int>(LK::UI_Strech_edge)] = "Strech edge";
+    table[static_cast<int>(LK::UI_Edge_fill_mode)] = "Edge fill mode";
+    table[static_cast<int>(LK::UI_Depth_cutoff)] = "Depth cutoff";
+    table[static_cast<int>(LK::UI_Cutoff_expand)] = "Cutoff expand";
 }

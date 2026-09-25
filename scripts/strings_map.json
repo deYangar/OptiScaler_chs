@@ -1118,5 +1118,15 @@
  "%.2f ms": "UI_S_2f_ms",
  "Extra shaders:": "UI_Extra_shaders",
  "DLSSG output\\nCan be used in conjuction with Nukem's for example": "UI_DLSSG_output_nCan_be_used_in_conjuction_with_Nukem_s_for_exa",
- "FSR 3 MFG mod": "UI_FSR_3_MFG_mod"
+ "FSR 3 MFG mod": "UI_FSR_3_MFG_mod",
+ "Reprojection (WIP)": "UI_Reprojection_WIP",
+ "Reprojects the game image using new mouse data\\nKinda like Reflex 2, perceived latency improvement\\n\\n- REQUIRES DLSSG VIA STREAMLINE AS INPUT\\n- Only works with first person perspective games\\n- Only mouse, no controller\\n- If possible, disable any mouse/camera smoothing in the game\\n": "UI_Reprojects_the_game_image_using_new_mouse_data_nKinda_like_R",
+ "Updated camera position by: %.1fms": "UI_Updated_camera_position_by_1fms",
+ "Not updating camera position": "UI_Not_updating_camera_position",
+ "Enable reprojection": "UI_Enable_reprojection",
+ "Show static elements": "UI_Show_static_elements",
+ "Strech edge": "UI_Strech_edge",
+ "Edge fill mode": "UI_Edge_fill_mode",
+ "Depth cutoff": "UI_Depth_cutoff",
+ "Cutoff expand": "UI_Cutoff_expand"
 }

@@ -1282,6 +1282,16 @@ enum class LK {
     UI_Extra_shaders,
     UI_DLSSG_output_nCan_be_used_in_conjuction_with_Nukem_s_for_exa,
     UI_FSR_3_MFG_mod,
+    UI_Reprojection_WIP,
+    UI_Reprojects_the_game_image_using_new_mouse_data_nKinda_like_R,
+    UI_Updated_camera_position_by_1fms,
+    UI_Not_updating_camera_position,
+    UI_Enable_reprojection,
+    UI_Show_static_elements,
+    UI_Strech_edge,
+    UI_Edge_fill_mode,
+    UI_Depth_cutoff,
+    UI_Cutoff_expand,
     COUNT
 };
 
