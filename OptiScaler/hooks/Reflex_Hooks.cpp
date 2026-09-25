@@ -11,6 +11,7 @@
 
 #include <math.h>
 #include <imgui/ImGuiNotify.hpp>
+#include <framegen/reprojection/InputCollection.h>
 
 static inline uint64_t _lastFrameId[20] = { 0 };
 static inline IUnknown* _lastDev[20] = { 0 };
@@ -132,10 +133,16 @@ NvAPI_Status ReflexHooks::hkNvAPI_D3D_SetLatencyMarker(IUnknown* pDev,
     _lastFrameId[pSetLatencyMarkerParams->markerType] = pSetLatencyMarkerParams->frameID;
     _lastDev[pSetLatencyMarkerParams->markerType] = pDev;
 
-    static bool skip[20] = {};
-
     if (pSetLatencyMarkerParams->markerType == SIMULATION_START)
+    {
+        InputCollection::getInstance().startCollectingForFrame(pSetLatencyMarkerParams->frameID);
+    }
+    else if (pSetLatencyMarkerParams->markerType == SIMULATION_END)
+    {
         _lastMarkerFrame = State::Instance().fgLastFrame;
+    }
+
+    static bool skip[20] = {};
 
     if (State::Instance().activeFgOutput == FGOutput::DLSSG && StreamlineProxy::IsD3D12Inited() &&
         Config::Instance()->FGDLSSGUseGamesReflexMarkers.value_or_default() && State::Instance().currentFG &&
