@@ -1128,5 +1128,8 @@
  "Strech edge": "UI_Strech_edge",
  "Edge fill mode": "UI_Edge_fill_mode",
  "Depth cutoff": "UI_Depth_cutoff",
- "Cutoff expand": "UI_Cutoff_expand"
+ "Cutoff expand": "UI_Cutoff_expand",
+ "Updated camera rotation by: %.1fms": "UI_Updated_camera_rotation_by_1fms",
+ "Not updating camera rotation": "UI_Not_updating_camera_rotation",
+ "Active##5": "UI_Active_5"
 }

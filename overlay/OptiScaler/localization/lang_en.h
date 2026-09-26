@@ -1298,4 +1298,7 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Edge_fill_mode)] = "Edge fill mode";
     table[static_cast<int>(LK::UI_Depth_cutoff)] = "Depth cutoff";
     table[static_cast<int>(LK::UI_Cutoff_expand)] = "Cutoff expand";
+    table[static_cast<int>(LK::UI_Updated_camera_rotation_by_1fms)] = "Updated camera rotation by: %.1fms";
+    table[static_cast<int>(LK::UI_Not_updating_camera_rotation)] = "Not updating camera rotation";
+    table[static_cast<int>(LK::UI_Active_5)] = "Active##5";
 }

@@ -1310,4 +1310,7 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Edge_fill_mode)] = "边缘填充模式";
     table[static_cast<int>(LK::UI_Depth_cutoff)] = "深度截止";
     table[static_cast<int>(LK::UI_Cutoff_expand)] = "截止扩展";
+    table[static_cast<int>(LK::UI_Updated_camera_rotation_by_1fms)] = "相机旋转已更新：%.1fms";
+    table[static_cast<int>(LK::UI_Not_updating_camera_rotation)] = "未更新相机旋转";
+    table[static_cast<int>(LK::UI_Active_5)] = "激活##5";
 }

@@ -1292,6 +1292,9 @@ enum class LK {
     UI_Edge_fill_mode,
     UI_Depth_cutoff,
     UI_Cutoff_expand,
+    UI_Updated_camera_rotation_by_1fms,
+    UI_Not_updating_camera_rotation,
+    UI_Active_5,
     COUNT
 };
 
