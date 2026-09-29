@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Reprojection_Dx12.h"
+#include "swapchain/reprojectionSwapchain.h"
 
 #include <hudfix/Hudfix_Dx12.h>
 #include <hudfix/Hudfix_Dx11.h>
@@ -78,11 +79,16 @@ void Reprojection_Dx12::CreateObjects(ID3D12Device* InDevice)
 bool Reprojection_Dx12::CreateSwapchainInternal(IDXGIFactory* factory, ID3D12CommandQueue* cmdQueue,
                                                 DXGI_SWAP_CHAIN_DESC* desc, IDXGISwapChain** swapChain)
 {
-    // Normal swapchain creation, no proxy upgrades
-    auto result = factory->CreateSwapChain(cmdQueue, desc, swapChain);
+    IDXGISwapChain* realSwapchain {};
+    auto result = factory->CreateSwapChain(cmdQueue, desc, &realSwapchain);
 
-    if (result == S_OK)
+    if (result == S_OK && swapChain)
     {
+        auto reprojectionSwapchain =
+            new ReprojectionDXGISwapChain(realSwapchain, _device, desc->OutputWindow, 0, false);
+
+        *swapChain = reprojectionSwapchain;
+
         _gameCommandQueue = cmdQueue;
         _swapChain = *swapChain;
         _hwnd = desc->OutputWindow;
@@ -100,12 +106,17 @@ bool Reprojection_Dx12::CreateSwapchain1Internal(IDXGIFactory* factory, ID3D12Co
     if (factory->QueryInterface(IID_PPV_ARGS(&factory2)) != S_OK)
         return false;
 
-    // Normal swapchain creation
-    auto result = factory2->CreateSwapChainForHwnd(cmdQueue, hwnd, desc, pFullscreenDesc, nullptr, swapChain);
+    IDXGISwapChain1* realSwapchain1 {};
+
+    auto result = factory2->CreateSwapChainForHwnd(cmdQueue, hwnd, desc, pFullscreenDesc, nullptr, &realSwapchain1);
     factory2->Release();
 
-    if (result == S_OK)
+    if (result == S_OK && swapChain)
     {
+        auto reprojectionSwapchain1 = new ReprojectionDXGISwapChain(realSwapchain1, _device, hwnd, 0, false);
+
+        *swapChain = reprojectionSwapchain1;
+
         _gameCommandQueue = cmdQueue;
         _swapChain = *swapChain;
         _hwnd = hwnd;
@@ -275,6 +286,8 @@ bool Reprojection_Dx12::Present()
                 data.mouseDeltaSimToSim = mouseDeltaSimToSim;
                 data.screenWidth = (uint32_t) _interpolationWidth[fIndex];
                 data.screenHeight = (uint32_t) _interpolationHeight[fIndex];
+                data.depthWidth = (uint32_t) depth->width;
+                data.depthHeight = (uint32_t) depth->height;
                 data.invertedDepth = _constants.flags[FG_Flags::InvertedDepth];
 
                 data.cameraVFov = _cameraVFov[fIndex];
@@ -357,6 +370,11 @@ bool Reprojection_Dx12::SetResource(Dx12Resource* inputResource)
     fResource->validity = inputResource->validity;
     fResource->resource = inputResource->resource;
     fResource->cmdList = inputResource->cmdList;
+
+    fResource->top = inputResource->top;
+    fResource->left = inputResource->left;
+    fResource->width = inputResource->width;
+    fResource->height = inputResource->height;
 
     if (inputResource->cmdList != nullptr && fResource->validity == FG_ResourceValidity::ValidButMakeCopy)
     {
