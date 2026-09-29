@@ -1301,4 +1301,18 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Updated_camera_rotation_by_1fms)] = "Updated camera rotation by: %.1fms";
     table[static_cast<int>(LK::UI_Not_updating_camera_rotation)] = "Not updating camera rotation";
     table[static_cast<int>(LK::UI_Active_5)] = "Active##5";
+    table[static_cast<int>(LK::UI_s_active_but_currently_not_used_by_the_game_nPlease_load_int)] = "%s active, but currently not used by the game\nPlease load into the game";
+    table[static_cast<int>(LK::UI_Disable_HUDFix_Resource_Tracking)] = "Disable HUDFix Resource Tracking";
+    table[static_cast<int>(LK::UI_Current_3f)] = "(Current: %.3f)";
+    table[static_cast<int>(LK::UI_Current_disabled)] = "(Current: disabled)";
+    table[static_cast<int>(LK::UI_DXGI_Spoofing)] = "DXGI Spoofing";
+    table[static_cast<int>(LK::UI_VLK_Spoofing)] = "VLK Spoofing";
+    table[static_cast<int>(LK::UI_VLK_Extension_Spoofing)] = "VLK Extension Spoofing";
+    table[static_cast<int>(LK::UI_Ntdll_Hooks)] = "Ntdll Hooks";
+    table[static_cast<int>(LK::UI_Disable_Overlays)] = "Disable Overlays";
+    table[static_cast<int>(LK::UI_Load_ASI_plugins)] = "Load ASI plugins";
+    table[static_cast<int>(LK::UI_Disable_Splash_message)] = "Disable Splash message";
+    table[static_cast<int>(LK::UI_Check_for_Update)] = "Check for Update";
+    table[static_cast<int>(LK::UI_Single_File)] = "Single File";
+    table[static_cast<int>(LK::UI_Override_Vsync)] = "Override Vsync";
 }

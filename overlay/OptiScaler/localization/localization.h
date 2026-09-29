@@ -1295,6 +1295,20 @@ enum class LK {
     UI_Updated_camera_rotation_by_1fms,
     UI_Not_updating_camera_rotation,
     UI_Active_5,
+    UI_s_active_but_currently_not_used_by_the_game_nPlease_load_int,
+    UI_Disable_HUDFix_Resource_Tracking,
+    UI_Current_3f,
+    UI_Current_disabled,
+    UI_DXGI_Spoofing,
+    UI_VLK_Spoofing,
+    UI_VLK_Extension_Spoofing,
+    UI_Ntdll_Hooks,
+    UI_Disable_Overlays,
+    UI_Load_ASI_plugins,
+    UI_Disable_Splash_message,
+    UI_Check_for_Update,
+    UI_Single_File,
+    UI_Override_Vsync,
     COUNT
 };
 

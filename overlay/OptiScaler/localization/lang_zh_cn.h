@@ -1313,4 +1313,18 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Updated_camera_rotation_by_1fms)] = "相机旋转已更新：%.1fms";
     table[static_cast<int>(LK::UI_Not_updating_camera_rotation)] = "未更新相机旋转";
     table[static_cast<int>(LK::UI_Active_5)] = "激活##5";
+    table[static_cast<int>(LK::UI_s_active_but_currently_not_used_by_the_game_nPlease_load_int)] = "%s 已启用，但游戏当前未使用\n请加载到游戏中";
+    table[static_cast<int>(LK::UI_Disable_HUDFix_Resource_Tracking)] = "禁用 HUDFix 资源跟踪";
+    table[static_cast<int>(LK::UI_Current_3f)] = "(当前：%.3f)";
+    table[static_cast<int>(LK::UI_Current_disabled)] = "(当前：已禁用)";
+    table[static_cast<int>(LK::UI_DXGI_Spoofing)] = "DXGI 伪装";
+    table[static_cast<int>(LK::UI_VLK_Spoofing)] = "VLK 伪装";
+    table[static_cast<int>(LK::UI_VLK_Extension_Spoofing)] = "VLK 扩展伪装";
+    table[static_cast<int>(LK::UI_Ntdll_Hooks)] = "Ntdll 挂钩";
+    table[static_cast<int>(LK::UI_Disable_Overlays)] = "禁用覆盖层";
+    table[static_cast<int>(LK::UI_Load_ASI_plugins)] = "加载 ASI 插件";
+    table[static_cast<int>(LK::UI_Disable_Splash_message)] = "禁用启动画面消息";
+    table[static_cast<int>(LK::UI_Check_for_Update)] = "检查更新";
+    table[static_cast<int>(LK::UI_Single_File)] = "单文件";
+    table[static_cast<int>(LK::UI_Override_Vsync)] = "覆盖垂直同步";
 }

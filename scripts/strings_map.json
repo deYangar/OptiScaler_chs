@@ -1131,5 +1131,19 @@
  "Cutoff expand": "UI_Cutoff_expand",
  "Updated camera rotation by: %.1fms": "UI_Updated_camera_rotation_by_1fms",
  "Not updating camera rotation": "UI_Not_updating_camera_rotation",
- "Active##5": "UI_Active_5"
+ "Active##5": "UI_Active_5",
+ "%s active, but currently not used by the game\\nPlease load into the game": "UI_s_active_but_currently_not_used_by_the_game_nPlease_load_int",
+ "Disable HUDFix Resource Tracking": "UI_Disable_HUDFix_Resource_Tracking",
+ "(Current: %.3f)": "UI_Current_3f",
+ "(Current: disabled)": "UI_Current_disabled",
+ "DXGI Spoofing": "UI_DXGI_Spoofing",
+ "VLK Spoofing": "UI_VLK_Spoofing",
+ "VLK Extension Spoofing": "UI_VLK_Extension_Spoofing",
+ "Ntdll Hooks": "UI_Ntdll_Hooks",
+ "Disable Overlays": "UI_Disable_Overlays",
+ "Load ASI plugins": "UI_Load_ASI_plugins",
+ "Disable Splash message": "UI_Disable_Splash_message",
+ "Check for Update": "UI_Check_for_Update",
+ "Single File": "UI_Single_File",
+ "Override Vsync": "UI_Override_Vsync"
 }
