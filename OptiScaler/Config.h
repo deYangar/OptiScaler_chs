@@ -377,6 +377,8 @@ class Config
     CustomOptional<float> MenuBGColorG { 0.0f };
     CustomOptional<float> MenuBGColorB { 0.0f };
     CustomOptional<float> MenuBGColorA { 0.99f };
+    CustomOptional<bool> CustomTabEnabled { false };
+    CustomOptional<std::string> CustomTabCards { "" }; // Comma separated ids of the boxes
 
     // Hooks
     CustomOptional<bool> HookOriginalNvngxOnly { false };
@@ -501,6 +503,7 @@ class Config
     // NVAPI Override
     CustomOptional<bool> DisableFlipMetering { false };
     CustomOptional<bool> DisableOTA { false };
+    CustomOptional<bool> ImASillyGooseThatIsAboutToMisuseReflex { false };
 
     // Spoofing
     CustomOptional<bool, SoftDefault> DxgiSpoofing { true };
