@@ -5,8 +5,9 @@
 用法: python translate.py --input pending.json [--key <API_KEY>]
 流程:
   1. 读待翻译列表
-  2. 调 DeepSeek 翻译（带术语表保证一致性）
+  2. 调 DeepSeek 翻译（带术语表保证一致性；thinking 显式关闭，防思考链吃光输出预算）
   3. 生成新 LK key → 更新 localization.h / lang_en.h / lang_zh_cn.h / strings_map.json
+失败语义: 翻译失败直接 exit 1、不写任何文件（防英文兜底污染 strings_map 后永久跳过）
 """
 import io
 import json
@@ -63,10 +64,14 @@ def call_deepseek(api_key, texts):
     """批量翻译"""
     prompt = GLOSSARY + '\n请把以下 JSON 数组中的英文 UI 字符串翻译成简体中文（游戏软件风格，保留 %s/%d/%llu 等格式符和 \\n 换行，保留 HTML/技术术语），输出 JSON 数组，一一对应：\n' + json.dumps(texts, ensure_ascii=False)
     body = json.dumps({
-        "model": "deepseek-v4-flash",
+        # 2026-09-10 起 deepseek-v4-flash 已下线、旧名仅暂时路由到 V4.1-Flash；
+        # V4.1-Flash 的 thinking 默认 enabled 且思考 tokens 计入输出预算，
+        # 不显式关闭会在 max_tokens 内吃光预算、content 返回空（2026-10-03 事故）
+        "model": "deepseek-flash",
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.3,
-        "max_tokens": 4096,
+        "thinking": {"type": "disabled"},
+        "max_tokens": 8192,
     }).encode('utf-8')
     req = urllib.request.Request(
         'https://api.deepseek.com/chat/completions',
@@ -75,7 +80,13 @@ def call_deepseek(api_key, texts):
     )
     with urllib.request.urlopen(req, timeout=120) as resp:
         data = json.loads(resp.read().decode('utf-8'))
-    content = data['choices'][0]['message']['content']
+    choice = data['choices'][0]
+    content = choice['message'].get('content') or ''
+    if not content.strip():
+        # 空 content 携带 finish_reason/usage 上抛，典型形态：finish_reason=length
+        # 且 usage.completion_tokens_details.reasoning_tokens == max_tokens（思考链撞顶）
+        raise RuntimeError(
+            f'空响应: finish_reason={choice.get("finish_reason")}, usage={data.get("usage")}')
     # 提取 JSON 数组
     m = re.search(r'\[.*\]', content, re.S)
     if not m:
@@ -84,7 +95,11 @@ def call_deepseek(api_key, texts):
 
 
 def call_deepseek_retry(api_key, texts, max_retries=3):
-    """调用 DeepSeek 翻译，返回与 texts 等长的列表；失败/丢条时重试，最终用原文兜底"""
+    """调用 DeepSeek 翻译，返回与 texts 等长的列表。
+    重试只兜网络抖动/采样随机性；耗尽即 exit 1——原文兜底会把英文写进 zh 表
+    并登记 strings_map.json，登记过的串永远不再进入 pending，一次失败变永久英文
+    （2026-10-03 事故：87 条全灭入库）。exit 1 让 workflow 步骤失败、阻断 commit，
+    字串保持 pending 等下一轮重试。"""
     res = None
     last_err = None
     for attempt in range(1, max_retries + 1):
@@ -99,17 +114,8 @@ def call_deepseek_retry(api_key, texts, max_retries=3):
         except Exception as e:
             last_err = str(e)
             print(f'    重试 {attempt}: {e}')
-    # 重试耗尽：按位置尽量对齐，缺失的用原文兜底
-    out = []
-    for i, t in enumerate(texts):
-        if res is not None and i < len(res) and isinstance(res[i], str) and res[i].strip():
-            out.append(res[i])
-        else:
-            out.append(t)
-    fallback_cnt = sum(1 for i, t in enumerate(texts)
-                       if not (res is not None and i < len(res) and isinstance(res[i], str) and res[i].strip()))
-    print(f'    ⚠️ 重试耗尽（{last_err}），{fallback_cnt} 条用原文兜底')
-    return out
+    print(f'    ⚠️ 重试耗尽（{last_err}），{len(texts)} 条保持 pending，本轮不写任何文件')
+    sys.exit(1)
 
 def key_from_en(en):
     """英文串 → 合法 key 名"""
@@ -150,7 +156,7 @@ def main():
         print('没有待翻译字符串')
         return
 
-    # 分批（每批 50 条），带重试+原文兜底
+    # 分批（每批 50 条），带重试；失败退出不写文件
     zh_all = []
     BATCH = 50
     for i in range(0, len(pending), BATCH):
