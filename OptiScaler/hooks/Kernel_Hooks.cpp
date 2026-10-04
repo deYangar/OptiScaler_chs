@@ -15,6 +15,7 @@
 #include <misc/IdentifyGpu.h>
 
 #include "Hook_Utils.h"
+#include <proxies/XeLL_Proxy.h>
 
 #include "Amdxc64_Hooks.h"
 #pragma intrinsic(_ReturnAddress)
@@ -194,8 +195,16 @@ BOOL WINAPI KernelHooks::hk_K32_GetModuleHandleExA(DWORD dwFlags, LPCSTR lpModul
 {
     if (lpModuleName && dwFlags == 0 && strcmp("libxell.dll", lpModuleName) == 0 && phModule)
     {
+#ifdef LOW_LATENCY_INPUTS
         *phModule = dllModule;
         return true;
+#else
+        if (const auto module = XeLLProxy::Module())
+        {
+            return o_K32_GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, reinterpret_cast<LPCSTR>(module),
+                                            phModule);
+        }
+#endif
     }
 
     return o_K32_GetModuleHandleExA(dwFlags, lpModuleName, phModule);
@@ -424,7 +433,10 @@ VALIDATE_HOOK(hk_K32_FreeLibrary, Kernel32Proxy::PFN_FreeLibrary)
 BOOL KernelHooks::hk_K32_FreeLibrary(HMODULE lpLibrary)
 {
     if (lpLibrary == nullptr)
-        return STATUS_INVALID_PARAMETER;
+    {
+        SetLastError(ERROR_INVALID_PARAMETER);
+        return FALSE;
+    }
 
 #ifdef _DEBUG
     // LOG_TRACE("{:X}", (size_t) lpLibrary);
@@ -438,5 +450,9 @@ BOOL KernelHooks::hk_K32_FreeLibrary(HMODULE lpLibrary)
             return result.value() == TRUE;
     }
 
-    return o_K32_FreeLibrary(lpLibrary);
+    auto freeResult = o_K32_FreeLibrary(lpLibrary);
+
+    LibraryLoadHooks::AfterFreeLibrary(lpLibrary);
+
+    return freeResult;
 }
