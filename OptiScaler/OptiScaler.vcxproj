@@ -307,6 +307,7 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
     <ClInclude Include="fsr4\FSR4Upgrade.h" />
     <ClInclude Include="gpu_time\GpuTime_Dx11.h" />
     <ClInclude Include="gpu_time\GpuTime_Dx12.h" />
+    <ClInclude Include="gpu_time\GpuTime_Vk.h" />
     <ClInclude Include="hooks\Amdxc64_Hooks.h" />
     <ClInclude Include="DllNames.h" />
     <ClInclude Include="BuildInfo.h" />
@@ -368,6 +369,13 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
     <ClInclude Include="proxies\Streamline_Proxy.h" />
     <ClInclude Include="shaders\magnifier\Magnifier_Common.h" />
     <ClInclude Include="shaders\magnifier\Magnifier_Dx12.h" />
+    <ClInclude Include="shaders\menu_blur\MenuBlur_Common.h" />
+    <ClInclude Include="shaders\menu_blur\MenuBlur_Dx11.h" />
+    <ClInclude Include="shaders\menu_blur\MenuBlur_Dx12.h" />
+    <ClInclude Include="shaders\menu_blur\MenuBlur_Vk.h" />
+    <ClInclude Include="shaders\menu_blur\precompile\MenuBlur_Shader_Dx11.h" />
+    <ClInclude Include="shaders\menu_blur\precompile\MenuBlur_Shader_Vk.h" />
+    <ClInclude Include="shaders\menu_blur\precompile\MenuBlur_Shader.h" />
     <ClInclude Include="shaders\magnifier\Magnifier_Vk.h" />
     <ClInclude Include="shaders\magnifier\precompile\Magnifier_Shader_Vk.h" />
     <ClInclude Include="shaders\rcas\precompile\da_das_sharpen_Shader.h" />
@@ -445,7 +453,6 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
     <ClInclude Include="upscalers\ffx\FFXFeature_VkOn12.h" />
     <ClInclude Include="upscalers\fsr31\FSR31Feature.h" />
     <ClInclude Include="upscalers\IFeature_VkwDx12.h" />
-    <ClInclude Include="upscaler_time\UpscalerTime_Vk.h" />
     <ClInclude Include="SysUtils.h" />
     <ClInclude Include="with_dx12\dx11_with_dx12.h" />
     <ClInclude Include="with_dx12\with_dx12.h" />
@@ -617,6 +624,7 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
     <ClCompile Include="fsr4\FSR4Upgrade.cpp" />
     <ClCompile Include="gpu_time\GpuTime_Dx11.cpp" />
     <ClCompile Include="gpu_time\GpuTime_Dx12.cpp" />
+    <ClCompile Include="gpu_time\GpuTime_Vk.cpp" />
     <ClCompile Include="hooks\Amdxc64_Hooks.cpp" />
     <ClCompile Include="framegen\dlssg\DLSSG_Dx12.cpp" />
     <ClCompile Include="framegen\ffx\FSRFG_Dx12.cpp" />
@@ -687,6 +695,9 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
     <ClCompile Include="shaders\depth_transfer\DT_Vk.cpp" />
     <ClCompile Include="shaders\magnifier\Magnifier_Common.cpp" />
     <ClCompile Include="shaders\magnifier\Magnifier_Dx12.cpp" />
+    <ClCompile Include="shaders\menu_blur\MenuBlur_Dx11.cpp" />
+    <ClCompile Include="shaders\menu_blur\MenuBlur_Dx12.cpp" />
+    <ClCompile Include="shaders\menu_blur\MenuBlur_Vk.cpp" />
     <ClCompile Include="shaders\magnifier\Magnifier_Vk.cpp" />
     <ClCompile Include="shaders\output_scaling\OS_Vk.cpp" />
     <ClCompile Include="shaders\rcas\RCAS_Common.cpp" />
@@ -711,7 +722,6 @@ copy NUL "$(SolutionDir)x64\Release\a\!! EXTRACT ALL FILES TO GAME FOLDER !!" /Y
     <ClCompile Include="upscalers\fsr31\FSR31Feature.cpp" />
     <ClCompile Include="upscalers\IFeature_Vk.cpp" />
     <ClCompile Include="upscalers\IFeature_VkwDx12.cpp" />
-    <ClCompile Include="upscaler_time\UpscalerTime_Vk.cpp" />
     <ClCompile Include="with_dx12\dx11_with_dx12.cpp" />
     <ClCompile Include="with_dx12\with_dx12.cpp" />
     <ClCompile Include="with_dx12\dx11_with_dx12_sc.cpp" />

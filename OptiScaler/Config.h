@@ -377,9 +377,14 @@ class Config
     CustomOptional<float> MenuBGColorR { 0.0f };
     CustomOptional<float> MenuBGColorG { 0.0f };
     CustomOptional<float> MenuBGColorB { 0.0f };
-    CustomOptional<float> MenuBGColorA { 0.99f };
-    CustomOptional<bool> CustomTabEnabled { false };
-    CustomOptional<std::string> CustomTabCards { "" }; // Comma separated ids of the boxes
+    CustomOptional<float> MenuBGColorA { 0.93f };
+    CustomOptional<bool> MenuBlur { true };
+    CustomOptional<float> MenuBlurStrength { 1.0f };
+    CustomOptional<bool> CustomTabEnabled { true };
+    CustomOptional<std::string> CustomTabCards {
+        "upscaler,fg_selection,fg_fsrfg,fg_xefg,fg_dlssg,fg_reprojection,fg_optifg,fg_nvngx,fg_fsrfg_inputs,fg_sl_"
+        "inputs,framerate"
+    }; // Comma separated ids of the boxes
 
     // Hooks
     CustomOptional<bool> HookOriginalNvngxOnly { false };
@@ -640,6 +645,7 @@ class Config
     CustomOptional<ReprojectionFill> ReprojectionFillMode { ReprojectionFill::Dithering };
     CustomOptional<float> ReprojectionDepthCutoff { 0.1f };
     CustomOptional<uint32_t> ReprojectionCutoffExpand { 1 };
+    CustomOptional<bool> ReprojectionLateLatch { true };
 
     // As per
     // https://github.com/artur-graniszewski/dlss-enabler-main/blob/a92464d468eb0d91ae17befa66c6bf6229f20b9f/Utils/DlssgProxy.cpp#L1033
