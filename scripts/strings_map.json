@@ -1232,5 +1232,12 @@
  "Frame time: %.2f ms / %.1f fps": "UI_Frame_time_2f_ms_1f_fps",
  "%.2f - %.2f ms": "UI_S_2f_2f_ms",
  "Upscaler GPU time: %.2f ms": "UI_Upscaler_GPU_time_2f_ms",
- "%s - %s %s": "UI_s_s_s"
+ "%s - %s %s": "UI_s_s_s",
+ "Late latch mouse": "UI_Late_latch_mouse",
+ "Background Blur": "UI_Background_Blur",
+ "Blur Strength": "UI_Blur_Strength",
+ "Customise this tab": "UI_Customise_this_tab",
+ "Range: %.2f ms - %.2f ms": "UI_Range_2f_ms_2f_ms",
+ "Frametime: %.2fms / %.1ffps (avg: %.1ffps)": "UI_Frametime_2fms_1ffps_avg_1ffps",
+ "Upscaler GPU time: %.2fms (avg: %.2fms)": "UI_Upscaler_GPU_time_2fms_avg_2fms"
 }

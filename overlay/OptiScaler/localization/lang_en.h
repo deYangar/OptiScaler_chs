@@ -1402,4 +1402,11 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_S_2f_2f_ms)] = "%.2f - %.2f ms";
     table[static_cast<int>(LK::UI_Upscaler_GPU_time_2f_ms)] = "Upscaler GPU time: %.2f ms";
     table[static_cast<int>(LK::UI_s_s_s)] = "%s - %s %s";
+    table[static_cast<int>(LK::UI_Late_latch_mouse)] = "Late latch mouse";
+    table[static_cast<int>(LK::UI_Background_Blur)] = "Background Blur";
+    table[static_cast<int>(LK::UI_Blur_Strength)] = "Blur Strength";
+    table[static_cast<int>(LK::UI_Customise_this_tab)] = "Customise this tab";
+    table[static_cast<int>(LK::UI_Range_2f_ms_2f_ms)] = "Range: %.2f ms - %.2f ms";
+    table[static_cast<int>(LK::UI_Frametime_2fms_1ffps_avg_1ffps)] = "Frametime: %.2fms / %.1ffps (avg: %.1ffps)";
+    table[static_cast<int>(LK::UI_Upscaler_GPU_time_2fms_avg_2fms)] = "Upscaler GPU time: %.2fms (avg: %.2fms)";
 }

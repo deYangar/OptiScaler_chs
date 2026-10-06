@@ -1396,6 +1396,13 @@ enum class LK {
     UI_S_2f_2f_ms,
     UI_Upscaler_GPU_time_2f_ms,
     UI_s_s_s,
+    UI_Late_latch_mouse,
+    UI_Background_Blur,
+    UI_Blur_Strength,
+    UI_Customise_this_tab,
+    UI_Range_2f_ms_2f_ms,
+    UI_Frametime_2fms_1ffps_avg_1ffps,
+    UI_Upscaler_GPU_time_2fms_avg_2fms,
     COUNT
 };
 

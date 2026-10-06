@@ -1414,4 +1414,11 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_S_2f_2f_ms)] = "%.2f - %.2f ms";
     table[static_cast<int>(LK::UI_Upscaler_GPU_time_2f_ms)] = "超分辨率 GPU 时间：%.2f ms";
     table[static_cast<int>(LK::UI_s_s_s)] = "%s - %s %s";
+    table[static_cast<int>(LK::UI_Late_latch_mouse)] = "后置锁存鼠标";
+    table[static_cast<int>(LK::UI_Background_Blur)] = "背景模糊";
+    table[static_cast<int>(LK::UI_Blur_Strength)] = "模糊强度";
+    table[static_cast<int>(LK::UI_Customise_this_tab)] = "自定义此标签页";
+    table[static_cast<int>(LK::UI_Range_2f_ms_2f_ms)] = "范围：%.2f ms - %.2f ms";
+    table[static_cast<int>(LK::UI_Frametime_2fms_1ffps_avg_1ffps)] = "帧时间：%.2fms / %.1ffps（平均：%.1ffps）";
+    table[static_cast<int>(LK::UI_Upscaler_GPU_time_2fms_avg_2fms)] = "超分辨率 GPU 时间：%.2fms（平均：%.2fms）";
 }
