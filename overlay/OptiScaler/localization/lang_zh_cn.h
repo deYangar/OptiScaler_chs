@@ -1421,4 +1421,14 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Range_2f_ms_2f_ms)] = "范围：%.2f ms - %.2f ms";
     table[static_cast<int>(LK::UI_Frametime_2fms_1ffps_avg_1ffps)] = "帧时间：%.2fms / %.1ffps（平均：%.1ffps）";
     table[static_cast<int>(LK::UI_Upscaler_GPU_time_2fms_avg_2fms)] = "超分辨率 GPU 时间：%.2fms（平均：%.2fms）";
+    table[static_cast<int>(LK::UI_Dx12)] = " (Dx12)";
+    table[static_cast<int>(LK::UI_s_d)] = "%s##%d";
+    table[static_cast<int>(LK::UI_FFX_Dx12)] = "FFX Dx12";
+    table[static_cast<int>(LK::UI_Frame_Generation_mode_nDefault_follows_the_game_s_DLSS_FG_se)] = "帧生成模式\n默认跟随游戏的 DLSS FG 设置";
+    table[static_cast<int>(LK::UI_Frame_Generation_mode)] = "帧生成模式";
+    table[static_cast<int>(LK::UI_FFX_FG_Version)] = "FFX FG 版本";
+    table[static_cast<int>(LK::UI_Frame_Gen_fsrfg)] = "帧生成##fsrfg";
+    table[static_cast<int>(LK::UI_Frame_Gen_xefg)] = "帧生成##xefg";
+    table[static_cast<int>(LK::UI_Frame_Gen_dlssg)] = "帧生成##dlssg";
+    table[static_cast<int>(LK::UI_Reprojection_mode)] = "重投影##mode";
 }

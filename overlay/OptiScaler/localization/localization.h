@@ -1403,6 +1403,16 @@ enum class LK {
     UI_Range_2f_ms_2f_ms,
     UI_Frametime_2fms_1ffps_avg_1ffps,
     UI_Upscaler_GPU_time_2fms_avg_2fms,
+    UI_Dx12,
+    UI_s_d,
+    UI_FFX_Dx12,
+    UI_Frame_Generation_mode_nDefault_follows_the_game_s_DLSS_FG_se,
+    UI_Frame_Generation_mode,
+    UI_FFX_FG_Version,
+    UI_Frame_Gen_fsrfg,
+    UI_Frame_Gen_xefg,
+    UI_Frame_Gen_dlssg,
+    UI_Reprojection_mode,
     COUNT
 };
 

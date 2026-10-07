@@ -1239,5 +1239,15 @@
  "Customise this tab": "UI_Customise_this_tab",
  "Range: %.2f ms - %.2f ms": "UI_Range_2f_ms_2f_ms",
  "Frametime: %.2fms / %.1ffps (avg: %.1ffps)": "UI_Frametime_2fms_1ffps_avg_1ffps",
- "Upscaler GPU time: %.2fms (avg: %.2fms)": "UI_Upscaler_GPU_time_2fms_avg_2fms"
+ "Upscaler GPU time: %.2fms (avg: %.2fms)": "UI_Upscaler_GPU_time_2fms_avg_2fms",
+ " (Dx12)": "UI_Dx12",
+ "%s##%d": "UI_s_d",
+ "FFX Dx12": "UI_FFX_Dx12",
+ "Frame Generation mode\\nDefault follows the game's DLSS FG setting": "UI_Frame_Generation_mode_nDefault_follows_the_game_s_DLSS_FG_se",
+ "Frame Generation mode": "UI_Frame_Generation_mode",
+ "FFX FG Version": "UI_FFX_FG_Version",
+ "Frame Gen##fsrfg": "UI_Frame_Gen_fsrfg",
+ "Frame Gen##xefg": "UI_Frame_Gen_xefg",
+ "Frame Gen##dlssg": "UI_Frame_Gen_dlssg",
+ "Reprojection##mode": "UI_Reprojection_mode"
 }

@@ -1409,4 +1409,14 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Range_2f_ms_2f_ms)] = "Range: %.2f ms - %.2f ms";
     table[static_cast<int>(LK::UI_Frametime_2fms_1ffps_avg_1ffps)] = "Frametime: %.2fms / %.1ffps (avg: %.1ffps)";
     table[static_cast<int>(LK::UI_Upscaler_GPU_time_2fms_avg_2fms)] = "Upscaler GPU time: %.2fms (avg: %.2fms)";
+    table[static_cast<int>(LK::UI_Dx12)] = " (Dx12)";
+    table[static_cast<int>(LK::UI_s_d)] = "%s##%d";
+    table[static_cast<int>(LK::UI_FFX_Dx12)] = "FFX Dx12";
+    table[static_cast<int>(LK::UI_Frame_Generation_mode_nDefault_follows_the_game_s_DLSS_FG_se)] = "Frame Generation mode\nDefault follows the game's DLSS FG setting";
+    table[static_cast<int>(LK::UI_Frame_Generation_mode)] = "Frame Generation mode";
+    table[static_cast<int>(LK::UI_FFX_FG_Version)] = "FFX FG Version";
+    table[static_cast<int>(LK::UI_Frame_Gen_fsrfg)] = "Frame Gen##fsrfg";
+    table[static_cast<int>(LK::UI_Frame_Gen_xefg)] = "Frame Gen##xefg";
+    table[static_cast<int>(LK::UI_Frame_Gen_dlssg)] = "Frame Gen##dlssg";
+    table[static_cast<int>(LK::UI_Reprojection_mode)] = "Reprojection##mode";
 }
