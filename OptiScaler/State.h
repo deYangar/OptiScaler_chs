@@ -288,6 +288,11 @@ class State
     sl::DLSSGMode dlssgLastSetMode = sl::DLSSGMode::eOff;
     int dlssgDetectedInterpolationCount = 0;
 
+    // What the game requested from DLSSG when it's used as FG Input
+    // This might need to get moved to Sl_Inputs_Dx12
+    bool dlssgInputGameEnabled = false;
+    int dlssgInputGameInterpolationCount = 1;
+
     // DLSS
     bool dlssPresetsOverriddenExternally = false;
     bool dlssPresetsOverridenByOpti = false;
@@ -319,8 +324,14 @@ class State
     std::vector<std::string> detectedQuirks {};
 
     // FFX
-    std::vector<const char*> ffxUpscalerVersionNames {};
-    std::vector<uint64_t> ffxUpscalerVersionIds {};
+    // Separate lists as DX12 (incl. w/Dx12) and Vulkan FFX can report different upscalers
+    struct FfxVersionList
+    {
+        std::vector<const char*> names {};
+        std::vector<uint64_t> ids {};
+    };
+    FfxVersionList ffxUpscalerVersionsDx12 {};
+    FfxVersionList ffxUpscalerVersionsVk {};
     std::vector<const char*> ffxFGVersionNames {};
     std::vector<uint64_t> ffxFGVersionIds {};
     std::optional<uint32_t> currentFsr4Preset {};

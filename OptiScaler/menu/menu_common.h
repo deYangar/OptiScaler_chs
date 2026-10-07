@@ -144,7 +144,6 @@ class MenuCommon
     inline static float _limitFps = std::numeric_limits<float>::infinity();
 
     // ffx
-    inline static int _ffxUpscalerIndex = -1;
     inline static int _ffxFGIndex = -1;
 
     // output scaling
@@ -229,6 +228,8 @@ class MenuCommon
     static void RenderActiveUpscalerSettings(RenderMenuContext& ctx);
     static void RenderFrameGenerationSelection(RenderMenuContext& ctx);
     static void RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx);
+    static void RenderFGModeCombo(RenderMenuContext& ctx, const char* label, int maxInterpolationCount,
+                                  CustomOptional<int>* countConfig);
     static void RenderFsrCommonSettings(RenderMenuContext& ctx);
     static void RenderFramerateSettings(RenderMenuContext& ctx);
     static void RenderVsyncSettings(RenderMenuContext& ctx);
