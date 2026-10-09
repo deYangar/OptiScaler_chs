@@ -1413,6 +1413,10 @@ enum class LK {
     UI_Frame_Gen_xefg,
     UI_Frame_Gen_dlssg,
     UI_Reprojection_mode,
+    UI_s_s_s_Input_s,
+    UI_Game_specific_quirks_applied_by_OptiScaler,
+    UI_s_2f,
+    UI_s_ux,
     COUNT
 };
 

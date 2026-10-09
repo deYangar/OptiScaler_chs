@@ -1419,4 +1419,8 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Frame_Gen_xefg)] = "Frame Gen##xefg";
     table[static_cast<int>(LK::UI_Frame_Gen_dlssg)] = "Frame Gen##dlssg";
     table[static_cast<int>(LK::UI_Reprojection_mode)] = "Reprojection##mode";
+    table[static_cast<int>(LK::UI_s_s_s_Input_s)] = "%s%s | %s | Input: %s";
+    table[static_cast<int>(LK::UI_Game_specific_quirks_applied_by_OptiScaler)] = "Game specific quirks applied by OptiScaler.";
+    table[static_cast<int>(LK::UI_s_2f)] = "%s (%.2f)";
+    table[static_cast<int>(LK::UI_s_ux)] = "%s %ux";
 }

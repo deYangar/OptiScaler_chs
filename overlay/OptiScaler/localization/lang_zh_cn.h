@@ -1431,4 +1431,8 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Frame_Gen_xefg)] = "帧生成##xefg";
     table[static_cast<int>(LK::UI_Frame_Gen_dlssg)] = "帧生成##dlssg";
     table[static_cast<int>(LK::UI_Reprojection_mode)] = "重投影##mode";
+    table[static_cast<int>(LK::UI_s_s_s_Input_s)] = "%s%s | %s | 输入：%s";
+    table[static_cast<int>(LK::UI_Game_specific_quirks_applied_by_OptiScaler)] = "由 OptiScaler 应用的游戏特定兼容处理。";
+    table[static_cast<int>(LK::UI_s_2f)] = "%s (%.2f)";
+    table[static_cast<int>(LK::UI_s_ux)] = "%s %ux";
 }
