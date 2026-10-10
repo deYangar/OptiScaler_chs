@@ -1,9 +1,7 @@
 [
- "Late latch mouse",
- "Background Blur",
- "Blur Strength",
- "Customise this tab",
- "Range: %.2f ms - %.2f ms",
- "Frametime: %.2fms / %.1ffps (avg: %.1ffps)",
- "Upscaler GPU time: %.2fms (avg: %.2fms)"
+ "Override XeFG Ratio",
+ "The game doesn't send it",
+ "Set by XeFG: the game's own keeps its XeLL",
+ "The GPU's own: AntiLag 2 on AMD, Reflex on Nvidia, XeLL on Intel, LatencyFlex otherwise",
+ "Incompatible: %s"
 ]
