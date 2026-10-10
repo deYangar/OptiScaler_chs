@@ -12,6 +12,7 @@
 #include <proxies/XeSS_Proxy.h>
 #include <proxies/XeFG_Proxy.h>
 #include <proxies/XeLL_Proxy.h>
+#include <inputs/FG/XeFG_Inputs_Dx12.h>
 #include <proxies/NVNGX_Proxy.h>
 #include <proxies/FfxApi_Proxy.h>
 
@@ -463,6 +464,14 @@ HMODULE LibraryLoadHooks::LoadLibraryCheckW(std::wstring libName, LPCWSTR lpLibF
         return module;
     }
 
+    // Also the game's own XeFG, for its XeLL context
+    if (CheckDllNameW(&libName, &xefgNamesW))
+    {
+        auto module = NtdllProxy::LoadLibraryExW_Ldr(lpLibFullPath, NULL, 0);
+        XeFGInputs::Hook(module);
+        return module;
+    }
+
     if (CheckDllNameW(&libName, &xessDx11NamesW))
     {
         if (XeSSProxy::ModuleDx11() != nullptr)
@@ -725,6 +734,27 @@ void LibraryLoadHooks::AfterFreeLibrary(PVOID lpLibrary)
     StreamlineHooks::onModuleFreed(lpLibrary);
 }
 
+void LibraryLoadHooks::AfterLoadLibrary(HMODULE library)
+{
+#ifdef LOW_LATENCY_INPUTS
+    if (library == nullptr || State::Instance().isShuttingDown)
+        return;
+
+    // libxell also comes in as another library's import, which isn't loaded through here
+    if (auto libxell = KernelBaseProxy::GetModuleHandleW_()(L"libxell.dll"))
+        XeLLProxy::RedirectToInput(libxell);
+
+    // Or as another copy by its full path
+    wchar_t path[MAX_PATH];
+
+    if (GetModuleFileNameW(library, path, MAX_PATH) != 0 &&
+        EndsWithInsensitive(std::wstring_view(path), std::wstring_view(L"\\libxell.dll")))
+    {
+        XeLLProxy::RedirectToInput(library);
+    }
+#endif
+}
+
 HMODULE LibraryLoadHooks::LoadNvApi()
 {
     LOG_FUNC();
@@ -971,12 +1001,32 @@ HMODULE LibraryLoadHooks::LoadNvngxDlss(std::wstring originalPath)
 
 void LibraryLoadHooks::CheckModulesInMemory()
 {
+    const auto isLocalStreamlineModule = [](HMODULE module) -> bool
+    {
+        if (module == nullptr)
+            return false;
+
+        char modulePath[MAX_PATH] = {};
+        if (GetModuleFileNameA(module, modulePath, sizeof(modulePath)) == 0)
+            return false;
+
+        const auto path = std::filesystem::path(modulePath).lexically_normal();
+        const std::filesystem::path localSlPath =
+            std::filesystem::path(Config::Instance()->MainDllPath.value()) / L"streamline";
+        return Util::IsSubpath(path, localSlPath.lexically_normal());
+    };
+
     if (!StreamlineHooks::isInterposerHooked())
     {
         // hook streamline right away if it's already loaded
         HMODULE slModule = nullptr;
         slModule = GetDllNameWModule(&slInterposerNamesW);
-        if (slModule != nullptr && slModule != State::Instance().optiSlInterposer)
+
+        const bool gameInterposer =
+            slModule != nullptr && slModule != State::Instance().optiSlInterposer &&
+            (!isLocalStreamlineModule(slModule) || State::Instance().activeFgInput == FGInput::NvngxFG);
+
+        if (gameInterposer)
         {
             LOG_DEBUG("sl.interposer.dll already in memory");
             StreamlineHooks::hookInterposer(slModule);
@@ -997,21 +1047,6 @@ void LibraryLoadHooks::CheckModulesInMemory()
             }
         }
     }
-
-    const auto isLocalStreamlineModule = [](HMODULE module) -> bool
-    {
-        if (module == nullptr)
-            return false;
-
-        char modulePath[MAX_PATH] = {};
-        if (GetModuleFileNameA(module, modulePath, sizeof(modulePath)) == 0)
-            return false;
-
-        const auto path = std::filesystem::path(modulePath).lexically_normal();
-        const std::filesystem::path localSlPath =
-            std::filesystem::path(Config::Instance()->MainDllPath.value()) / L"streamline";
-        return Util::IsSubpath(path, localSlPath.lexically_normal());
-    };
 
     // DLSS-G
     {

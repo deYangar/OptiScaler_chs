@@ -26,6 +26,7 @@
 #include "inputs/FSR2_Vk.h"
 #include "inputs/FSR3_Dx12.h"
 #include "inputs/FG/FSR3_Dx12_FG.h"
+#include "inputs/FG/XeFG_Inputs_Dx12.h"
 
 #include <fsr4/FSR4ModelSelection.h>
 
@@ -1140,7 +1141,7 @@ static void CheckWorkingMode()
     if (reshadeModule == nullptr && Config::Instance()->LoadReShade.value_or_default() &&
         !Config::Instance()->CreateD3D12DeviceForLuma.value_or_default())
     {
-        auto rsFile = Util::ExePath().parent_path() / L"ReShade64.dll";
+        auto rsFile = Util::ReShadePath();
         SetEnvironmentVariableW(L"RESHADE_DISABLE_LOADING_CHECK", L"1");
 
         if (skModule != nullptr)
@@ -1150,7 +1151,7 @@ static void CheckWorkingMode()
         reshadeModule = NtdllProxy::LoadLibraryExW_Ldr(rsFile.c_str(), NULL, 0);
         State::DisableServeOriginal(201);
 
-        LOG_INFO("Loading ReShade64.dll, result: {0:X}", (size_t) reshadeModule);
+        LOG_INFO("Loading {}, result: {:X}", rsFile.filename().string(), (size_t) reshadeModule);
     }
 
     // Version check
@@ -1224,6 +1225,9 @@ static void printQuirks(flag_set<GameQuirk>& quirks)
 
     if (quirks & GameQuirk::CreateSLOnThe2ndDevice)
         stringQuirks.push_back("Create SL on the 2nd device");
+
+    if (quirks & GameQuirk::XeFGCameraMotionFill)
+        stringQuirks.push_back("Fill XeFG input motion vectors with camera motion");
 
     state->detectedQuirks.append_range(stringQuirks);
     for (auto& stringQuirk : stringQuirks)
@@ -1416,10 +1420,14 @@ void CheckMemoryForProxies()
     FfxApiProxy::InitFfxDx12_Denoiser();
     FfxApiProxy::InitFfxDx12_Radiance();
 
+    // Only the game's XeFG already in memory, the one OptiScaler loads next is hooked once the game loads it too
+    auto gameXeFG = KernelBaseProxy::GetModuleHandleW_()(L"libxess_fg.dll");
+
     XeSSProxy::InitXeSS();
     XeSSProxy::InitXeSSDx11();
     XeFGProxy::InitXeFG();
     XeLLProxy::InitXeLL();
+    XeFGInputs::Hook(gameXeFG);
 
     XellHooks::Hook();
 
@@ -1565,10 +1573,23 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         State::Instance().activeFgNvngx = Config::Instance()->FGNvngxReplacement.value_or_default();
 
         // Ensure valid FG configuration
+        if (State::Instance().activeFgOutput == FGOutput::NoFG && State::Instance().activeFgInput != FGInput::NoFG &&
+            State::Instance().activeFgInput != FGInput::NvngxFG &&
+            State::Instance().activeFgInput != FGInput::ForceXeLL)
+        {
+            spdlog::warn("FG Input {} without an FG Output, using none",
+                         magic_enum::enum_name(State::Instance().activeFgInput));
+            State::Instance().activeFgInput = FGInput::NoFG;
+        }
+
         if (State::Instance().activeFgInput != FGInput::NvngxFG && State::Instance().activeFgOutput != FGOutput::DLSSG)
             State::Instance().activeFgNvngx = FGNvngxReplacement::None;
 
         if (State::Instance().activeFgInput == FGInput::NvngxFG)
+            State::Instance().activeFgOutput = FGOutput::NoFG;
+
+        // XeFG input to XeFG output runs the game's own XeFG, without OptiScaler's FG pipeline
+        if (XeFGInputs::Passthrough())
             State::Instance().activeFgOutput = FGOutput::NoFG;
 
         // Init Kernel proxies

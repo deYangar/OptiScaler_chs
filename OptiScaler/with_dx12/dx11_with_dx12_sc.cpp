@@ -12,6 +12,7 @@
 
 #include <Util.h>
 #include <Config.h>
+#include <misc/IdentifyGpu.h>
 
 #include <d3d11.h>
 #include <d3d11_4.h>
@@ -1234,13 +1235,18 @@ bool Dx11wDx12SC::_CopyDx11SharedToDx12FGBackBuffer(UINT dx11Index)
 
 bool Dx11wDx12SC::_WaitForInteropCopyOnPresentQueue()
 {
-    if (_fg == nullptr || _copyFence == nullptr)
+    if (_copyFence == nullptr)
         return false;
 
     if (_lastInteropCopyFenceValue == 0)
         return true;
 
-    auto result = _fg->GetCommandQueue()->Wait(_copyFence, _lastInteropCopyFenceValue);
+    auto presentQueue = _fg != nullptr ? _fg->GetCommandQueue() : nullptr;
+
+    if (presentQueue == nullptr || presentQueue == _dx12CommandQueue)
+        return true;
+
+    auto result = presentQueue->Wait(_copyFence, _lastInteropCopyFenceValue);
     if (FAILED(result))
     {
         LOG_ERROR("present queue Wait on interop copy fence failed: {:X}", (UINT) result);
