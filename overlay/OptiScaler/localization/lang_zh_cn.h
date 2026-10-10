@@ -1435,4 +1435,9 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Game_specific_quirks_applied_by_OptiScaler)] = "由 OptiScaler 应用的游戏特定兼容处理。";
     table[static_cast<int>(LK::UI_s_2f)] = "%s (%.2f)";
     table[static_cast<int>(LK::UI_s_ux)] = "%s %ux";
+    table[static_cast<int>(LK::UI_Override_XeFG_Ratio)] = "覆盖 XeFG 比例";
+    table[static_cast<int>(LK::UI_The_game_doesn_t_send_it)] = "游戏不发送它";
+    table[static_cast<int>(LK::UI_Set_by_XeFG_the_game_s_own_keeps_its_XeLL)] = "由 XeFG 设置：游戏自身的保留其 XeLL";
+    table[static_cast<int>(LK::UI_The_GPU_s_own_AntiLag_2_on_AMD_Reflex_on_Nvidia_XeLL_on_Inte)] = "GPU 自身的：AMD 上为 AntiLag 2，Nvidia 上为 Reflex，Intel 上为 XeLL，否则为 LatencyFlex";
+    table[static_cast<int>(LK::UI_Incompatible_s)] = "不兼容：%s";
 }

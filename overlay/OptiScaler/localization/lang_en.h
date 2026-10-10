@@ -1423,4 +1423,9 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Game_specific_quirks_applied_by_OptiScaler)] = "Game specific quirks applied by OptiScaler.";
     table[static_cast<int>(LK::UI_s_2f)] = "%s (%.2f)";
     table[static_cast<int>(LK::UI_s_ux)] = "%s %ux";
+    table[static_cast<int>(LK::UI_Override_XeFG_Ratio)] = "Override XeFG Ratio";
+    table[static_cast<int>(LK::UI_The_game_doesn_t_send_it)] = "The game doesn't send it";
+    table[static_cast<int>(LK::UI_Set_by_XeFG_the_game_s_own_keeps_its_XeLL)] = "Set by XeFG: the game's own keeps its XeLL";
+    table[static_cast<int>(LK::UI_The_GPU_s_own_AntiLag_2_on_AMD_Reflex_on_Nvidia_XeLL_on_Inte)] = "The GPU's own: AntiLag 2 on AMD, Reflex on Nvidia, XeLL on Intel, LatencyFlex otherwise";
+    table[static_cast<int>(LK::UI_Incompatible_s)] = "Incompatible: %s";
 }

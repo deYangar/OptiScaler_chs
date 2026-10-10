@@ -1417,6 +1417,11 @@ enum class LK {
     UI_Game_specific_quirks_applied_by_OptiScaler,
     UI_s_2f,
     UI_s_ux,
+    UI_Override_XeFG_Ratio,
+    UI_The_game_doesn_t_send_it,
+    UI_Set_by_XeFG_the_game_s_own_keeps_its_XeLL,
+    UI_The_GPU_s_own_AntiLag_2_on_AMD_Reflex_on_Nvidia_XeLL_on_Inte,
+    UI_Incompatible_s,
     COUNT
 };
 

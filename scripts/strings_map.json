@@ -1253,5 +1253,10 @@
  "%s%s | %s | Input: %s": "UI_s_s_s_Input_s",
  "Game specific quirks applied by OptiScaler.": "UI_Game_specific_quirks_applied_by_OptiScaler",
  "%s (%.2f)": "UI_s_2f",
- "%s %ux": "UI_s_ux"
+ "%s %ux": "UI_s_ux",
+ "Override XeFG Ratio": "UI_Override_XeFG_Ratio",
+ "The game doesn't send it": "UI_The_game_doesn_t_send_it",
+ "Set by XeFG: the game's own keeps its XeLL": "UI_Set_by_XeFG_the_game_s_own_keeps_its_XeLL",
+ "The GPU's own: AntiLag 2 on AMD, Reflex on Nvidia, XeLL on Intel, LatencyFlex otherwise": "UI_The_GPU_s_own_AntiLag_2_on_AMD_Reflex_on_Nvidia_XeLL_on_Inte",
+ "Incompatible: %s": "UI_Incompatible_s"
 }
