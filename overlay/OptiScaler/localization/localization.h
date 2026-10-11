@@ -1422,6 +1422,15 @@ enum class LK {
     UI_Set_by_XeFG_the_game_s_own_keeps_its_XeLL,
     UI_The_GPU_s_own_AntiLag_2_on_AMD_Reflex_on_Nvidia_XeLL_on_Inte,
     UI_Incompatible_s,
+    UI_FPS_Limiter,
+    UI_Only_limits_the_FPS,
+    UI_Needs_an_AMD_GPU,
+    UI_Not_with_XeFG,
+    UI_XeLL_XeFG_paces_with_it,
+    UI_nReflex_can_do_the_sleeping_instead_XeFG_keeps_an_XeLL_conte,
+    UI_nAntiLag_2_can_do_the_sleeping_instead_XeFG_keeps_an_XeLL_co,
+    UI_Set_by_XeFG_the_game_s_own_keeps_its_XeLL_only_the_FPS_limit,
+    UI_Save_Settings_and_restart_the_game_XeFG_keeps_the_low_latenc,
     COUNT
 };
 

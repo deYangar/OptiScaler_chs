@@ -1440,4 +1440,13 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Set_by_XeFG_the_game_s_own_keeps_its_XeLL)] = "由 XeFG 设置：游戏自身的保留其 XeLL";
     table[static_cast<int>(LK::UI_The_GPU_s_own_AntiLag_2_on_AMD_Reflex_on_Nvidia_XeLL_on_Inte)] = "GPU 自身的：AMD 上为 AntiLag 2，Nvidia 上为 Reflex，Intel 上为 XeLL，否则为 LatencyFlex";
     table[static_cast<int>(LK::UI_Incompatible_s)] = "不兼容：%s";
+    table[static_cast<int>(LK::UI_FPS_Limiter)] = "FPS 限制器";
+    table[static_cast<int>(LK::UI_Only_limits_the_FPS)] = "仅限制 FPS";
+    table[static_cast<int>(LK::UI_Needs_an_AMD_GPU)] = "需要 AMD GPU";
+    table[static_cast<int>(LK::UI_Not_with_XeFG)] = "不能与 XeFG 一起使用";
+    table[static_cast<int>(LK::UI_XeLL_XeFG_paces_with_it)] = "XeLL、XeFG 会跟随它进行节奏控制。";
+    table[static_cast<int>(LK::UI_nReflex_can_do_the_sleeping_instead_XeFG_keeps_an_XeLL_conte)] = "\nReflex 可以代替执行休眠，XeFG 会保留自己的 XeLL 上下文。";
+    table[static_cast<int>(LK::UI_nAntiLag_2_can_do_the_sleeping_instead_XeFG_keeps_an_XeLL_co)] = "\nAntiLag 2 可以代替执行休眠，XeFG 会保留自己的 XeLL 上下文。";
+    table[static_cast<int>(LK::UI_Set_by_XeFG_the_game_s_own_keeps_its_XeLL_only_the_FPS_limit)] = "由 XeFG 设置：游戏自身的设置会保留其 XeLL（只有 FPS 限制由 OptiScaler 控制）";
+    table[static_cast<int>(LK::UI_Save_Settings_and_restart_the_game_XeFG_keeps_the_low_latenc)] = "保存设置并重启游戏：XeFG 会保留其启动时的低延迟输出";
 }

@@ -1428,4 +1428,13 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Set_by_XeFG_the_game_s_own_keeps_its_XeLL)] = "Set by XeFG: the game's own keeps its XeLL";
     table[static_cast<int>(LK::UI_The_GPU_s_own_AntiLag_2_on_AMD_Reflex_on_Nvidia_XeLL_on_Inte)] = "The GPU's own: AntiLag 2 on AMD, Reflex on Nvidia, XeLL on Intel, LatencyFlex otherwise";
     table[static_cast<int>(LK::UI_Incompatible_s)] = "Incompatible: %s";
+    table[static_cast<int>(LK::UI_FPS_Limiter)] = "FPS Limiter";
+    table[static_cast<int>(LK::UI_Only_limits_the_FPS)] = "Only limits the FPS";
+    table[static_cast<int>(LK::UI_Needs_an_AMD_GPU)] = "Needs an AMD GPU";
+    table[static_cast<int>(LK::UI_Not_with_XeFG)] = "Not with XeFG";
+    table[static_cast<int>(LK::UI_XeLL_XeFG_paces_with_it)] = "XeLL, XeFG paces with it.";
+    table[static_cast<int>(LK::UI_nReflex_can_do_the_sleeping_instead_XeFG_keeps_an_XeLL_conte)] = "\nReflex can do the sleeping instead, XeFG keeps an XeLL context of its own.";
+    table[static_cast<int>(LK::UI_nAntiLag_2_can_do_the_sleeping_instead_XeFG_keeps_an_XeLL_co)] = "\nAntiLag 2 can do the sleeping instead, XeFG keeps an XeLL context of its own.";
+    table[static_cast<int>(LK::UI_Set_by_XeFG_the_game_s_own_keeps_its_XeLL_only_the_FPS_limit)] = "Set by XeFG: the game's own keeps its XeLL (only the FPS limit is OptiScaler's)";
+    table[static_cast<int>(LK::UI_Save_Settings_and_restart_the_game_XeFG_keeps_the_low_latenc)] = "Save Settings and restart the game: XeFG keeps the low latency output it started with";
 }
