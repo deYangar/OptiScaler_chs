@@ -5,12 +5,13 @@
 
 #include "NVNGX_DLSS.h"
 #include <framegen/nvngx/Nvngx_FG.h>
+#include <inputs/FG/Upscaler_Inputs_Vk.h>
 #include "NVNGX_Parameter.h"
 #include "proxies/NVNGX_Proxy.h"
 
 #include "upscalers/FeatureProvider_Vk.h"
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 #include <ankerl/unordered_dense.h>
 #include <imgui/ImGuiNotify.hpp>
 #include <misc/IdentifyGpu.h>
@@ -1058,6 +1059,8 @@ NVSDK_NGX_API NVSDK_NGX_Result NVSDK_NGX_VULKAN_EvaluateFeature(VkCommandBuffer 
 
     deviceContext = VkContexts[handleId].feature.get();
     state.currentFeature = deviceContext;
+
+    UpscalerInputsVk::UpscaleStart(InCmdList, InParameters, deviceContext);
 
     auto upscaleResult = deviceContext->Evaluate(InCmdList, InParameters);
 
