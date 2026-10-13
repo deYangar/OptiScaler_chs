@@ -1783,7 +1783,7 @@ void MenuCommon::HandleMenuShortcuts(RenderMenuContext& ctx)
             inputFG = false;
 
             if (state.activeFgInput != FGInput::NoFG && state.activeFgOutput != FGOutput::NoFG &&
-                (state.currentFGSwapchain != nullptr || state.activeFgInput == FGInput::NvngxFG))
+                (state.FGSwapchainExists() || state.activeFgInput == FGInput::NvngxFG))
             {
                 if (fgHotkeyLeftDefault)
                 {
@@ -3533,10 +3533,6 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
         (streamlineVersion == feature_version { 0, 0, 0 } || streamlineVersion > feature_version { 2, 0, 1 });
     inputOptions[nvngxInputIndex].set_disabled(nukemsUnsupportedApi, "Unsupported API");
 
-    // FSR FG output requirements
-    auto constexpr fsrfgOutputIndex = (uint32_t) FGOutput::FSRFG;
-    outputOptions[fsrfgOutputIndex].set_disabled(state.swapchainApi == API::Vulkan, "Unsupported API");
-
     // XeFG output requirements
     auto constexpr xefgOutputIndex = (uint32_t) FGOutput::XeFG;
     outputOptions[xefgOutputIndex].set_disabled(state.swapchainApi == API::Vulkan, "Unsupported API");
@@ -3772,7 +3768,7 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
             ImGui::EndDisabled();
         }
 
-        auto fgOutput = reinterpret_cast<IFGFeature_Dx12*>(state.currentFG);
+        auto fgOutput = state.CurrentFG();
         if ((state.activeFgOutput != FGOutput::Reprojection && state.activeFgOutput != FGOutput::NoFG &&
              state.activeFgInput != FGInput::NoFG && state.activeFgInput != FGInput::NvngxFG) &&
             fgOutput)
@@ -3824,7 +3820,7 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
 
                 if (showOutputSpecificFGSettings)
                 {
-                    auto fgOutput = reinterpret_cast<IFGFeature_Dx12*>(state.currentFG);
+                    auto fgOutput = state.CurrentFG();
                     if (fgOutput)
                     {
                         ImGui::BeginDisabled(!fgOutput->IsActive());
@@ -4062,7 +4058,7 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
 
     // FSR FG controls
     if (ScopedCard::Shows("fg_fsrfg") && state.activeFgOutput == FGOutput::FSRFG &&
-        state.activeFgInput != FGInput::NoFG && state.currentFGSwapchain != nullptr)
+        state.activeFgInput != FGInput::NoFG && state.FGSwapchainExists())
     {
         if (state.activeFgInput != FGInput::Upscaler ||
             (currentFeature != nullptr && !currentFeature->IsFrozen()) && FfxApiProxy::IsFGReady())
@@ -5030,12 +5026,6 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
                     ShowTooltip("Makes a copy of the depth buffer\nCan fix broken visuals in some games on AMD "
                                 "GPUs under Windows\nCan cause stutters, so best to use only when necessary");
                 }
-            }
-            else if (state.swapchainApi == Vulkan)
-            {
-                ImGui::TextColored(toneMapColor(ImVec4(1.f, 0.8f, 0.f, 1.f)),
-                                   "DLSSG is purposefully disabled when this menu is visible");
-                ImGui::Spacing();
             }
         }
 
@@ -8495,7 +8485,32 @@ void MenuCommon::RenderMainMenuTabs(RenderMenuContext& ctx)
         ImGui::TextDisabled("FG");
         ImGui::SameLine(0.0f, 8.0f * menuResScale);
         auto fg = state.currentFG;
-        if (fg != nullptr && fg->IsActive() && !fg->IsPaused())
+
+        // Nvngx replacements don't use currentFG, have to use the DLSSG state detected from the game
+        const FGNvngxReplacement activeNvngxFg = state.activeFgNvngx;
+
+        if (activeNvngxFg != FGNvngxReplacement::None)
+        {
+            const char* nvngxName = activeNvngxFg == FGNvngxReplacement::Nukems   ? "Nukems"
+                                    : activeNvngxFg == FGNvngxReplacement::Arturs ? "Enabler"
+                                    : activeNvngxFg == FGNvngxReplacement::FFX    ? "FFX"
+                                                                                  : "Combo";
+            const int detectedCount = state.dlssgDetectedInterpolationCount;
+
+            if (detectedCount <= 0)
+            {
+                ImGui::TextDisabled("Off");
+            }
+
+            else
+            {
+                const bool unsupported = detectedCount > Nvngx_FG::getMaxFakeFramesCount();
+                const ImVec4 color = unsupported ? ImVec4(1.f, 0.8f, 0.f, 1.f) : ImVec4(0.35f, 0.85f, 0.45f, 1.f);
+                ImGui::TextColored(toneMapColor(color), "%s %dx", nvngxName, detectedCount + 1);
+            }
+        }
+
+        else if (fg != nullptr && fg->IsActive() && !fg->IsPaused())
         {
             const UINT multiplier = fg->GetInterpolatedFrameCount() + 1;
 
