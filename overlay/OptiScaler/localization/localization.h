@@ -1431,6 +1431,7 @@ enum class LK {
     UI_nAntiLag_2_can_do_the_sleeping_instead_XeFG_keeps_an_XeLL_co,
     UI_Set_by_XeFG_the_game_s_own_keeps_its_XeLL_only_the_FPS_limit,
     UI_Save_Settings_and_restart_the_game_XeFG_keeps_the_low_latenc,
+    UI_s_dx,
     COUNT
 };
 

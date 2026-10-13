@@ -1437,4 +1437,5 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_nAntiLag_2_can_do_the_sleeping_instead_XeFG_keeps_an_XeLL_co)] = "\nAntiLag 2 can do the sleeping instead, XeFG keeps an XeLL context of its own.";
     table[static_cast<int>(LK::UI_Set_by_XeFG_the_game_s_own_keeps_its_XeLL_only_the_FPS_limit)] = "Set by XeFG: the game's own keeps its XeLL (only the FPS limit is OptiScaler's)";
     table[static_cast<int>(LK::UI_Save_Settings_and_restart_the_game_XeFG_keeps_the_low_latenc)] = "Save Settings and restart the game: XeFG keeps the low latency output it started with";
+    table[static_cast<int>(LK::UI_s_dx)] = "%s %dx";
 }
