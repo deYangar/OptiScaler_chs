@@ -1438,4 +1438,7 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Set_by_XeFG_the_game_s_own_keeps_its_XeLL_only_the_FPS_limit)] = "Set by XeFG: the game's own keeps its XeLL (only the FPS limit is OptiScaler's)";
     table[static_cast<int>(LK::UI_Save_Settings_and_restart_the_game_XeFG_keeps_the_low_latenc)] = "Save Settings and restart the game: XeFG keeps the low latency output it started with";
     table[static_cast<int>(LK::UI_s_dx)] = "%s %dx";
+    table[static_cast<int>(LK::UI_Loaded_ASI_Plugins)] = "Loaded ASI Plugins";
+    table[static_cast<int>(LK::UI_Quirks_ASI)] = "Quirks / ASI";
+    table[static_cast<int>(LK::UI_Game_specific_quirks_applied_by_OptiScaler_and_loaded_ASI_pl)] = "Game specific quirks applied by OptiScaler and loaded ASI plugins.";
 }

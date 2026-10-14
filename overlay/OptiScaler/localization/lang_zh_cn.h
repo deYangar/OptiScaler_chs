@@ -1450,4 +1450,7 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Set_by_XeFG_the_game_s_own_keeps_its_XeLL_only_the_FPS_limit)] = "由 XeFG 设置：游戏自身的设置会保留其 XeLL（只有 FPS 限制由 OptiScaler 控制）";
     table[static_cast<int>(LK::UI_Save_Settings_and_restart_the_game_XeFG_keeps_the_low_latenc)] = "保存设置并重启游戏：XeFG 会保留其启动时的低延迟输出";
     table[static_cast<int>(LK::UI_s_dx)] = "%s %dx";
+    table[static_cast<int>(LK::UI_Loaded_ASI_Plugins)] = "已加载 ASI 插件";
+    table[static_cast<int>(LK::UI_Quirks_ASI)] = "Quirks / ASI";
+    table[static_cast<int>(LK::UI_Game_specific_quirks_applied_by_OptiScaler_and_loaded_ASI_pl)] = "由 OptiScaler 应用的游戏特定 Quirks 及已加载的 ASI 插件。";
 }

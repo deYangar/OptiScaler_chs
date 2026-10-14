@@ -1432,6 +1432,9 @@ enum class LK {
     UI_Set_by_XeFG_the_game_s_own_keeps_its_XeLL_only_the_FPS_limit,
     UI_Save_Settings_and_restart_the_game_XeFG_keeps_the_low_latenc,
     UI_s_dx,
+    UI_Loaded_ASI_Plugins,
+    UI_Quirks_ASI,
+    UI_Game_specific_quirks_applied_by_OptiScaler_and_loaded_ASI_pl,
     COUNT
 };
 
