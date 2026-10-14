@@ -250,6 +250,14 @@ class State
     HMODULE optiSlPCL = nullptr;
     HMODULE optiDLSSG = nullptr;
 
+    // One of the modules of OptiScaler's own Streamline (DLSSG output)
+    bool IsOptiStreamlineModule(HMODULE module) const
+    {
+        return module != nullptr && optiSlInterposer != nullptr &&
+               (module == optiSlInterposer || module == optiSlCommon || module == optiSlDLSSG ||
+                module == optiSlReflex || module == optiSlPCL || module == optiDLSSG);
+    }
+
     // NGX OTA
     std::string NGX_OTA_Dlss;
     std::string NGX_OTA_Dlssd;
@@ -322,6 +330,15 @@ class State
 
     // quirks
     std::vector<std::string> detectedQuirks {};
+
+    // ASI plugins loaded from the plugins folder, late-load ones are added from another thread
+    struct LoadedAsiPlugin
+    {
+        std::string name;
+        bool isOptiPatcher;
+    };
+    std::vector<LoadedAsiPlugin> loadedAsiPlugins {};
+    std::mutex loadedAsiPluginsMutex;
 
     // FFX
     // Separate lists as DX12 (incl. w/Dx12) and Vulkan FFX can report different upscalers

@@ -2271,7 +2271,7 @@ void MenuCommon::RenderPerformanceOverlay(RenderMenuContext& ctx)
             std::string secondLine = "";
             std::string thirdLine = "";
 
-            auto fg = state.currentFG;
+            auto fg = state.CurrentFG();
             auto fgText = (fg != nullptr && fg->IsActive() && !fg->IsPaused()) ? (" (" + std::string(fg->Name()) + ")")
                                                                                : std::string();
 
@@ -3411,7 +3411,63 @@ void MenuCommon::RenderActiveUpscalerSettings(RenderMenuContext& ctx)
     }
 }
 
-static void DrawSliderStepMarks(const ImVec2& framePos, float frameWidth, float frameHeight, int stepCount);
+// Draws a line wherever an integer slider switches to the next step, so it's visible where to click
+static void DrawSliderStepMarks(const ImVec2& framePos, float frameWidth, float frameHeight, int stepCount)
+{
+    if (stepCount < 2)
+        return;
+
+    constexpr float grabPadding = 2.0f; // Hardcoded in ImGui as well
+    const float sliderSize = frameWidth - grabPadding * 2.0f;
+    const float grabSize =
+        std::min(std::max(sliderSize / (float) stepCount, ImGui::GetStyle().GrabMinSize), sliderSize);
+    const float firstGrabCenter = framePos.x + grabPadding + grabSize * 0.5f;
+    const float grabTravel = (sliderSize - grabSize) / (float) (stepCount - 1);
+    const float inset = frameHeight * 0.2f;
+    const ImU32 color = ImGui::GetColorU32(ImGuiCol_Text, 0.35f);
+    auto drawList = ImGui::GetWindowDrawList();
+
+    for (int step = 1; step < stepCount; step++)
+    {
+        // Snapped to the pixel grid to keep the 1 px line sharp, AddLine already centers it on the pixel
+        const float x = std::floor(firstGrabCenter + grabTravel * ((float) step - 0.5f));
+        drawList->AddLine(ImVec2(x, framePos.y + inset), ImVec2(x, framePos.y + frameHeight - inset), color);
+    }
+}
+
+// Integer slider over [0, stepCount) with step marks and stepName(step) as the shown text
+// Clicking a step applies it right away, while dragging only applies the step it's released on,
+// so switching e.g. from Off to 4X doesn't go through every mode in between
+// Returns true when step got changed
+static bool RenderStepSlider(const char* label, int& step, int stepCount,
+                             const std::function<std::string(int)>& stepName)
+{
+    // Step under the grab during a drag, -1 when not dragging
+    auto storage = ImGui::GetStateStorage();
+    const ImGuiID id = ImGui::GetID(label);
+    const int draggedStep = storage->GetInt(id, -1);
+    int shownStep = draggedStep >= 0 ? draggedStep : step;
+
+    const ImVec2 sliderPos = ImGui::GetCursorScreenPos();
+    const float sliderWidth = ImGui::CalcItemWidth();
+    const float sliderHeight = ImGui::GetFrameHeight();
+    ImGui::SliderInt(label, &shownStep, 0, stepCount - 1, stepName(shownStep).c_str(), ImGuiSliderFlags_NoInput);
+    DrawSliderStepMarks(sliderPos, sliderWidth, sliderHeight, stepCount);
+
+    // The click itself moves the grab on the activation frame, that's the only change applied immediately
+    const bool apply = (ImGui::IsItemActivated() || ImGui::IsItemDeactivated()) && shownStep != step;
+
+    if (ImGui::IsItemActive())
+        storage->SetInt(id, shownStep);
+    else if (draggedStep >= 0)
+        storage->SetInt(id, -1);
+
+    if (!apply)
+        return false;
+
+    step = shownStep;
+    return true;
+}
 
 // Slider for overriding the game's FG ratio: Off, Default (no override), 2X, 3X... up to maxInterpolationCount
 static bool RenderRatioOverrideSlider(const char* label, CustomOptional<int, NoDefault>& setting,
@@ -3422,15 +3478,12 @@ static bool RenderRatioOverrideSlider(const char* label, CustomOptional<int, NoD
     if (setting.has_value())
         index = setting.value() == 0 ? 0 : std::min(setting.value(), maxInterpolationCount) + 1;
 
-    const std::string preview = index == 0 ? "Off" : index == 1 ? "Default" : std::format("{}X", index);
+    auto stepName = [](int step) -> std::string
+    {
+        return step == 0 ? "Off" : step == 1 ? "Default" : std::format("{}X", step);
+    };
 
-    const ImVec2 sliderPos = ImGui::GetCursorScreenPos();
-    const float sliderWidth = ImGui::CalcItemWidth();
-    const float sliderHeight = ImGui::GetFrameHeight();
-    const bool changed =
-        ImGui::SliderInt(label, &index, 0, maxInterpolationCount + 1, preview.c_str(), ImGuiSliderFlags_NoInput);
-    DrawSliderStepMarks(sliderPos, sliderWidth, sliderHeight, maxInterpolationCount + 2);
-    if (!changed)
+    if (!RenderStepSlider(label, index, maxInterpolationCount + 2, stepName))
         return false;
 
     if (index == 1)
@@ -3542,7 +3595,6 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
             "No real DLSSG, unsupported hardware\nOnly Nvngx FG replacements available";
     }
 
-    outputOptions[dlssgOutputIndex].set_disabled(state.swapchainApi == API::Vulkan, "Unsupported API");
     outputOptions[dlssgOutputIndex].set_disabled(!maySupportDlssg && !hasDlssgReplacement,
                                                  "Unsupported hardware and no replacements");
 
@@ -3979,28 +4031,6 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
     }
 }
 
-// Draws a line wherever an integer slider switches to the next step, so it's visible where to click
-static void DrawSliderStepMarks(const ImVec2& framePos, float frameWidth, float frameHeight, int stepCount)
-{
-    if (stepCount < 2)
-        return;
-    constexpr float grabPadding = 2.0f; // Hardcoded in ImGui as well
-    const float sliderSize = frameWidth - grabPadding * 2.0f;
-    const float grabSize =
-        std::min(std::max(sliderSize / (float) stepCount, ImGui::GetStyle().GrabMinSize), sliderSize);
-    const float firstGrabCenter = framePos.x + grabPadding + grabSize * 0.5f;
-    const float grabTravel = (sliderSize - grabSize) / (float) (stepCount - 1);
-    const float inset = frameHeight * 0.2f;
-    const ImU32 color = ImGui::GetColorU32(ImGuiCol_Text, 0.35f);
-    auto drawList = ImGui::GetWindowDrawList();
-    for (int step = 1; step < stepCount; step++)
-    {
-        // Snapped to the pixel grid to keep the 1 px line sharp, AddLine already centers it on the pixel
-        const float x = std::floor(firstGrabCenter + grabTravel * ((float) step - 0.5f));
-        drawList->AddLine(ImVec2(x, framePos.y + inset), ImVec2(x, framePos.y + frameHeight - inset), color);
-    }
-}
-
 // Replaces the Active checkbox + MFG combo of FG outputs with a single slider
 // maxInterpolationCount of 0 means the output doesn't generate frames, "On" is shown instead of "2X"
 void MenuCommon::RenderFGModeSlider(RenderMenuContext& ctx, const char* label, int maxInterpolationCount,
@@ -4044,23 +4074,20 @@ void MenuCommon::RenderFGModeSlider(RenderMenuContext& ctx, const char* label, i
     if (index >= (int) modes.size())
         index = 0;
 
-    std::string preview = modeName(current);
-    if (current < 0)
+    auto stepName = [&](int step) -> std::string
     {
+        const int mode = modes[step];
+        if (mode >= 0)
+            return modeName(mode);
+
         const int gameMode =
             state.dlssgInputGameEnabled ? std::min(state.dlssgInputGameInterpolationCount, maxMode) : 0;
-        preview += std::format(" ({})", modeName(gameMode));
-    }
+        return std::format("{} ({})", modeName(mode), modeName(gameMode));
+    };
 
     ImGui::PushItemWidth(150.0f * ctx.menuResScale);
 
-    // Where the slider frame is going to be, used for the step lines
-    const ImVec2 sliderPos = ImGui::GetCursorScreenPos();
-    const float sliderWidth = ImGui::CalcItemWidth();
-    const float sliderHeight = ImGui::GetFrameHeight();
-
-    if (ImGui::SliderInt(label, &index, 0, (int) modes.size() - 1, preview.c_str(), ImGuiSliderFlags_NoInput) &&
-        modes[index] != current)
+    if (RenderStepSlider(label, index, (int) modes.size(), stepName) && modes[index] != current)
     {
         const int mode = modes[index];
         fgHotkeyLeftDefault = false;
@@ -4082,8 +4109,6 @@ void MenuCommon::RenderFGModeSlider(RenderMenuContext& ctx, const char* label, i
         if (config->IsFGEnabled())
             state.fgChanged = true;
     }
-
-    DrawSliderStepMarks(sliderPos, sliderWidth, sliderHeight, (int) modes.size());
 
     ImGui::PopItemWidth();
 
@@ -4114,7 +4139,8 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
         {
             ScopedCard card { "FSR FG Settings" };
 
-            if (_ffxFGIndex < 0)
+            // The output resets an index from a game with more FFX versions
+            if (_ffxFGIndex < 0 || _ffxFGIndex >= (int) state.ffxFGVersionNames.size())
                 _ffxFGIndex = config->FfxFGIndex.value_or_default();
 
             if (state.ffxFGVersionNames.size() > 0)
@@ -4507,9 +4533,9 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
     }
 
     // DLSSG controls
-    if (ScopedCard::Shows("fg_dlssg") && state.activeFgOutput == FGOutput::DLSSG &&
-        state.activeFgInput != FGInput::NoFG && state.currentFGSwapchain != nullptr &&
-        StreamlineProxy::LoadStreamline() && fgOutput)
+    if (auto dlssg = state.CurrentFG(); ScopedCard::Shows("fg_dlssg") && state.activeFgOutput == FGOutput::DLSSG &&
+                                        state.activeFgInput != FGInput::NoFG && state.FGSwapchainExists() &&
+                                        StreamlineProxy::LoadStreamline() && dlssg)
     {
         ScopedCard card { "DLSSG Settings" };
 
@@ -4533,12 +4559,12 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
             ImGui::TextColored(toneMapColor(ImVec4(1.f, 0.f, 0.f, 1.f)), "OFF");
         }
 
-        RenderFGModeSlider(ctx, "Frame Gen##dlssg", fgOutput->GetMaxInterpolationCount(),
+        RenderFGModeSlider(ctx, "Frame Gen##dlssg", dlssg->GetMaxInterpolationCount(),
                            &config->FGDLSSGInterpolationCount);
 
-        if (fgOutput->GetMaxInterpolationCount() > 1)
+        if (dlssg->GetMaxInterpolationCount() > 1)
         {
-            if (fgOutput->GetDMFGSupport())
+            if (dlssg->GetDMFGSupport())
             {
                 ImGui::SameLine(0.0f, 16.0f);
 
@@ -4574,7 +4600,8 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
         }
 
         bool useGamesMarkers = config->FGDLSSGUseGamesReflexMarkers.value_or_default();
-        ImGui::BeginDisabled(!ReflexHooks::gameIsSendingMarkers());
+        // Vulkan games' markers don't reach OptiScaler's Streamline
+        ImGui::BeginDisabled(!ReflexHooks::gameIsSendingMarkers() || state.swapchainApi == API::Vulkan);
         if (ImGui::Checkbox("Use Game's Reflex Markers", &useGamesMarkers))
         {
             config->FGDLSSGUseGamesReflexMarkers = useGamesMarkers;
@@ -5186,7 +5213,7 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
 
             if (activeNvngxFg == FGNvngxReplacement::FFX || activeNvngxFg == FGNvngxReplacement::Combo)
             {
-                if (_ffxFGIndex < 0)
+                if (_ffxFGIndex < 0 || _ffxFGIndex >= (int) state.ffxFGVersionNames.size())
                     _ffxFGIndex = config->FfxFGIndex.value_or_default();
 
                 if (state.ffxFGVersionNames.size() > 0)
@@ -6616,18 +6643,55 @@ void MenuCommon::RenderMagnifierSettings(RenderMenuContext& ctx)
         ImGui::Spacing();
     }
 }
+
+// List loaded ASI plugins, excluding OptiPatcher
+static std::vector<std::string> ListedAsiPlugins(State& state)
+{
+    std::vector<std::string> names;
+    std::lock_guard<std::mutex> lock(state.loadedAsiPluginsMutex);
+    for (const auto& plugin : state.loadedAsiPlugins)
+    {
+        if (!plugin.isOptiPatcher)
+            names.push_back(plugin.name);
+    }
+    return names;
+}
+
+// Modular Quirks / ASI tab
+static bool QuirksTabVisible(State& state) { return !state.detectedQuirks.empty() || !ListedAsiPlugins(state).empty(); }
+static const char* QuirksTabLabel(State& state)
+{
+    const bool quirks = !state.detectedQuirks.empty();
+    const bool asi = !ListedAsiPlugins(state).empty();
+    if (quirks && asi)
+        return "Quirks / ASI";
+    return asi ? "ASI" : "Quirks";
+}
+
 void MenuCommon::RenderQuirksSettings(RenderMenuContext& ctx)
 {
     auto& state = ctx.state;
 
+    const auto asiPlugins = ListedAsiPlugins(state);
+
     // QUIRKS -----------------------------
-    if (state.detectedQuirks.size() > 0)
+    if (ScopedCard::Shows("active_quirks") && state.detectedQuirks.size() > 0)
     {
-        SectionTitle("Active Quirks");
+        ScopedCard card { "Active Quirks" };
 
         for (const auto& quirk : state.detectedQuirks)
         {
             ImGui::TextWrapped("%s", quirk.c_str());
+        }
+    }
+
+    // ASI PLUGINS -----------------------------
+    if (ScopedCard::Shows("loaded_asi_plugins") && asiPlugins.size() > 0)
+    {
+        ScopedCard card { "Loaded ASI Plugins" };
+        for (const auto& name : asiPlugins)
+        {
+            ImGui::TextWrapped("%s", name.c_str());
         }
     }
 }
@@ -7995,6 +8059,18 @@ void MenuCommon::RenderStatusInfo(RenderMenuContext& ctx)
                 ImGui::TextWrapped("%s", quirks.c_str());
             }
 
+            const auto asiPlugins = ListedAsiPlugins(state);
+            if (asiPlugins.size() > 0)
+            {
+                std::string asi;
+                for (const auto& name : asiPlugins)
+                    asi += asi.empty() ? name : ", " + name;
+                ImGui::TableNextColumn();
+                ImGui::TextDisabled("ASI");
+                ImGui::TableNextColumn();
+                ImGui::TextWrapped("%s", asi.c_str());
+            }
+
             ImGui::EndTable();
         }
 
@@ -8213,6 +8289,9 @@ const MenuCommon::MenuBox* MenuCommon::GetMenuBoxes(size_t& count)
         { "keybinds", "Menu", "Keybinds", [](RenderMenuContext& c) { RenderCard(c, RenderKeybindSettings); } },
         { "custom_tab", "Menu", "Custom Tab", [](RenderMenuContext& c) { RenderCard(c, RenderCustomTabSettings); }, nullptr, false },
 
+        { "active_quirks", "Quirks / ASI", "Active Quirks", nullptr, RenderQuirksSettings },
+        { "loaded_asi_plugins", "Quirks / ASI", "Loaded ASI Plugins", nullptr, RenderQuirksSettings },
+
         { "status_system", "Help / Status", "System", nullptr, RenderStatusInfo },
         { "status_detected", "Help / Status", "Detected", nullptr, RenderStatusInfo },
         { "status_hooks", "Help / Status", "Hooks / Config", nullptr, RenderStatusInfo },
@@ -8398,7 +8477,8 @@ void MenuCommon::RenderMainMenuTabs(RenderMenuContext& ctx)
         const char* description;
         DrawFn draw; // Drawn above the boxes of the tab
         bool hideLabelInMenu;
-        bool (*visible)(RenderMenuContext&) = nullptr; // Tab hidden when returned false
+        bool (*visible)(RenderMenuContext&) = nullptr;             // Tab hidden when returned false
+        const char* (*displayLabel)(RenderMenuContext&) = nullptr; // Name shown in the sidebar
     };
 
     // Boxes of a tab come from GetMenuBoxes, by the label of the tab
@@ -8411,9 +8491,9 @@ void MenuCommon::RenderMainMenuTabs(RenderMenuContext& ctx)
         { "SYSTEM", "Textures", "Mipmap bias and anisotropic filtering." },
         { "SYSTEM", "Compatibility", "Init flags, hooks, plugins and game specific workarounds." },
         { "ADVANCED", "Menu", "Menu scale, theme, FPS overlay and keybinds." },
-        { "ADVANCED", "Quirks", "Game specific quirks applied by OptiScaler.",
-+          [](RenderMenuContext& c) { RenderCard(c, RenderQuirksSettings); }, false,
-+          [](RenderMenuContext& c) { return !c.state.detectedQuirks.empty(); } },
+        { "ADVANCED", "Quirks", "Game specific quirks applied by OptiScaler and loaded ASI plugins.",
+          RenderQuirksSettings, false, [](RenderMenuContext& c) { return QuirksTabVisible(c.state); },
+          [](RenderMenuContext& c) { return QuirksTabLabel(c.state); } },
         { "ADVANCED", "Help / Status", "Support info. Filled dot: on or found, hollow dot: off or missing.", nullptr, true },
     };
     // clang-format on
@@ -8500,7 +8580,8 @@ void MenuCommon::RenderMainMenuTabs(RenderMenuContext& ctx)
 
             drawList->AddText(
                 ImVec2(rectMin.x + 10.0f * menuResScale, rectMin.y + (tabHeight - ImGui::GetTextLineHeight()) * 0.5f),
-                ImGui::GetColorU32(ImGuiCol_Text), tabs[i].label);
+                ImGui::GetColorU32(ImGuiCol_Text),
+                tabs[i].displayLabel != nullptr ? tabs[i].displayLabel(ctx) : tabs[i].label);
         }
 
         // OptiPatcher status only visible when used
