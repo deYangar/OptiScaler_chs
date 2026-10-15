@@ -1,7 +1,6 @@
 [
- "Override XeFG Ratio",
- "The game doesn't send it",
- "Set by XeFG: the game's own keeps its XeLL",
- "The GPU's own: AntiLag 2 on AMD, Reflex on Nvidia, XeLL on Intel, LatencyFlex otherwise",
- "Incompatible: %s"
+ "Accept HUDless candidates of any format",
+ "UI Texture",
+ "Use the UI texture the game blends on the frame in its last compute pass",
+ "Unblend UI"
 ]
