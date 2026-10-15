@@ -7,6 +7,7 @@
 #include <SysUtils.h>
 
 #include <menu/menu_overlay_vk.h>
+#include <menu/menu_common.h>
 #include <proxies/KernelBase_Proxy.h>
 #include <upscalers/IFeature_Vk.h>
 #include <framegen/ffx/FSRFG_Vk.h>
@@ -16,6 +17,7 @@
 #include "Reflex_Hooks.h"
 
 #include <spoofing/Vulkan_Spoofing.h>
+#include <hudfix/Hudfix_Vk.h>
 
 #include <vulkan/vulkan.h>
 
@@ -80,6 +82,13 @@ static bool FromFGOutput(void* returnAddress)
 
     auto& state = State::Instance();
     return state.optiSlInterposer != nullptr && state.IsOptiStreamlineModule(Util::GetCallerModule(returnAddress));
+}
+
+// FG outputs present the real and the generated frames through this
+static VkResult FGOutputQueuePresent(VkQueue queue, const VkPresentInfoKHR* pPresentInfo)
+{
+    MenuCommon::FGOutputPresent();
+    return o_QueuePresentKHR(queue, pPresentInfo);
 }
 
 // OptiScaler's Streamline calls the driver's swapchain functions directly. Overlays like RTSS hook the same ones on top
@@ -469,6 +478,7 @@ static VkResult hkvkCreateDevice(VkPhysicalDevice physicalDevice, const VkDevice
     {
         fg->OnDeviceCreated(*pDevice);
         HookDevice(*pDevice);
+        Hudfix_Vk::HookDevice(*pDevice);
     }
 
     if (result == VK_SUCCESS && Config::Instance()->OverlayMenu.value_or_default())
@@ -557,7 +567,7 @@ static VkResult hkvkQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR* pPres
 
     // FFX presents the real swapchain from its own queue
     if (FromFGOutput(_ReturnAddress()) || (fg != nullptr && fg->OwnsQueue(queue)))
-        return o_QueuePresentKHR(queue, pPresentInfo);
+        return FGOutputQueuePresent(queue, pPresentInfo);
 
     LOG_FUNC();
 
@@ -597,6 +607,10 @@ static VkResult hkvkQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR* pPres
         }
     }
 
+    // Ends the hudless search before the menu renders to the swapchain
+    if (!dxgiBacked)
+        Hudfix_Vk::PresentStart();
+
     VkPresentInfoKHR localPresentInfo {};
     memcpy(&localPresentInfo, pPresentInfo, sizeof(VkPresentInfoKHR));
 
@@ -615,6 +629,8 @@ static VkResult hkvkQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR* pPres
 
     const bool fgPresent = !dxgiBacked && fg != nullptr && localPresentInfo.swapchainCount == 1 &&
                            fg->OwnsSwapchain(localPresentInfo.pSwapchains[0]);
+
+    MenuCommon::FGOutputPresents(fgPresent);
 
     if (fgPresent)
     {
@@ -786,7 +802,12 @@ static VkResult hkvkGetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapch
         fg != nullptr && fg->OwnsSwapchain(swapchain) && !FromFGOutput(_ReturnAddress()))
     {
         ScopedFGCall fgCall {};
-        return fg->GetSwapchainImages(device, swapchain, pSwapchainImageCount, pSwapchainImages);
+        auto result = fg->GetSwapchainImages(device, swapchain, pSwapchainImageCount, pSwapchainImages);
+
+        if (result == VK_SUCCESS && pSwapchainImages != nullptr)
+            Hudfix_Vk::AddSwapchainImages(pSwapchainImages, *pSwapchainImageCount);
+
+        return result;
     }
 
     return o_GetSwapchainImagesKHR(device, swapchain, pSwapchainImageCount, pSwapchainImages);
@@ -929,6 +950,14 @@ PFN_vkVoidFunction VulkanHooks::GetDeviceProcAddr(VkDevice device, const char* p
     return vkGetDeviceProcAddr(device, pName);
 }
 
+PFN_vkVoidFunction VulkanHooks::GetInstanceProcAddr(VkInstance instance, const char* pName)
+{
+    if (o_vkGetInstanceProcAddr != nullptr)
+        return o_vkGetInstanceProcAddr(instance, pName);
+
+    return vkGetInstanceProcAddr(instance, pName);
+}
+
 PFN_vkVoidFunction VulkanHooks::OriginalSwapchainFunction(const char* pName)
 {
     if (std::strcmp(pName, "vkCreateSwapchainKHR") == 0)
@@ -944,7 +973,7 @@ PFN_vkVoidFunction VulkanHooks::OriginalSwapchainFunction(const char* pName)
         return (PFN_vkVoidFunction) o_AcquireNextImageKHR;
 
     if (std::strcmp(pName, "vkQueuePresentKHR") == 0)
-        return (PFN_vkVoidFunction) o_QueuePresentKHR;
+        return o_QueuePresentKHR != nullptr ? (PFN_vkVoidFunction) FGOutputQueuePresent : nullptr;
 
     return nullptr;
 }

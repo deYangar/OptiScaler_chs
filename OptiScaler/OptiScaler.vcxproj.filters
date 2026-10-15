@@ -431,6 +431,9 @@
     <ClInclude Include="hudfix\Hudfix_Dx12.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="hudfix\Hudfix_Vk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="resource_tracking\ResTrack_dx11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1043,6 +1046,9 @@
     <ClInclude Include="shaders\hudless_compare_compute\HCC_Vk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="shaders\ui_unblend\UiUnblend_Vk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="shaders\hud_copy\precompile\HudCopy_Shader_Vk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1059,6 +1065,33 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="upscalers\dlss\DLSSFeature_VkOnDx12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\ui_unblend\precompile\UiUnblend_Shader_Vk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\hudless_compare_compute\precompile\HCC_Shader_Vk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\hudless_compare_compute\precompile\HCC_Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\magnifier\precompile\Magnifier_Shader_Dx11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\magnifier\precompile\Magnifier_Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\reproject\precompile\reproject_latch_Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\reproject\precompile\reproject_mask_h_Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\reproject\precompile\reproject_Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\reproject\precompile\reproject_mask_v_Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1314,6 +1347,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="hudfix\Hudfix_Dx12.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hudfix\Hudfix_Vk.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="resource_tracking\ResTrack_dx11.cpp">
@@ -1735,6 +1771,5 @@
     <None Include="Source.def">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="shaders\magnifier\precompile\Magnifier_Shader_Vk.spv" />
   </ItemGroup>
 </Project>
