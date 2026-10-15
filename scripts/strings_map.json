@@ -1271,5 +1271,9 @@
  "%s %dx": "UI_s_dx",
  "Loaded ASI Plugins": "UI_Loaded_ASI_Plugins",
  "Quirks / ASI": "UI_Quirks_ASI",
- "Game specific quirks applied by OptiScaler and loaded ASI plugins.": "UI_Game_specific_quirks_applied_by_OptiScaler_and_loaded_ASI_pl"
+ "Game specific quirks applied by OptiScaler and loaded ASI plugins.": "UI_Game_specific_quirks_applied_by_OptiScaler_and_loaded_ASI_pl",
+ "Accept HUDless candidates of any format": "UI_Accept_HUDless_candidates_of_any_format",
+ "UI Texture": "UI_UI_Texture",
+ "Use the UI texture the game blends on the frame in its last compute pass": "UI_Use_the_UI_texture_the_game_blends_on_the_frame_in_its_last_",
+ "Unblend UI": "UI_Unblend_UI"
 }

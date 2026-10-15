@@ -1435,6 +1435,10 @@ enum class LK {
     UI_Loaded_ASI_Plugins,
     UI_Quirks_ASI,
     UI_Game_specific_quirks_applied_by_OptiScaler_and_loaded_ASI_pl,
+    UI_Accept_HUDless_candidates_of_any_format,
+    UI_UI_Texture,
+    UI_Use_the_UI_texture_the_game_blends_on_the_frame_in_its_last_,
+    UI_Unblend_UI,
     COUNT
 };
 

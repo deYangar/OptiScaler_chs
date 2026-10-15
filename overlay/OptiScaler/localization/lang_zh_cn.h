@@ -1453,4 +1453,8 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Loaded_ASI_Plugins)] = "已加载 ASI 插件";
     table[static_cast<int>(LK::UI_Quirks_ASI)] = "Quirks / ASI";
     table[static_cast<int>(LK::UI_Game_specific_quirks_applied_by_OptiScaler_and_loaded_ASI_pl)] = "由 OptiScaler 应用的游戏特定 Quirks 及已加载的 ASI 插件。";
+    table[static_cast<int>(LK::UI_Accept_HUDless_candidates_of_any_format)] = "接受任意格式的 HUDLess 候选";
+    table[static_cast<int>(LK::UI_UI_Texture)] = "UI 纹理";
+    table[static_cast<int>(LK::UI_Use_the_UI_texture_the_game_blends_on_the_frame_in_its_last_)] = "使用游戏在最后一轮计算通道中混合到帧上的 UI 纹理";
+    table[static_cast<int>(LK::UI_Unblend_UI)] = "取消混合 UI";
 }

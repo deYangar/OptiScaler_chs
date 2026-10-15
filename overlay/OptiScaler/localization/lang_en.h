@@ -1441,4 +1441,8 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Loaded_ASI_Plugins)] = "Loaded ASI Plugins";
     table[static_cast<int>(LK::UI_Quirks_ASI)] = "Quirks / ASI";
     table[static_cast<int>(LK::UI_Game_specific_quirks_applied_by_OptiScaler_and_loaded_ASI_pl)] = "Game specific quirks applied by OptiScaler and loaded ASI plugins.";
+    table[static_cast<int>(LK::UI_Accept_HUDless_candidates_of_any_format)] = "Accept HUDless candidates of any format";
+    table[static_cast<int>(LK::UI_UI_Texture)] = "UI Texture";
+    table[static_cast<int>(LK::UI_Use_the_UI_texture_the_game_blends_on_the_frame_in_its_last_)] = "Use the UI texture the game blends on the frame in its last compute pass";
+    table[static_cast<int>(LK::UI_Unblend_UI)] = "Unblend UI";
 }
