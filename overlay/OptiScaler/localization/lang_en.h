@@ -1445,4 +1445,16 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_UI_Texture)] = "UI Texture";
     table[static_cast<int>(LK::UI_Use_the_UI_texture_the_game_blends_on_the_frame_in_its_last_)] = "Use the UI texture the game blends on the frame in its last compute pass";
     table[static_cast<int>(LK::UI_Unblend_UI)] = "Unblend UI";
+    table[static_cast<int>(LK::UI_s_s_s_2)] = " | %s -> %s%s";
+    table[static_cast<int>(LK::UI_Paused_3rd_person_detected)] = "Paused, 3rd person detected";
+    table[static_cast<int>(LK::UI_Soft_edge)] = "Soft edge";
+    table[static_cast<int>(LK::UI_Direction_cache)] = "Direction cache";
+    table[static_cast<int>(LK::UI_Auto_parallax)] = "Auto##parallax";
+    table[static_cast<int>(LK::UI_Cache_parallax_scale)] = "Cache parallax scale";
+    table[static_cast<int>(LK::UI_No_motion_vectors)] = "No motion vectors";
+    table[static_cast<int>(LK::UI_Pause_in_3rd_person)] = "Pause in 3rd person";
+    table[static_cast<int>(LK::UI_no_usable_motion_vectors)] = "(no usable motion vectors)";
+    table[static_cast<int>(LK::UI_needs_the_parallax_scale)] = "(needs the parallax scale)";
+    table[static_cast<int>(LK::UI_S_3rd_person_detected_2f_orbit_2f)] = "3rd person detected (%.2f, orbit %.2f)";
+    table[static_cast<int>(LK::UI_S_1st_person_2f_orbit_2f)] = "1st person (%.2f, orbit %.2f)";
 }

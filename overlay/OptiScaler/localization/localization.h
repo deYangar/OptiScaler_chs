@@ -1439,6 +1439,18 @@ enum class LK {
     UI_UI_Texture,
     UI_Use_the_UI_texture_the_game_blends_on_the_frame_in_its_last_,
     UI_Unblend_UI,
+    UI_s_s_s_2,
+    UI_Paused_3rd_person_detected,
+    UI_Soft_edge,
+    UI_Direction_cache,
+    UI_Auto_parallax,
+    UI_Cache_parallax_scale,
+    UI_No_motion_vectors,
+    UI_Pause_in_3rd_person,
+    UI_no_usable_motion_vectors,
+    UI_needs_the_parallax_scale,
+    UI_S_3rd_person_detected_2f_orbit_2f,
+    UI_S_1st_person_2f_orbit_2f,
     COUNT
 };
 

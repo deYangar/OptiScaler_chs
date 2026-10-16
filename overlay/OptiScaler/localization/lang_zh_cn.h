@@ -1457,4 +1457,16 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_UI_Texture)] = "UI 纹理";
     table[static_cast<int>(LK::UI_Use_the_UI_texture_the_game_blends_on_the_frame_in_its_last_)] = "使用游戏在最后一轮计算通道中混合到帧上的 UI 纹理";
     table[static_cast<int>(LK::UI_Unblend_UI)] = "取消混合 UI";
+    table[static_cast<int>(LK::UI_s_s_s_2)] = " | %s -> %s%s";
+    table[static_cast<int>(LK::UI_Paused_3rd_person_detected)] = "已暂停，检测到第三人称";
+    table[static_cast<int>(LK::UI_Soft_edge)] = "软边缘";
+    table[static_cast<int>(LK::UI_Direction_cache)] = "方向缓存";
+    table[static_cast<int>(LK::UI_Auto_parallax)] = "自动##视差";
+    table[static_cast<int>(LK::UI_Cache_parallax_scale)] = "缓存视差缩放";
+    table[static_cast<int>(LK::UI_No_motion_vectors)] = "无运动矢量";
+    table[static_cast<int>(LK::UI_Pause_in_3rd_person)] = "第三人称时暂停";
+    table[static_cast<int>(LK::UI_no_usable_motion_vectors)] = "（无可用运动矢量）";
+    table[static_cast<int>(LK::UI_needs_the_parallax_scale)] = "（需要视差缩放）";
+    table[static_cast<int>(LK::UI_S_3rd_person_detected_2f_orbit_2f)] = "检测到第三人称（%.2f，环绕 %.2f）";
+    table[static_cast<int>(LK::UI_S_1st_person_2f_orbit_2f)] = "第一人称（%.2f，环绕 %.2f）";
 }

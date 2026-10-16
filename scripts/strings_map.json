@@ -1275,5 +1275,17 @@
  "Accept HUDless candidates of any format": "UI_Accept_HUDless_candidates_of_any_format",
  "UI Texture": "UI_UI_Texture",
  "Use the UI texture the game blends on the frame in its last compute pass": "UI_Use_the_UI_texture_the_game_blends_on_the_frame_in_its_last_",
- "Unblend UI": "UI_Unblend_UI"
+ "Unblend UI": "UI_Unblend_UI",
+ " | %s -> %s%s": "UI_s_s_s_2",
+ "Paused, 3rd person detected": "UI_Paused_3rd_person_detected",
+ "Soft edge": "UI_Soft_edge",
+ "Direction cache": "UI_Direction_cache",
+ "Auto##parallax": "UI_Auto_parallax",
+ "Cache parallax scale": "UI_Cache_parallax_scale",
+ "No motion vectors": "UI_No_motion_vectors",
+ "Pause in 3rd person": "UI_Pause_in_3rd_person",
+ "(no usable motion vectors)": "UI_no_usable_motion_vectors",
+ "(needs the parallax scale)": "UI_needs_the_parallax_scale",
+ "3rd person detected (%.2f, orbit %.2f)": "UI_S_3rd_person_detected_2f_orbit_2f",
+ "1st person (%.2f, orbit %.2f)": "UI_S_1st_person_2f_orbit_2f"
 }
