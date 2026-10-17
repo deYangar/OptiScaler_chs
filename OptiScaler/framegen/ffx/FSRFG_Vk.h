@@ -31,6 +31,9 @@ class FSRFG_Vk : public virtual IFGFeature_Vk
     ImageCopy _hudlessCopies[BUFFER_COUNT] {};
     bool _hudlessInCopy[BUFFER_COUNT] {};
 
+    // Not owned, the copy the HUD shaders work on: _hudlessCopies or the one SetResource made
+    ImageCopy _hudlessTarget[BUFFER_COUNT] {};
+
     std::unique_ptr<HudCopy_Vk> _hudCopy;
     std::unique_ptr<HCC_Vk> _hudlessCompare;
 
@@ -39,17 +42,9 @@ class FSRFG_Vk : public virtual IFGFeature_Vk
 
     uint64_t _lastDispatchedFrameId = 0;
 
-    VkCommandPool _commandPool[BUFFER_COUNT] {};
-    VkCommandBuffer _commandBuffer[BUFFER_COUNT] {};
-    VkFence _fence[BUFFER_COUNT] {};
-
     void CreateContext();
     void ReleaseSwapchainContext();
     ffxReturnCode_t ConfigureEnabled(bool enabled);
-
-    VkCommandBuffer BeginCommandBuffer(int index);
-    void WaitForCommandBuffers();
-    void DestroyCommandBuffers();
 
     bool Dispatch();
     ffxReturnCode_t DispatchCallback(ffxDispatchDescFrameGeneration* params);

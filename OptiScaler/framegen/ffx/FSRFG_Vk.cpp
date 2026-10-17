@@ -653,7 +653,18 @@ bool FSRFG_Vk::Dispatch()
         // The HUD shaders change and read our copy.
         if (hudless->format != _swapchainFormat || HudCutoffThreshold().has_value() || state.fgHudlessCompare)
         {
-            _hudlessInCopy[fIndex] = CopyImage(cmdBuffer, *hudless, _hudlessCopies[fIndex], _swapchainFormat);
+            // Already copied by SetResource in the right format, no need for another one
+            if (auto own = OwnCopy(*hudless, (int) fIndex); own != nullptr && hudless->format == _swapchainFormat)
+            {
+                DestroyCopy(_hudlessCopies[fIndex]);
+                _hudlessTarget[fIndex] = *own;
+                _hudlessInCopy[fIndex] = true;
+            }
+            else
+            {
+                _hudlessInCopy[fIndex] = CopyImage(cmdBuffer, *hudless, _hudlessCopies[fIndex], _swapchainFormat);
+                _hudlessTarget[fIndex] = _hudlessCopies[fIndex];
+            }
 
             if (!_hudlessInCopy[fIndex])
                 hudless.reset();
@@ -792,7 +803,7 @@ void FSRFG_Vk::DispatchHudShaders(ffxDispatchDescFrameGeneration* params)
         return;
     }
 
-    auto& copy = _hudlessCopies[fIndex];
+    auto& copy = _hudlessTarget[fIndex];
     auto hudlessInfo = GetImageInfo(copy.image, copy.view, copy.format, copy.width, copy.height);
     const auto hudlessLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
@@ -846,85 +857,4 @@ VkImageView FSRFG_Vk::PresentView(VkImage image)
 
     _presentViews[image] = view;
     return view;
-}
-
-VkCommandBuffer FSRFG_Vk::BeginCommandBuffer(int index)
-{
-    // Fence is created last, without it the rest might be missing too
-    if (_fence[index] == VK_NULL_HANDLE)
-    {
-        VkCommandPoolCreateInfo poolInfo { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
-        poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
-        poolInfo.queueFamilyIndex = _gameQueueFamily;
-
-        if (_commandPool[index] == VK_NULL_HANDLE &&
-            vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool[index]) != VK_SUCCESS)
-        {
-            LOG_ERROR("vkCreateCommandPool failed for {}", index);
-            return VK_NULL_HANDLE;
-        }
-
-        VkCommandBufferAllocateInfo allocInfo { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
-        allocInfo.commandPool = _commandPool[index];
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = 1;
-
-        if (_commandBuffer[index] == VK_NULL_HANDLE &&
-            vkAllocateCommandBuffers(_device, &allocInfo, &_commandBuffer[index]) != VK_SUCCESS)
-        {
-            LOG_ERROR("vkAllocateCommandBuffers failed for {}", index);
-            return VK_NULL_HANDLE;
-        }
-
-        VkFenceCreateInfo fenceInfo { VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
-        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-        if (vkCreateFence(_device, &fenceInfo, nullptr, &_fence[index]) != VK_SUCCESS)
-        {
-            LOG_ERROR("vkCreateFence failed for {}", index);
-            return VK_NULL_HANDLE;
-        }
-    }
-
-    if (vkWaitForFences(_device, 1, &_fence[index], VK_TRUE, 1'000'000'000) != VK_SUCCESS)
-    {
-        LOG_ERROR("Waiting for the FG command buffer {} timed out", index);
-        return VK_NULL_HANDLE;
-    }
-
-    vkResetCommandPool(_device, _commandPool[index], 0);
-
-    VkCommandBufferBeginInfo beginInfo { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    vkBeginCommandBuffer(_commandBuffer[index], &beginInfo);
-
-    return _commandBuffer[index];
-}
-
-void FSRFG_Vk::WaitForCommandBuffers()
-{
-    for (auto fence : _fence)
-    {
-        if (fence != VK_NULL_HANDLE)
-            vkWaitForFences(_device, 1, &fence, VK_TRUE, 1'000'000'000);
-    }
-}
-
-void FSRFG_Vk::DestroyCommandBuffers()
-{
-    WaitForCommandBuffers();
-
-    for (size_t i = 0; i < BUFFER_COUNT; i++)
-    {
-        if (_fence[i] != VK_NULL_HANDLE)
-            vkDestroyFence(_device, _fence[i], nullptr);
-
-        // Frees the command buffer too
-        if (_commandPool[i] != VK_NULL_HANDLE)
-            vkDestroyCommandPool(_device, _commandPool[i], nullptr);
-
-        _fence[i] = VK_NULL_HANDLE;
-        _commandPool[i] = VK_NULL_HANDLE;
-        _commandBuffer[i] = VK_NULL_HANDLE;
-    }
 }

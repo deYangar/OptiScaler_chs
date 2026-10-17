@@ -12,8 +12,10 @@
 #include <upscalers/IFeature_Vk.h>
 #include <framegen/ffx/FSRFG_Vk.h>
 #include <framegen/dlssg/DLSSG_Vk.h>
+#include <framegen/reprojection/Reprojection_Vk.h>
 
 #include <misc/FrameLimit.h>
+#include <misc/DeferredRelease.h>
 #include "Reflex_Hooks.h"
 
 #include <spoofing/Vulkan_Spoofing.h>
@@ -322,6 +324,10 @@ static IFGFeature_Vk* CreateFGFeature()
         else
             LOG_ERROR("Can't init Streamline, DLSSG won't be available");
     }
+    else if (state.activeFgOutput == FGOutput::Reprojection)
+    {
+        state.currentVkFG = new Reprojection_Vk();
+    }
 
     return state.currentVkFG;
 }
@@ -473,6 +479,9 @@ static VkResult hkvkCreateDevice(VkPhysicalDevice physicalDevice, const VkDevice
     VulkanSpoofing::hkvkCreateDevice(physicalDevice, &localCreteInfo, pAllocator, pDevice);
 
     auto result = o_vkCreateDevice(physicalDevice, &localCreteInfo, pAllocator, pDevice);
+
+    if (result == VK_SUCCESS)
+        DeferredRelease::DropOwnersExcept((uint64_t) *pDevice);
 
     if (result == VK_SUCCESS && fg != nullptr)
     {
@@ -630,7 +639,7 @@ static VkResult hkvkQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR* pPres
     const bool fgPresent = !dxgiBacked && fg != nullptr && localPresentInfo.swapchainCount == 1 &&
                            fg->OwnsSwapchain(localPresentInfo.pSwapchains[0]);
 
-    MenuCommon::FGOutputPresents(fgPresent);
+    MenuCommon::FGOutputPresents(fgPresent && fg->IsActive() && !fg->IsPaused());
 
     if (fgPresent)
     {
@@ -659,6 +668,10 @@ static VkResult hkvkQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR* pPres
     {
         result = o_QueuePresentKHR(queue, &localPresentInfo);
     }
+
+    // dxvk/vkd3d-proton's are counted by the DXGI swapchain
+    if (!dxgiBacked)
+        DeferredRelease::Process();
 
     // Unsure about Vulkan Reflex fps limit and if that could be causing an issue here
     if (!State::Instance().reflexLimitsFps && !InputCommon::can_limit_fps())
@@ -974,6 +987,9 @@ PFN_vkVoidFunction VulkanHooks::OriginalSwapchainFunction(const char* pName)
 
     if (std::strcmp(pName, "vkQueuePresentKHR") == 0)
         return o_QueuePresentKHR != nullptr ? (PFN_vkVoidFunction) FGOutputQueuePresent : nullptr;
+
+    if (std::strcmp(pName, "vkSetHdrMetadataEXT") == 0)
+        return (PFN_vkVoidFunction) o_SetHdrMetadataEXT;
 
     return nullptr;
 }

@@ -166,18 +166,26 @@ class IFeature_VkwDx12 : public virtual IFeature_Vk
                     deductedUpscalerTime += time.time;
             }
 
-            auto upscalerWithInterop = UpscalerTime->ReadGpuTime();
+            auto upscalerWithInterop = UpscalerTime->ReadInteropGpuTime();
 
-            if (dx12UpscalerTime && upscalerWithInterop)
+            if (dx12UpscalerTime)
             {
-                auto interopTime = upscalerWithInterop.value() - dx12UpscalerTime.value() - deductedUpscalerTime;
-
-                if (interopTime > 0.0)
+                if (upscalerWithInterop)
                 {
-                    detailedGpuTimes.push_back({ "Interop", interopTime, true });
-                    return interopTime + dx12UpscalerTime.value();
+                    const double interopTime = *upscalerWithInterop - *dx12UpscalerTime - deductedUpscalerTime;
+
+                    if (std::isfinite(interopTime) && interopTime > 0.0)
+                    {
+                        detailedGpuTimes.push_back({ "Interop", interopTime, true });
+                        return *dx12UpscalerTime + interopTime;
+                    }
                 }
+
+                // Vulkan timing has issue use Dx12 timing.
+                return dx12UpscalerTime;
             }
+
+            return upscalerWithInterop;
         }
 
         return std::nullopt;

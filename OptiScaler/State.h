@@ -174,6 +174,7 @@ class State
     std::string gameName;
     std::string gameVersion;
     GameEngineType gameEngine = GameEngineType::Other;
+    bool isWindows10 = false;
 
     bool nvngxDx11Inited = false;
     bool nvngxDx12Inited = false;
@@ -215,7 +216,7 @@ class State
     bool fgHudlessCompare = false;
     bool fgChanged = false;
     bool scChanged = false;
-    bool skipHeapCapture = false;
+    inline static thread_local bool skipHeapCapture = false;
 
     bool fgCaptureResources = false;
     size_t fgCapturedResourceCount = 0;

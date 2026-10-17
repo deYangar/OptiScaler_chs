@@ -3,6 +3,7 @@
 
 #include <Config.h>
 #include <State.h>
+#include <misc/DeferredRelease.h>
 
 #include <magic_enum.hpp>
 #include <bit>
@@ -191,16 +192,33 @@ bool IFGFeature_Vk::OwnsQueue(VkQueue queue) const
 
 void IFGFeature_Vk::DestroyCopy(ImageCopy& copy)
 {
-    if (copy.view != VK_NULL_HANDLE)
-        vkDestroyImageView(_device, copy.view, nullptr);
+    if (copy.view != VK_NULL_HANDLE || copy.image != VK_NULL_HANDLE || copy.memory != VK_NULL_HANDLE)
+    {
+        DeferredRelease::Enqueue(
+            [device = _device, view = copy.view, image = copy.image, memory = copy.memory]()
+            {
+                if (view != VK_NULL_HANDLE)
+                    vkDestroyImageView(device, view, nullptr);
 
-    if (copy.image != VK_NULL_HANDLE)
-        vkDestroyImage(_device, copy.image, nullptr);
+                if (image != VK_NULL_HANDLE)
+                    vkDestroyImage(device, image, nullptr);
 
-    if (copy.memory != VK_NULL_HANDLE)
-        vkFreeMemory(_device, copy.memory, nullptr);
+                if (memory != VK_NULL_HANDLE)
+                    vkFreeMemory(device, memory, nullptr);
+            },
+            (uint64_t) _device);
+    }
 
     copy = {};
+}
+
+const IFGFeature_Vk::ImageCopy* IFGFeature_Vk::OwnCopy(const VkFGResource& resource, int fIndex) const
+{
+    if (fIndex < 0 || fIndex >= BUFFER_COUNT)
+        return nullptr;
+
+    auto& copy = _copies[fIndex][resource.type];
+    return copy.image != VK_NULL_HANDLE && copy.image == resource.image ? &copy : nullptr;
 }
 
 bool IFGFeature_Vk::CreateCopy(ImageCopy& copy, FG_ResourceType type, VkFormat format, uint32_t width, uint32_t height,
@@ -364,13 +382,19 @@ bool IFGFeature_Vk::FlipResource(VkCommandBuffer cmdBuffer, VkFGResource& resour
     if (!flip->IsInit())
         return false;
 
-    ImageBarrier(cmdBuffer, resource.image, resource.format, resource.layout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    resource.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    // Can be the game's image, its layout is restored after the flip
+    const auto sourceLayout = resource.layout;
+    ImageBarrier(cmdBuffer, resource.image, resource.format, sourceLayout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     ImageBarrier(cmdBuffer, flipped.image, flipped.format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
-    if (!flip->Dispatch(cmdBuffer, resource.view, flipped.view, { resource.imageWidth, resource.imageHeight },
-                        resource.width, resource.height, velocity))
+    const bool flipResult =
+        flip->Dispatch(cmdBuffer, resource.view, flipped.view, { resource.imageWidth, resource.imageHeight },
+                       resource.width, resource.height, velocity);
+
+    ImageBarrier(cmdBuffer, resource.image, resource.format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, sourceLayout);
+
+    if (!flipResult)
     {
         LOG_ERROR("Can't flip {}", magic_enum::enum_name(type));
         return false;
@@ -421,7 +445,6 @@ bool IFGFeature_Vk::SetResource(VkFGResource* inputResource)
     auto willFlip = State::Instance().activeFgInput == FGInput::Upscaler && config->FGResourceFlip.value_or_default() &&
                     (type == FG_ResourceType::Depth || type == FG_ResourceType::Velocity);
 
-    // Flipping reads from our copy
     if (resource.validity == FG_ResourceValidity::ValidNow || willFlip)
     {
         if (resource.cmdBuffer == VK_NULL_HANDLE)
@@ -430,11 +453,19 @@ bool IFGFeature_Vk::SetResource(VkFGResource* inputResource)
             return false;
         }
 
-        if (!CopyImage(resource.cmdBuffer, resource, _copies[fIndex][type], resource.format))
-            return false;
+        // The flipped image is our own copy already, flipping straight from the source saves one.
+        // Without a view the shader can't read the source, it gets copied first.
+        const bool flipped =
+            willFlip && resource.view != VK_NULL_HANDLE && FlipResource(resource.cmdBuffer, resource, fIndex);
 
-        if (willFlip)
-            FlipResource(resource.cmdBuffer, resource, fIndex);
+        if (!flipped)
+        {
+            if (!CopyImage(resource.cmdBuffer, resource, _copies[fIndex][type], resource.format))
+                return false;
+
+            if (willFlip)
+                FlipResource(resource.cmdBuffer, resource, fIndex);
+        }
     }
 
     _frameResources[fIndex][type] = resource;
@@ -473,6 +504,87 @@ void IFGFeature_Vk::RemoveUiFromHudless(VkCommandBuffer cmdBuffer, bool premulti
     };
 
     _uiUnblend->Dispatch(cmdBuffer, imageInfo(*ui), ui->layout, imageInfo(*hudless), hudless->layout, premultiplied);
+}
+
+VkCommandBuffer IFGFeature_Vk::BeginCommandBuffer(int index)
+{
+    // Fence is created last, without it the rest might be missing too
+    if (_fence[index] == VK_NULL_HANDLE)
+    {
+        VkCommandPoolCreateInfo poolInfo { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+        poolInfo.queueFamilyIndex = _gameQueueFamily;
+
+        if (_commandPool[index] == VK_NULL_HANDLE &&
+            vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool[index]) != VK_SUCCESS)
+        {
+            LOG_ERROR("vkCreateCommandPool failed for {}", index);
+            return VK_NULL_HANDLE;
+        }
+
+        VkCommandBufferAllocateInfo allocInfo { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
+        allocInfo.commandPool = _commandPool[index];
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandBufferCount = 1;
+
+        if (_commandBuffer[index] == VK_NULL_HANDLE &&
+            vkAllocateCommandBuffers(_device, &allocInfo, &_commandBuffer[index]) != VK_SUCCESS)
+        {
+            LOG_ERROR("vkAllocateCommandBuffers failed for {}", index);
+            return VK_NULL_HANDLE;
+        }
+
+        VkFenceCreateInfo fenceInfo { VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
+        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+        if (vkCreateFence(_device, &fenceInfo, nullptr, &_fence[index]) != VK_SUCCESS)
+        {
+            LOG_ERROR("vkCreateFence failed for {}", index);
+            return VK_NULL_HANDLE;
+        }
+    }
+
+    if (vkWaitForFences(_device, 1, &_fence[index], VK_TRUE, 1'000'000'000) != VK_SUCCESS)
+    {
+        LOG_ERROR("Waiting for the FG command buffer {} timed out", index);
+        return VK_NULL_HANDLE;
+    }
+
+    vkResetCommandPool(_device, _commandPool[index], 0);
+
+    VkCommandBufferBeginInfo beginInfo { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    vkBeginCommandBuffer(_commandBuffer[index], &beginInfo);
+
+    return _commandBuffer[index];
+}
+
+void IFGFeature_Vk::WaitForCommandBuffers()
+{
+    for (auto fence : _fence)
+    {
+        if (fence != VK_NULL_HANDLE)
+            vkWaitForFences(_device, 1, &fence, VK_TRUE, 1'000'000'000);
+    }
+}
+
+void IFGFeature_Vk::DestroyCommandBuffers()
+{
+    WaitForCommandBuffers();
+
+    for (size_t i = 0; i < BUFFER_COUNT; i++)
+    {
+        if (_fence[i] != VK_NULL_HANDLE)
+            vkDestroyFence(_device, _fence[i], nullptr);
+
+        // Frees the command buffer too
+        if (_commandPool[i] != VK_NULL_HANDLE)
+            vkDestroyCommandPool(_device, _commandPool[i], nullptr);
+
+        _fence[i] = VK_NULL_HANDLE;
+        _commandPool[i] = VK_NULL_HANDLE;
+        _commandBuffer[i] = VK_NULL_HANDLE;
+    }
 }
 
 std::optional<VkFGResource> IFGFeature_Vk::GetResource(FG_ResourceType type, int index)
