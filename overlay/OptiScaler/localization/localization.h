@@ -1451,6 +1451,7 @@ enum class LK {
     UI_needs_the_parallax_scale,
     UI_S_3rd_person_detected_2f_orbit_2f,
     UI_S_1st_person_2f_orbit_2f,
+    UI_No_usable_motion_vectors,
     COUNT
 };
 

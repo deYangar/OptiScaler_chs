@@ -1457,4 +1457,5 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_needs_the_parallax_scale)] = "(needs the parallax scale)";
     table[static_cast<int>(LK::UI_S_3rd_person_detected_2f_orbit_2f)] = "3rd person detected (%.2f, orbit %.2f)";
     table[static_cast<int>(LK::UI_S_1st_person_2f_orbit_2f)] = "1st person (%.2f, orbit %.2f)";
+    table[static_cast<int>(LK::UI_No_usable_motion_vectors)] = "No usable motion vectors";
 }

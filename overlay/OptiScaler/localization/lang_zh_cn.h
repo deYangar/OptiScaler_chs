@@ -1469,4 +1469,5 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_needs_the_parallax_scale)] = "（需要视差缩放）";
     table[static_cast<int>(LK::UI_S_3rd_person_detected_2f_orbit_2f)] = "检测到第三人称（%.2f，环绕 %.2f）";
     table[static_cast<int>(LK::UI_S_1st_person_2f_orbit_2f)] = "第一人称（%.2f，环绕 %.2f）";
+    table[static_cast<int>(LK::UI_No_usable_motion_vectors)] = "没有可用的运动矢量";
 }

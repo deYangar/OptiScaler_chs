@@ -1287,5 +1287,6 @@
  "(no usable motion vectors)": "UI_no_usable_motion_vectors",
  "(needs the parallax scale)": "UI_needs_the_parallax_scale",
  "3rd person detected (%.2f, orbit %.2f)": "UI_S_3rd_person_detected_2f_orbit_2f",
- "1st person (%.2f, orbit %.2f)": "UI_S_1st_person_2f_orbit_2f"
+ "1st person (%.2f, orbit %.2f)": "UI_S_1st_person_2f_orbit_2f",
+ "No usable motion vectors": "UI_No_usable_motion_vectors"
 }
