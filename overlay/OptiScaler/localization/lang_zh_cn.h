@@ -1470,4 +1470,18 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_S_3rd_person_detected_2f_orbit_2f)] = "检测到第三人称（%.2f，环绕 %.2f）";
     table[static_cast<int>(LK::UI_S_1st_person_2f_orbit_2f)] = "第一人称（%.2f，环绕 %.2f）";
     table[static_cast<int>(LK::UI_No_usable_motion_vectors)] = "没有可用的运动矢量";
+    table[static_cast<int>(LK::UI_FSR4_Model)] = "FSR4 模型";
+    table[static_cast<int>(LK::UI_Active_s)] = "(当前: %s)";
+    table[static_cast<int>(LK::UI_Current_XeFG_state)] = "当前 XeFG 状态：";
+    table[static_cast<int>(LK::UI_Dynamic)] = "(动态)";
+    table[static_cast<int>(LK::UI_Max_Frame_Gen_xefgMode)] = "最大帧生成###xefgMode";
+    table[static_cast<int>(LK::UI_Frame_Gen_xefgMode)] = "帧生成###xefgMode";
+    table[static_cast<int>(LK::UI_Dynamic_MFG_xefg)] = "动态 MFG##xefg";
+    table[static_cast<int>(LK::UI_Target_FPS_xefg)] = "目标 FPS##xefg";
+    table[static_cast<int>(LK::UI_Use_as_FPS_limit_xefg)] = "用作 FPS 限制##xefg";
+    table[static_cast<int>(LK::UI_At_most_target)] = "至多目标";
+    table[static_cast<int>(LK::UI_Around_target)] = "接近目标";
+    table[static_cast<int>(LK::UI_At_least_target)] = "至少目标";
+    table[static_cast<int>(LK::UI_xefgRounding)] = "##xefgRounding";
+    table[static_cast<int>(LK::UI_Allow_1X_xefg)] = "允许 1X##xefg";
 }

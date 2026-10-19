@@ -1452,6 +1452,20 @@ enum class LK {
     UI_S_3rd_person_detected_2f_orbit_2f,
     UI_S_1st_person_2f_orbit_2f,
     UI_No_usable_motion_vectors,
+    UI_FSR4_Model,
+    UI_Active_s,
+    UI_Current_XeFG_state,
+    UI_Dynamic,
+    UI_Max_Frame_Gen_xefgMode,
+    UI_Frame_Gen_xefgMode,
+    UI_Dynamic_MFG_xefg,
+    UI_Target_FPS_xefg,
+    UI_Use_as_FPS_limit_xefg,
+    UI_At_most_target,
+    UI_Around_target,
+    UI_At_least_target,
+    UI_xefgRounding,
+    UI_Allow_1X_xefg,
     COUNT
 };
 

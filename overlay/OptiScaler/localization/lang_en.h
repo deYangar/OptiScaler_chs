@@ -1458,4 +1458,18 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_S_3rd_person_detected_2f_orbit_2f)] = "3rd person detected (%.2f, orbit %.2f)";
     table[static_cast<int>(LK::UI_S_1st_person_2f_orbit_2f)] = "1st person (%.2f, orbit %.2f)";
     table[static_cast<int>(LK::UI_No_usable_motion_vectors)] = "No usable motion vectors";
+    table[static_cast<int>(LK::UI_FSR4_Model)] = "FSR4 Model";
+    table[static_cast<int>(LK::UI_Active_s)] = "(Active: %s)";
+    table[static_cast<int>(LK::UI_Current_XeFG_state)] = "Current XeFG state:";
+    table[static_cast<int>(LK::UI_Dynamic)] = "(Dynamic)";
+    table[static_cast<int>(LK::UI_Max_Frame_Gen_xefgMode)] = "Max Frame Gen###xefgMode";
+    table[static_cast<int>(LK::UI_Frame_Gen_xefgMode)] = "Frame Gen###xefgMode";
+    table[static_cast<int>(LK::UI_Dynamic_MFG_xefg)] = "Dynamic MFG##xefg";
+    table[static_cast<int>(LK::UI_Target_FPS_xefg)] = "Target FPS##xefg";
+    table[static_cast<int>(LK::UI_Use_as_FPS_limit_xefg)] = "Use as FPS limit##xefg";
+    table[static_cast<int>(LK::UI_At_most_target)] = "At most target";
+    table[static_cast<int>(LK::UI_Around_target)] = "Around target";
+    table[static_cast<int>(LK::UI_At_least_target)] = "At least target";
+    table[static_cast<int>(LK::UI_xefgRounding)] = "##xefgRounding";
+    table[static_cast<int>(LK::UI_Allow_1X_xefg)] = "Allow 1X##xefg";
 }

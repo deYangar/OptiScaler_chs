@@ -1288,5 +1288,19 @@
  "(needs the parallax scale)": "UI_needs_the_parallax_scale",
  "3rd person detected (%.2f, orbit %.2f)": "UI_S_3rd_person_detected_2f_orbit_2f",
  "1st person (%.2f, orbit %.2f)": "UI_S_1st_person_2f_orbit_2f",
- "No usable motion vectors": "UI_No_usable_motion_vectors"
+ "No usable motion vectors": "UI_No_usable_motion_vectors",
+ "FSR4 Model": "UI_FSR4_Model",
+ "(Active: %s)": "UI_Active_s",
+ "Current XeFG state:": "UI_Current_XeFG_state",
+ "(Dynamic)": "UI_Dynamic",
+ "Max Frame Gen###xefgMode": "UI_Max_Frame_Gen_xefgMode",
+ "Frame Gen###xefgMode": "UI_Frame_Gen_xefgMode",
+ "Dynamic MFG##xefg": "UI_Dynamic_MFG_xefg",
+ "Target FPS##xefg": "UI_Target_FPS_xefg",
+ "Use as FPS limit##xefg": "UI_Use_as_FPS_limit_xefg",
+ "At most target": "UI_At_most_target",
+ "Around target": "UI_Around_target",
+ "At least target": "UI_At_least_target",
+ "##xefgRounding": "UI_xefgRounding",
+ "Allow 1X##xefg": "UI_Allow_1X_xefg"
 }
