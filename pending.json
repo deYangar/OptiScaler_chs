@@ -1,6 +1,16 @@
 [
- "Accept HUDless candidates of any format",
- "UI Texture",
- "Use the UI texture the game blends on the frame in its last compute pass",
- "Unblend UI"
+ "FSR4 Model",
+ "(Active: %s)",
+ "Current XeFG state:",
+ "(Dynamic)",
+ "Max Frame Gen###xefgMode",
+ "Frame Gen###xefgMode",
+ "Dynamic MFG##xefg",
+ "Target FPS##xefg",
+ "Use as FPS limit##xefg",
+ "At most target",
+ "Around target",
+ "At least target",
+ "##xefgRounding",
+ "Allow 1X##xefg"
 ]
