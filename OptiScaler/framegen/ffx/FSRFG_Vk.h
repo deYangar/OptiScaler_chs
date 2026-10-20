@@ -5,7 +5,8 @@
 #include <shaders/hud_copy/HudCopy_Vk.h>
 #include <shaders/hudless_compare_compute/HCC_Vk.h>
 
-// FSR 3.1 FG from the FFX SDK 1.1.4, the last one with Vulkan support
+// FSR 3.1 FG from the FFX SDK 1.1.4, the last one with Vulkan support,
+// or ML FG (FSR 4) with its swapchain from the AMD Vulkan driver
 class FSRFG_Vk : public virtual IFGFeature_Vk
 {
   private:
@@ -18,8 +19,18 @@ class FSRFG_Vk : public virtual IFGFeature_Vk
 
     ffxContext _swapChainContext = nullptr;
     ffxContext _fgContext = nullptr;
+
+    // SDK or driver, picked at swapchain creation as FG needs the swapchain from the same place
+    FfxModule* _ffxSwapchain = nullptr;
+    FfxModule* _ffx = nullptr;
+
+    // Selected FG version needs the swapchain from the other provider, the game recreates it on out of date
+    bool _swapchainOutdated = false;
     ffxQueryDescSwapchainReplacementFunctionsVK _functions {};
     feature_version _version { 0, 0, 0 };
+
+    // Surface of the FG swapchain, swapchains of the game's other windows are left alone
+    VkSurfaceKHR _surface = VK_NULL_HANDLE;
 
     // Game destroys its old swapchain after creating the new one, the context took it with it already
     VkSwapchainKHR _retiredSwapchain = VK_NULL_HANDLE;
@@ -43,8 +54,12 @@ class FSRFG_Vk : public virtual IFGFeature_Vk
     uint64_t _lastDispatchedFrameId = 0;
 
     void CreateContext();
+    void QueryVersions();
+    bool IsDriverVersionSelected();
+    bool UsesDriver() const;
     void ReleaseSwapchainContext();
     ffxReturnCode_t ConfigureEnabled(bool enabled);
+    void ConfigureFramePaceTuning();
 
     bool Dispatch();
     ffxReturnCode_t DispatchCallback(ffxDispatchDescFrameGeneration* params);

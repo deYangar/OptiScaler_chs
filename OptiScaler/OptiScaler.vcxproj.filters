@@ -188,6 +188,15 @@
     <ClInclude Include="State.h">
       <Filter>Config</Filter>
     </ClInclude>
+    <ClInclude Include="shaders\auto_exposure\AE_Common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\auto_exposure\AE_Dx12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\auto_exposure\precompile\AE_Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="shaders\bias\Bias_Common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -554,7 +563,7 @@
     <ClInclude Include="inputs\FG\XeFG_Inputs_Dx12.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fsr4\FSR4DriverProvider.h">
+    <ClInclude Include="fsr4\FSR4DriverProviderDx12.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fsr4\FSR4Models.h">
@@ -878,7 +887,10 @@
     <ClInclude Include="hooks\Amdxc64_Hooks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fsr4\FSR4Upgrade.h">
+    <ClInclude Include="fsr4\FSR4DriverProvider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fsr4\FSR4DriverProviderVk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="low_latency\input\input_antilag2.h">
@@ -1280,6 +1292,9 @@
     <ClCompile Include="shaders\bias\Bias_Dx11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="shaders\auto_exposure\AE_Dx12.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="shaders\bias\Bias_Dx12.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1457,7 +1472,7 @@
     <ClCompile Include="inputs\FG\XeFG_Inputs_Dx12.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="fsr4\FSR4DriverProvider.cpp">
+    <ClCompile Include="fsr4\FSR4DriverProviderDx12.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="fsr4\FSR4Models.cpp">
@@ -1661,7 +1676,10 @@
     <ClCompile Include="hooks\Amdxc64_Hooks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="fsr4\FSR4Upgrade.cpp">
+    <ClCompile Include="fsr4\FSR4DriverProvider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fsr4\FSR4DriverProviderVk.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="low_latency\input\input_antilag2.cpp">
