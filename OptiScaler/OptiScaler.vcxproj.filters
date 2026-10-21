@@ -62,6 +62,9 @@
     <ClInclude Include="upscalers\IFeature.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="upscalers\DynamicResolutionDetector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="upscalers\IFeature_Vk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -572,6 +575,9 @@
     <ClInclude Include="fsr4\FSR4Presets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="fsr4\FSR4PipelineLayouts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="inputs\FG\FSR3_Dx12_FG.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -696,6 +702,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="shaders\resource_copy\precompile\rc_Shader_Vk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\velocity_convert\VC_Vk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shaders\velocity_convert\precompile\vc_Shader_Vk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="shaders\depth_transfer\precompile\dt_int_Shader_Vk.h">
@@ -1481,6 +1493,9 @@
     <ClCompile Include="fsr4\FSR4Presets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="fsr4\FSR4PipelineLayouts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="inputs\FG\FSR3_Dx12_FG.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1569,6 +1584,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="shaders\resource_copy\RC_Vk.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shaders\velocity_convert\VC_Vk.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="upscalers\fsr2_212\FSR2Feature_VkOnDx12_212.cpp">

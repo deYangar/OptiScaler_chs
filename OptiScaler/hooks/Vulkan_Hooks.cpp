@@ -61,7 +61,10 @@ PFN_vkCreateSwapchainKHR o_CreateSwapchainKHR = nullptr;
 static PFN_vkDestroySwapchainKHR o_DestroySwapchainKHR = nullptr;
 static PFN_vkGetSwapchainImagesKHR o_GetSwapchainImagesKHR = nullptr;
 static PFN_vkAcquireNextImageKHR o_AcquireNextImageKHR = nullptr;
+static PFN_vkAcquireNextImage2KHR o_AcquireNextImage2KHR = nullptr;
 static PFN_vkSetHdrMetadataEXT o_SetHdrMetadataEXT = nullptr;
+static PFN_vkWaitForPresentKHR o_WaitForPresentKHR = nullptr;
+static PFN_vkWaitForPresent2KHR o_WaitForPresent2KHR = nullptr;
 static PFN_vkGetInstanceProcAddr o_vkGetInstanceProcAddr = nullptr;
 static PFN_vkGetDeviceProcAddr o_vkGetDeviceProcAddr = nullptr;
 static PFN_vkEnumeratePhysicalDevices o_vkEnumeratePhysicalDevices = nullptr;
@@ -71,7 +74,6 @@ static PFN_vkEnumeratePhysicalDeviceGroupsKHR o_vkEnumeratePhysicalDeviceGroupsK
 // Those aren't hooked, just grabbed for use
 static PFN_vkGetPhysicalDeviceFeatures2 o_vkGetPhysicalDeviceFeatures2 = nullptr;
 PFN_vkCreateSemaphore VulkanHooks::o_vkCreateSemaphore = nullptr;
-PFN_vkSignalSemaphore VulkanHooks::o_vkSignalSemaphore = nullptr;
 PFN_vkAntiLagUpdateAMD VulkanHooks::o_vkAntiLagUpdateAMD = nullptr;
 
 // The device with VK_NV_low_latency2 enabled
@@ -146,8 +148,13 @@ static VkResult hkvkGetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapch
                                           VkImage* pSwapchainImages);
 static VkResult hkvkAcquireNextImageKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t timeout,
                                         VkSemaphore semaphore, VkFence fence, uint32_t* pImageIndex);
+static VkResult hkvkAcquireNextImage2KHR(VkDevice device, const VkAcquireNextImageInfoKHR* pAcquireInfo,
+                                         uint32_t* pImageIndex);
 static void hkvkSetHdrMetadataEXT(VkDevice device, uint32_t swapchainCount, const VkSwapchainKHR* pSwapchains,
                                   const VkHdrMetadataEXT* pMetadata);
+static VkResult hkvkWaitForPresentKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t presentId, uint64_t timeout);
+static VkResult hkvkWaitForPresent2KHR(VkDevice device, VkSwapchainKHR swapchain,
+                                       const VkPresentWait2InfoKHR* pPresentWait2Info);
 
 // Swapchain calls coming from dxvk/vkd3d-proton's DXGI based modules
 // For those the menu is drawn on the DXGI swapchain instead
@@ -248,7 +255,10 @@ static void HookDevice(VkDevice InDevice)
     o_DestroySwapchainKHR = (PFN_vkDestroySwapchainKHR) (vkGetDeviceProcAddr(InDevice, "vkDestroySwapchainKHR"));
     o_GetSwapchainImagesKHR = (PFN_vkGetSwapchainImagesKHR) (vkGetDeviceProcAddr(InDevice, "vkGetSwapchainImagesKHR"));
     o_AcquireNextImageKHR = (PFN_vkAcquireNextImageKHR) (vkGetDeviceProcAddr(InDevice, "vkAcquireNextImageKHR"));
+    o_AcquireNextImage2KHR = (PFN_vkAcquireNextImage2KHR) (vkGetDeviceProcAddr(InDevice, "vkAcquireNextImage2KHR"));
     o_SetHdrMetadataEXT = (PFN_vkSetHdrMetadataEXT) (vkGetDeviceProcAddr(InDevice, "vkSetHdrMetadataEXT"));
+    o_WaitForPresentKHR = (PFN_vkWaitForPresentKHR) (vkGetDeviceProcAddr(InDevice, "vkWaitForPresentKHR"));
+    o_WaitForPresent2KHR = (PFN_vkWaitForPresent2KHR) (vkGetDeviceProcAddr(InDevice, "vkWaitForPresent2KHR"));
 
     if (o_CreateSwapchainKHR)
     {
@@ -273,8 +283,17 @@ static void HookDevice(VkDevice InDevice)
         if (o_AcquireNextImageKHR != nullptr)
             DetourAttach(&(PVOID&) o_AcquireNextImageKHR, hkvkAcquireNextImageKHR);
 
+        if (o_AcquireNextImage2KHR != nullptr)
+            DetourAttach(&(PVOID&) o_AcquireNextImage2KHR, hkvkAcquireNextImage2KHR);
+
         if (o_SetHdrMetadataEXT != nullptr)
             DetourAttach(&(PVOID&) o_SetHdrMetadataEXT, hkvkSetHdrMetadataEXT);
+
+        if (o_WaitForPresentKHR != nullptr)
+            DetourAttach(&(PVOID&) o_WaitForPresentKHR, hkvkWaitForPresentKHR);
+
+        if (o_WaitForPresent2KHR != nullptr)
+            DetourAttach(&(PVOID&) o_WaitForPresent2KHR, hkvkWaitForPresent2KHR);
 
         auto detourResult = DetourTransactionCommit();
         if (detourResult != NO_ERROR)
@@ -285,7 +304,10 @@ static void HookDevice(VkDevice InDevice)
             o_DestroySwapchainKHR = nullptr;
             o_GetSwapchainImagesKHR = nullptr;
             o_AcquireNextImageKHR = nullptr;
+            o_AcquireNextImage2KHR = nullptr;
             o_SetHdrMetadataEXT = nullptr;
+            o_WaitForPresentKHR = nullptr;
+            o_WaitForPresent2KHR = nullptr;
         }
     }
 }
@@ -999,6 +1021,24 @@ static VkResult hkvkAcquireNextImageKHR(VkDevice device, VkSwapchainKHR swapchai
     return o_AcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, pImageIndex);
 }
 
+// RDR2 acquires with this one, the FG output's swapchain only has the plain acquire. The device mask is for device
+// groups, the FG output runs on one GPU.
+VALIDATE_HOOK(hkvkAcquireNextImage2KHR, PFN_vkAcquireNextImage2KHR)
+static VkResult hkvkAcquireNextImage2KHR(VkDevice device, const VkAcquireNextImageInfoKHR* pAcquireInfo,
+                                         uint32_t* pImageIndex)
+{
+    if (auto fg = State::Instance().currentVkFG; fg != nullptr && pAcquireInfo != nullptr &&
+                                                 fg->OwnsSwapchain(pAcquireInfo->swapchain) &&
+                                                 !FromFGOutput(_ReturnAddress()))
+    {
+        ScopedFGCall fgCall {};
+        return fg->AcquireNextImage(device, pAcquireInfo->swapchain, pAcquireInfo->timeout, pAcquireInfo->semaphore,
+                                    pAcquireInfo->fence, pImageIndex);
+    }
+
+    return o_AcquireNextImage2KHR(device, pAcquireInfo, pImageIndex);
+}
+
 VALIDATE_HOOK(hkvkSetHdrMetadataEXT, PFN_vkSetHdrMetadataEXT)
 static void hkvkSetHdrMetadataEXT(VkDevice device, uint32_t swapchainCount, const VkSwapchainKHR* pSwapchains,
                                   const VkHdrMetadataEXT* pMetadata)
@@ -1015,6 +1055,33 @@ static void hkvkSetHdrMetadataEXT(VkDevice device, uint32_t swapchainCount, cons
         else
             o_SetHdrMetadataEXT(device, 1, &pSwapchains[i], &pMetadata[i]);
     }
+}
+
+// The FG output's swapchain isn't a driver one and the game's present ids don't reach the real presents,
+// the output paces the presents itself
+VALIDATE_HOOK(hkvkWaitForPresentKHR, PFN_vkWaitForPresentKHR)
+static VkResult hkvkWaitForPresentKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t presentId, uint64_t timeout)
+{
+    if (auto fg = State::Instance().currentVkFG;
+        fg != nullptr && fg->OwnsSwapchain(swapchain) && !FromFGOutput(_ReturnAddress()))
+    {
+        return VK_SUCCESS;
+    }
+
+    return o_WaitForPresentKHR(device, swapchain, presentId, timeout);
+}
+
+VALIDATE_HOOK(hkvkWaitForPresent2KHR, PFN_vkWaitForPresent2KHR)
+static VkResult hkvkWaitForPresent2KHR(VkDevice device, VkSwapchainKHR swapchain,
+                                       const VkPresentWait2InfoKHR* pPresentWait2Info)
+{
+    if (auto fg = State::Instance().currentVkFG;
+        fg != nullptr && fg->OwnsSwapchain(swapchain) && !FromFGOutput(_ReturnAddress()))
+    {
+        return VK_SUCCESS;
+    }
+
+    return o_WaitForPresent2KHR(device, swapchain, pPresentWait2Info);
 }
 
 VALIDATE_HOOK(hkvkGetInstanceProcAddr, PFN_vkGetInstanceProcAddr)
@@ -1142,12 +1209,59 @@ HWND VulkanHooks::SurfaceWindow(VkSurfaceKHR surface)
     return it != _surfaceWindows.end() ? it->second : nullptr;
 }
 
+// A promoted core function is missing on a device that only has its extension (RDR2's vkGetSemaphoreCounterValue and
+// vkCmdPushDescriptorSetWithTemplate are null), the extension's name then gives the same function. FFX and OptiScaler
+// ask for the core names.
 PFN_vkVoidFunction VulkanHooks::GetDeviceProcAddr(VkDevice device, const char* pName)
 {
-    if (o_vkGetDeviceProcAddr != nullptr)
-        return o_vkGetDeviceProcAddr(device, pName);
+    auto getProc = o_vkGetDeviceProcAddr != nullptr ? o_vkGetDeviceProcAddr : vkGetDeviceProcAddr;
 
-    return vkGetDeviceProcAddr(device, pName);
+    if (auto function = getProc(device, pName))
+        return function;
+
+    if (pName == nullptr)
+        return nullptr;
+
+    for (auto suffix : { "KHR", "EXT" })
+    {
+        auto name = std::string(pName) + suffix;
+
+        if (auto function = getProc(device, name.c_str()))
+        {
+            LOG_DEBUG("{} is missing, using {}", pName, name);
+            return function;
+        }
+    }
+
+    return nullptr;
+}
+
+// vulkan-1's exported vkSignalSemaphore dispatches through the device's core 1.2 entry, which a device with only
+// VK_KHR_timeline_semaphore (RDR2) doesn't have
+VkResult VulkanHooks::SignalSemaphore(VkDevice device, const VkSemaphoreSignalInfo* pSignalInfo)
+{
+    static std::mutex mutex;
+    static VkDevice lastDevice = VK_NULL_HANDLE;
+    static PFN_vkSignalSemaphore signalSemaphore = nullptr;
+
+    {
+        std::scoped_lock lock(mutex);
+
+        if (device != lastDevice)
+        {
+            signalSemaphore = (PFN_vkSignalSemaphore) GetDeviceProcAddr(device, "vkSignalSemaphore");
+
+            if (signalSemaphore == nullptr)
+                LOG_ERROR("Device {:X} has neither vkSignalSemaphore nor vkSignalSemaphoreKHR", (size_t) device);
+
+            lastDevice = device;
+        }
+    }
+
+    if (signalSemaphore == nullptr)
+        return VK_ERROR_FEATURE_NOT_PRESENT;
+
+    return signalSemaphore(device, pSignalInfo);
 }
 
 PFN_vkVoidFunction VulkanHooks::GetInstanceProcAddr(VkInstance instance, const char* pName)
@@ -1226,9 +1340,6 @@ void VulkanHooks::Hook(HMODULE vulkan1)
     address = KernelBaseProxy::GetProcAddress_()(vulkan1, "vkCreateSemaphore");
     o_vkCreateSemaphore = (PFN_vkCreateSemaphore) address;
 
-    address = KernelBaseProxy::GetProcAddress_()(vulkan1, "vkSignalSemaphore");
-    o_vkSignalSemaphore = (PFN_vkSignalSemaphore) address;
-
     DetourTransactionBegin();
     DetourUpdateThread(GetCurrentThread());
 
@@ -1303,8 +1414,17 @@ void VulkanHooks::Unhook()
     if (o_AcquireNextImageKHR != nullptr)
         DetourDetach(&(PVOID&) o_AcquireNextImageKHR, hkvkAcquireNextImageKHR);
 
+    if (o_AcquireNextImage2KHR != nullptr)
+        DetourDetach(&(PVOID&) o_AcquireNextImage2KHR, hkvkAcquireNextImage2KHR);
+
     if (o_SetHdrMetadataEXT != nullptr)
         DetourDetach(&(PVOID&) o_SetHdrMetadataEXT, hkvkSetHdrMetadataEXT);
+
+    if (o_WaitForPresentKHR != nullptr)
+        DetourDetach(&(PVOID&) o_WaitForPresentKHR, hkvkWaitForPresentKHR);
+
+    if (o_WaitForPresent2KHR != nullptr)
+        DetourDetach(&(PVOID&) o_WaitForPresent2KHR, hkvkWaitForPresent2KHR);
 
     if (o_vkCreateDevice != nullptr)
         DetourDetach(&(PVOID&) o_vkCreateDevice, hkvkCreateDevice);
@@ -1342,7 +1462,10 @@ void VulkanHooks::Unhook()
         o_DestroySwapchainKHR = nullptr;
         o_GetSwapchainImagesKHR = nullptr;
         o_AcquireNextImageKHR = nullptr;
+        o_AcquireNextImage2KHR = nullptr;
         o_SetHdrMetadataEXT = nullptr;
+        o_WaitForPresentKHR = nullptr;
+        o_WaitForPresent2KHR = nullptr;
         o_vkCreateDevice = nullptr;
         o_vkCreateInstance = nullptr;
         o_vkDestroyInstance = nullptr;
