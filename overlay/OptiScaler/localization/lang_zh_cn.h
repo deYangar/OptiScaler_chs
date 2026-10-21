@@ -1484,4 +1484,14 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_At_least_target)] = "至少目标";
     table[static_cast<int>(LK::UI_xefgRounding)] = "##xefgRounding";
     table[static_cast<int>(LK::UI_Allow_1X_xefg)] = "允许 1X##xefg";
+    table[static_cast<int>(LK::UI_Upscale_ux_u_ux_u_2fx)] = "超分：%ux%u -> %ux%u (%.2fx)";
+    table[static_cast<int>(LK::UI_DRS)] = "(DRS)";
+    table[static_cast<int>(LK::UI_Disable_HW_Flip_Metering)] = "禁用硬件翻转计量";
+    table[static_cast<int>(LK::UI_Overrides_the_AMD_hardware_flip_metering_requested_by_FSR)] = "覆盖 FSR 请求的 AMD 硬件翻转计量";
+    table[static_cast<int>(LK::UI_Mode_u)] = "(模式 %u)";
+    table[static_cast<int>(LK::UI_Off_2)] = "(关闭)";
+    table[static_cast<int>(LK::UI_Dynamic_Res_DRS)] = "动态分辨率 (DRS)";
+    table[static_cast<int>(LK::UI_Upscale_Ratio)] = "超分比例";
+    table[static_cast<int>(LK::UI_Shows_the_current_render_output_resolution_and_upscale_ratio)] = "在覆盖层中显示当前渲染 -> 输出分辨率及超分比例";
+    table[static_cast<int>(LK::UI_Dynamic_res)] = "动态分辨率";
 }

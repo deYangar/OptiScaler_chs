@@ -1472,4 +1472,14 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_At_least_target)] = "At least target";
     table[static_cast<int>(LK::UI_xefgRounding)] = "##xefgRounding";
     table[static_cast<int>(LK::UI_Allow_1X_xefg)] = "Allow 1X##xefg";
+    table[static_cast<int>(LK::UI_Upscale_ux_u_ux_u_2fx)] = "Upscale: %ux%u -> %ux%u (%.2fx)";
+    table[static_cast<int>(LK::UI_DRS)] = "(DRS)";
+    table[static_cast<int>(LK::UI_Disable_HW_Flip_Metering)] = "Disable HW Flip Metering";
+    table[static_cast<int>(LK::UI_Overrides_the_AMD_hardware_flip_metering_requested_by_FSR)] = "Overrides the AMD hardware flip metering requested by FSR";
+    table[static_cast<int>(LK::UI_Mode_u)] = "(Mode %u)";
+    table[static_cast<int>(LK::UI_Off_2)] = "(Off)";
+    table[static_cast<int>(LK::UI_Dynamic_Res_DRS)] = "Dynamic Res. (DRS)";
+    table[static_cast<int>(LK::UI_Upscale_Ratio)] = "Upscale Ratio";
+    table[static_cast<int>(LK::UI_Shows_the_current_render_output_resolution_and_upscale_ratio)] = "Shows the current render -> output resolution and upscale ratio in the overlay";
+    table[static_cast<int>(LK::UI_Dynamic_res)] = "Dynamic res.";
 }

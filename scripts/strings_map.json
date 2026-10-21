@@ -1302,5 +1302,15 @@
  "Around target": "UI_Around_target",
  "At least target": "UI_At_least_target",
  "##xefgRounding": "UI_xefgRounding",
- "Allow 1X##xefg": "UI_Allow_1X_xefg"
+ "Allow 1X##xefg": "UI_Allow_1X_xefg",
+ "Upscale: %ux%u -> %ux%u (%.2fx)": "UI_Upscale_ux_u_ux_u_2fx",
+ "(DRS)": "UI_DRS",
+ "Disable HW Flip Metering": "UI_Disable_HW_Flip_Metering",
+ "Overrides the AMD hardware flip metering requested by FSR": "UI_Overrides_the_AMD_hardware_flip_metering_requested_by_FSR",
+ "(Mode %u)": "UI_Mode_u",
+ "(Off)": "UI_Off_2",
+ "Dynamic Res. (DRS)": "UI_Dynamic_Res_DRS",
+ "Upscale Ratio": "UI_Upscale_Ratio",
+ "Shows the current render -> output resolution and upscale ratio in the overlay": "UI_Shows_the_current_render_output_resolution_and_upscale_ratio",
+ "Dynamic res.": "UI_Dynamic_res"
 }

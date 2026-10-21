@@ -1466,6 +1466,16 @@ enum class LK {
     UI_At_least_target,
     UI_xefgRounding,
     UI_Allow_1X_xefg,
+    UI_Upscale_ux_u_ux_u_2fx,
+    UI_DRS,
+    UI_Disable_HW_Flip_Metering,
+    UI_Overrides_the_AMD_hardware_flip_metering_requested_by_FSR,
+    UI_Mode_u,
+    UI_Off_2,
+    UI_Dynamic_Res_DRS,
+    UI_Upscale_Ratio,
+    UI_Shows_the_current_render_output_resolution_and_upscale_ratio,
+    UI_Dynamic_res,
     COUNT
 };
 
