@@ -1,16 +1,12 @@
 [
- "FSR4 Model",
- "(Active: %s)",
- "Current XeFG state:",
- "(Dynamic)",
- "Max Frame Gen###xefgMode",
- "Frame Gen###xefgMode",
- "Dynamic MFG##xefg",
- "Target FPS##xefg",
- "Use as FPS limit##xefg",
- "At most target",
- "Around target",
- "At least target",
- "##xefgRounding",
- "Allow 1X##xefg"
+ "Upscale: %ux%u -> %ux%u (%.2fx)",
+ "(DRS)",
+ "Disable HW Flip Metering",
+ "Overrides the AMD hardware flip metering requested by FSR",
+ "(Mode %u)",
+ "(Off)",
+ "Dynamic Res. (DRS)",
+ "Upscale Ratio",
+ "Shows the current render -> output resolution and upscale ratio in the overlay",
+ "Dynamic res."
 ]
