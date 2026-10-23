@@ -10,7 +10,7 @@
 
 // OptiScaler's own Streamline (DLSSG output): its calls marked as OptiScaler's, and the ones its modules make on
 // Streamline's own threads (the async markers of the generated frames' presents)
-static bool FromOptiScaler(void* returnAddress)
+bool InputReflex::FromOptiScaler(void* returnAddress)
 {
     if (ReflexHooks::optiScalerCall)
         return true;
@@ -23,7 +23,7 @@ static bool FromOptiScaler(void* returnAddress)
 // With NVIDIA's nvapi OptiScaler's Streamline reaches the driver, with fakenvapi it's the OptiScaler input
 template <typename Fn> static Fn ToDriver(unsigned int id)
 {
-    if (fakenvapi::isUsingAsMainNvapi())
+    if (!InputCommon::driver_reflex_available(API::DX12))
         return nullptr;
 
     return reinterpret_cast<Fn>(ReflexHooks::getHookedReflex(id));
@@ -79,7 +79,7 @@ NvAPI_Status InputReflex::D3D_GetSleepStatus(IUnknown* pDevice, NV_GET_SLEEP_STA
 
     bool own = FromOptiScaler(_ReturnAddress());
 
-    if (own && !fakenvapi::isUsingAsMainNvapi() && NvApiHooks::o_NvAPI_QueryInterface != nullptr)
+    if (own && InputCommon::driver_reflex_available(API::DX12) && NvApiHooks::o_NvAPI_QueryInterface != nullptr)
     {
         if (auto driver = GET_INTERFACE(NvAPI_D3D_GetSleepStatus, NvApiHooks::o_NvAPI_QueryInterface))
             return driver(pDevice, pGetSleepStatusParams);

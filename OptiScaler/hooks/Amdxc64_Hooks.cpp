@@ -7,7 +7,6 @@
 #include <proxies/Ntdll_Proxy.h>
 #include <low_latency/input/input_antilag2.h>
 #include <misc/IdentifyGpu.h>
-#include "Streamline_Hooks.h"
 
 #pragma endregion
 
@@ -119,6 +118,13 @@ void Amdxc64Hooks::Init()
         GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN, L"amdxc64.dll", &moduleAmdxc64);
 
         LOG_INFO("amdxc64.dll loaded");
+
+        static std::mutex initMutex;
+        std::scoped_lock lock(initMutex);
+
+        if (o_AmdExtD3DCreateInterface != nullptr)
+            return;
+
         o_AmdExtD3DCreateInterface = (PFN_AmdExtD3DCreateInterface) KernelBaseProxy::GetProcAddress_()(
             moduleAmdxc64, "AmdExtD3DCreateInterface");
 
@@ -194,7 +200,6 @@ HRESULT STDMETHODCALLTYPE Amdxc64Hooks::hkAmdExtD3DCreateInterface(IUnknown* pOu
         return S_OK;
     }
 
-#ifdef LOW_LATENCY_INPUTS
     else if (riid == IID_IAmdExtAntiLagApi && giveGameAl2Proxy)
     {
         if (amdExtAntiLagApi == nullptr)
@@ -207,18 +212,6 @@ HRESULT STDMETHODCALLTYPE Amdxc64Hooks::hkAmdExtD3DCreateInterface(IUnknown* pOu
 
         return S_OK;
     }
-#else
-    else if (riid == IID_IAmdExtAntiLagApi && giveGameAl2Proxy &&
-             (StreamlineHooks::isReflexHooked() || State::Instance().activeFgInput == FGInput::NvngxFG ||
-              State::Instance().activeFgInput == FGInput::DLSSG))
-    {
-        *ppvObject = nullptr;
-
-        LOG_INFO("Killing native AL2");
-
-        return S_OK;
-    }
-#endif
 
     else if (o_AmdExtD3DCreateInterface != nullptr)
     {

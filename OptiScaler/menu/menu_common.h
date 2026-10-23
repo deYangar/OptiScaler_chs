@@ -26,7 +26,7 @@ class ScopedID
 
 struct ImGuiWindow;
 
-// Draws a rectangle around everything drawn while it is alive. Nothing is drawn when it stays empty
+// Draws a group box around everything drawn while it is alive. Nothing is drawn when it stays empty
 class ScopedCard
 {
   public:
@@ -44,6 +44,8 @@ class ScopedCard
     static void SetFilter(const char* id);
 
   private:
+    void DrawTitle(const char* label);
+
     inline static ScopedCard* _current = nullptr;
     inline static const char* _filter = nullptr;
 
@@ -56,6 +58,8 @@ class ScopedCard
     float _oldWorkRectMaxX = 0.0f;
     float _oldContentRectMaxX = 0.0f;
     bool _active = false;
+    ImVec2 _titleMin {};
+    ImVec2 _titleMax {};
     bool _hasTitle = false;
 };
 
@@ -233,7 +237,6 @@ class MenuCommon
     static void RenderFsrCommonSettings(RenderMenuContext& ctx);
     static void RenderFramerateSettings(RenderMenuContext& ctx);
     static void RenderVsyncSettings(RenderMenuContext& ctx);
-    static void RenderFakenvapiSettings(RenderMenuContext& ctx);
     static void RenderLowLatencySettings(RenderMenuContext& ctx);
     static void RenderActiveImageSettings(RenderMenuContext& ctx);
     static void RenderUpscaleRatioSettings(RenderMenuContext& ctx);

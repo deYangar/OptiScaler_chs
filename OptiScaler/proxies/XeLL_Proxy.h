@@ -7,7 +7,6 @@
 
 #include <proxies/Ntdll_Proxy.h>
 #include <proxies/KernelBase_Proxy.h>
-#include <hooks/Xell_Hooks.h>
 
 #include <xell.h>
 #include <xell_d3d12.h>
@@ -146,16 +145,9 @@ class XeLLProxy
 
     inline static std::filesystem::path DllPath(HMODULE module)
     {
-        static std::filesystem::path dll;
-
-        if (dll.empty())
-        {
-            wchar_t dllPath[MAX_PATH];
-            GetModuleFileNameW(module, dllPath, MAX_PATH);
-            dll = std::filesystem::path(dllPath);
-        }
-
-        return dll;
+        wchar_t dllPath[MAX_PATH];
+        GetModuleFileNameW(module, dllPath, MAX_PATH);
+        return std::filesystem::path(dllPath);
     }
 
     static bool InitXeLLProper()
@@ -198,17 +190,14 @@ class XeLLProxy
 
     static bool InitXeLLInput()
     {
-#ifdef LOW_LATENCY_INPUTS
         RedirectToInput(_dll);
 
         if (_memoryDll != nullptr && _memoryDll != _dll)
             RedirectToInput(_memoryDll);
-#endif
 
         return true;
     }
 
-#ifdef LOW_LATENCY_INPUTS
     // Only called on the real XeLL by the low latency inputs
     inline static PVOID _xellQueryInterface = nullptr;
     inline static PVOID _xellGetContextParameterP = nullptr;
@@ -242,13 +231,12 @@ class XeLLProxy
 
     inline static std::recursive_mutex _redirectMutex;
     inline static std::vector<HMODULE> _redirected;
-#endif
 
   public:
-#ifdef LOW_LATENCY_INPUTS
     // Every libxell's calls go to OptiScaler's XeLL exports, also the ones from libraries that import it or got it
-    // before OptiScaler, so the game's XeLL is the low latency input. The first one becomes the real XeLL, reached
-    // through the trampolines, any other one goes to OptiScaler's entirely.
+    // before OptiScaler, so the game's XeLL is the low latency input. The real XeLL is OptiScaler's own libxell when
+    // it has one, as the game's might be too old for OptiScaler's XeFG, otherwise the first one. The real XeLL is
+    // reached through the trampolines, any other one goes to OptiScaler's entirely.
     static void RedirectToInput(HMODULE module)
     {
         if (module == nullptr || module == dllModule)
@@ -261,8 +249,8 @@ class XeLLProxy
 
         _redirected.push_back(module);
 
-        // The game loaded the only libxell
-        if (_dll == nullptr && HookXeLL(module))
+        // No libxell OptiScaler could load, the game's is the only one
+        if (_dll == nullptr && !InitXeLL() && HookXeLL(module))
             _dllPath = DllPath(module).wstring();
 
         auto path = wstring_to_string(DllPath(module).wstring());
@@ -304,7 +292,6 @@ class XeLLProxy
 
         return _dll != nullptr && _dll != dllModule ? (PVOID) KernelBaseProxy::GetProcAddress_()(_dll, name) : nullptr;
     }
-#endif
 
     static HMODULE Module() { return _dll; }
     static std::wstring Module_Path() { return _dllPath; }
@@ -356,13 +343,11 @@ class XeLLProxy
                     (PFN_xellGetLastPresentStartFrameId) KernelBaseProxy::GetProcAddress_()(
                         _dll, "xellGetLastPresentStartFrameId");
 
-#ifdef LOW_LATENCY_INPUTS
                 _xellQueryInterface = (PVOID) KernelBaseProxy::GetProcAddress_()(_dll, "xellQueryInterface");
                 _xellGetContextParameterP =
                     (PVOID) KernelBaseProxy::GetProcAddress_()(_dll, "xellGetContextParameterP");
                 _xellSetContextParameterP =
                     (PVOID) KernelBaseProxy::GetProcAddress_()(_dll, "xellSetContextParameterP");
-#endif
             }
         }
 
@@ -395,7 +380,6 @@ class XeLLProxy
         return _xellVersion;
     }
 
-#ifdef LOW_LATENCY_INPUTS
     // We export / implement those functions
     static PFN_xellDestroyContext DestroyContext() { return xellDestroyContext; }
     static PFN_xellSetSleepMode SetSleepMode() { return xellSetSleepMode; }
@@ -425,15 +409,4 @@ class XeLLProxy
     {
         return _xellGetLastPresentStartFrameId;
     }
-#else
-    static PFN_xellDestroyContext DestroyContext() { return _xellDestroyContext; }
-    static PFN_xellSetSleepMode SetSleepMode() { return _xellSetSleepMode; }
-    static PFN_xellGetSleepMode GetSleepMode() { return _xellGetSleepMode; }
-    static PFN_xellSleep Sleep() { return _xellSleep; }
-    static PFN_xellAddMarkerData AddMarkerData() { return _xellAddMarkerData; }
-    static PFN_xellGetVersion GetVersion() { return _xellGetVersion; }
-    static PFN_xellSetLoggingCallback SetLoggingCallback() { return _xellSetLoggingCallback; }
-    static PFN_xellGetFramesReports GetFramesReports() { return _xellGetFramesReports; }
-    static PFN_xellD3D12CreateContext D3D12CreateContext() { return _xellD3D12CreateContext; }
-#endif
 };
