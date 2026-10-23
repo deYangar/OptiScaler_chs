@@ -1482,4 +1482,9 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Upscale_Ratio)] = "Upscale Ratio";
     table[static_cast<int>(LK::UI_Shows_the_current_render_output_resolution_and_upscale_ratio)] = "Shows the current render -> output resolution and upscale ratio in the overlay";
     table[static_cast<int>(LK::UI_Dynamic_res)] = "Dynamic res.";
+    table[static_cast<int>(LK::UI_Please_put_dlssg_to_fsr3_amd_is_better_dll_into_OptiScaler_f)] = "Please put dlssg_to_fsr3_amd_is_better.dll into OptiScaler folder";
+    table[static_cast<int>(LK::UI_Please_put_dlss_enabler_headless_dll_into_OptiScaler_folder)] = "Please put dlss-enabler-headless.dll into OptiScaler folder";
+    table[static_cast<int>(LK::UI_Reset_Custom_Tab)] = "Reset Custom Tab";
+    table[static_cast<int>(LK::UI_Compatibility_list_known_issues_and_FG_options_explained)] = "Compatibility list, known issues and FG options explained";
+    table[static_cast<int>(LK::UI_s_s_OptiScalerMenu)] = "%s - %s###OptiScalerMenu";
 }

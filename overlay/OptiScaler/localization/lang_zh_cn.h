@@ -1494,4 +1494,9 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Upscale_Ratio)] = "超分比例";
     table[static_cast<int>(LK::UI_Shows_the_current_render_output_resolution_and_upscale_ratio)] = "在覆盖层中显示当前渲染 -> 输出分辨率及超分比例";
     table[static_cast<int>(LK::UI_Dynamic_res)] = "动态分辨率";
+    table[static_cast<int>(LK::UI_Please_put_dlssg_to_fsr3_amd_is_better_dll_into_OptiScaler_f)] = "请将 dlssg_to_fsr3_amd_is_better.dll 放入 OptiScaler 文件夹";
+    table[static_cast<int>(LK::UI_Please_put_dlss_enabler_headless_dll_into_OptiScaler_folder)] = "请将 dlss-enabler-headless.dll 放入 OptiScaler 文件夹";
+    table[static_cast<int>(LK::UI_Reset_Custom_Tab)] = "重置自定义标签页";
+    table[static_cast<int>(LK::UI_Compatibility_list_known_issues_and_FG_options_explained)] = "兼容性列表、已知问题及帧生成选项说明";
+    table[static_cast<int>(LK::UI_s_s_OptiScalerMenu)] = "%s - %s###OptiScalerMenu";
 }

@@ -1312,5 +1312,10 @@
  "Dynamic Res. (DRS)": "UI_Dynamic_Res_DRS",
  "Upscale Ratio": "UI_Upscale_Ratio",
  "Shows the current render -> output resolution and upscale ratio in the overlay": "UI_Shows_the_current_render_output_resolution_and_upscale_ratio",
- "Dynamic res.": "UI_Dynamic_res"
+ "Dynamic res.": "UI_Dynamic_res",
+ "Please put dlssg_to_fsr3_amd_is_better.dll into OptiScaler folder": "UI_Please_put_dlssg_to_fsr3_amd_is_better_dll_into_OptiScaler_f",
+ "Please put dlss-enabler-headless.dll into OptiScaler folder": "UI_Please_put_dlss_enabler_headless_dll_into_OptiScaler_folder",
+ "Reset Custom Tab": "UI_Reset_Custom_Tab",
+ "Compatibility list, known issues and FG options explained": "UI_Compatibility_list_known_issues_and_FG_options_explained",
+ "%s - %s###OptiScalerMenu": "UI_s_s_OptiScalerMenu"
 }

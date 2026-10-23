@@ -1476,6 +1476,11 @@ enum class LK {
     UI_Upscale_Ratio,
     UI_Shows_the_current_render_output_resolution_and_upscale_ratio,
     UI_Dynamic_res,
+    UI_Please_put_dlssg_to_fsr3_amd_is_better_dll_into_OptiScaler_f,
+    UI_Please_put_dlss_enabler_headless_dll_into_OptiScaler_folder,
+    UI_Reset_Custom_Tab,
+    UI_Compatibility_list_known_issues_and_FG_options_explained,
+    UI_s_s_OptiScalerMenu,
     COUNT
 };
 
