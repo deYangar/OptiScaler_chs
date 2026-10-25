@@ -1588,6 +1588,10 @@ enum class LK {
     UI_Applied_Save_Settings_to_keep_it,
     UI_No_FPS_overlay_code_in_the_clipboard,
     UI_Applies_a_copied_code_Settings_it_doesn_t_list_go_back_to_th,
+    UI_Low_latency_timings_whole_frame,
+    UI_S_1fms,
+    UI_Hide_Averages,
+    UI_A_strip_at_the_top_center_Bahnschrift_FPS_and_upscaler_time_,
     COUNT
 };
 

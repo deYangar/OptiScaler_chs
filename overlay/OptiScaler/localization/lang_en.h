@@ -1594,4 +1594,8 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Applied_Save_Settings_to_keep_it)] = "Applied, Save Settings to keep it";
     table[static_cast<int>(LK::UI_No_FPS_overlay_code_in_the_clipboard)] = "No FPS overlay code in the clipboard";
     table[static_cast<int>(LK::UI_Applies_a_copied_code_Settings_it_doesn_t_list_go_back_to_th)] = "Applies a copied code. Settings it doesn't list go back to their defaults.";
+    table[static_cast<int>(LK::UI_Low_latency_timings_whole_frame)] = "Low latency timings, whole frame: ";
+    table[static_cast<int>(LK::UI_S_1fms)] = "%.1fms";
+    table[static_cast<int>(LK::UI_Hide_Averages)] = "Hide Averages";
+    table[static_cast<int>(LK::UI_A_strip_at_the_top_center_Bahnschrift_FPS_and_upscaler_time_)] = "A strip at the top center: Bahnschrift, FPS and upscaler time in orange on a dark panel";
 }

@@ -1606,4 +1606,8 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Applied_Save_Settings_to_keep_it)] = "已应用，保存设置以保留";
     table[static_cast<int>(LK::UI_No_FPS_overlay_code_in_the_clipboard)] = "剪贴板中没有 FPS 覆盖层代码";
     table[static_cast<int>(LK::UI_Applies_a_copied_code_Settings_it_doesn_t_list_go_back_to_th)] = "应用已复制的代码。未列出的设置将恢复为默认值。";
+    table[static_cast<int>(LK::UI_Low_latency_timings_whole_frame)] = "低延迟时序，整帧：";
+    table[static_cast<int>(LK::UI_S_1fms)] = "%.1fms";
+    table[static_cast<int>(LK::UI_Hide_Averages)] = "隐藏平均值";
+    table[static_cast<int>(LK::UI_A_strip_at_the_top_center_Bahnschrift_FPS_and_upscaler_time_)] = "顶部中央条带：Bahnschrift，FPS 和超分辨率时间以橙色显示在深色面板上";
 }

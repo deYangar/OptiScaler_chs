@@ -1424,5 +1424,9 @@
  "Paste Code": "UI_Paste_Code",
  "Applied, Save Settings to keep it": "UI_Applied_Save_Settings_to_keep_it",
  "No FPS overlay code in the clipboard": "UI_No_FPS_overlay_code_in_the_clipboard",
- "Applies a copied code. Settings it doesn't list go back to their defaults.": "UI_Applies_a_copied_code_Settings_it_doesn_t_list_go_back_to_th"
+ "Applies a copied code. Settings it doesn't list go back to their defaults.": "UI_Applies_a_copied_code_Settings_it_doesn_t_list_go_back_to_th",
+ "Low latency timings, whole frame: ": "UI_Low_latency_timings_whole_frame",
+ "%.1fms": "UI_S_1fms",
+ "Hide Averages": "UI_Hide_Averages",
+ "A strip at the top center: Bahnschrift, FPS and upscaler time in orange on a dark panel": "UI_A_strip_at_the_top_center_Bahnschrift_FPS_and_upscaler_time_"
 }
