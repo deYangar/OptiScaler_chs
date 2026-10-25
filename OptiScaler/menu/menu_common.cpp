@@ -2068,8 +2068,6 @@ void MenuCommon::FGOutputPresent() { fgOutputPresentRate.Present(Util::Milliseco
 
 void MenuCommon::FGOutputPresents(bool presents) { fgOutputPresentRate.SetEnabled(presents); }
 
-static double FGOutputFrameTime(double now) { return fgOutputPresentRate.FrameTime(now); }
-
 struct VersionCheckStatus
 {
     bool completed = false;
@@ -2141,7 +2139,7 @@ void MenuCommon::UpdateRenderTiming(RenderMenuContext& ctx)
         frameRate = 1000.0 / frameTime;
     }
 
-    ctx.fgOutputFrameTimeMs = FGOutputFrameTime(now);
+    ctx.fgOutputFrameTimeMs = fgOutputPresentRate.FrameTime(now);
     if (ctx.fgOutputFrameTimeMs > 0.0)
     {
         frameTime = ctx.fgOutputFrameTimeMs;
@@ -2566,7 +2564,10 @@ void MenuCommon::UpdateFrameTimeAverages(RenderMenuContext& ctx)
 
         float lastFT = static_cast<float>(state.frameTimes.empty() ? 0.0f : state.frameTimes.back());
         float lastUT = static_cast<float>(state.upscaleTimes.empty() ? 0.0f : state.upscaleTimes.back());
-        gFrameTimes.Push(lastFT);
+
+        if (!fgOutputPresentRate.TakeIntervals([](double ms) { gFrameTimes.Push(static_cast<float>(ms)); }))
+            gFrameTimes.Push(lastFT);
+
         gUpscalerTimes.Push(lastUT);
 
         averageFrameTime = gFrameTimes.Average();
@@ -2816,6 +2817,7 @@ void MenuCommon::RenderPerformanceOverlay(RenderMenuContext& ctx)
 
             const bool compact = config->FpsOverlayCompactLabels.value_or_default();
             auto L = [compact](const char* full, const char* shorter) { return std::string(compact ? shorter : full); };
+            const bool averages = !config->FpsOverlayHideAverages.value_or_default();
 
             std::string featureText;
 
@@ -2908,7 +2910,7 @@ void MenuCommon::RenderPerformanceOverlay(RenderMenuContext& ctx)
 
                 if (fpsRow == FpsOverlayFpsRow_FrameTime)
                     line.Label(", ").Value("fpsFrameTime", StrFmt("%.2f ms", shown.frameTime));
-                else
+                else if (averages)
                     line.Label(L(", Avg: ", " Avg "))
                         .Value("fpsAverage", StrFmt("%.1f", 1000.0 / shown.averageFrameTime));
 
@@ -2946,17 +2948,22 @@ void MenuCommon::RenderPerformanceOverlay(RenderMenuContext& ctx)
 
             rows[OverlayRow_FrameTime] = OverlayLine()
                                              .Label(L("Frame Time: ", "FT "))
-                                             .Value("frameTime", StrFmt("%.2f ms", shown.lastFrameTime))
-                                             .Label(L(", Avg: ", " Avg "))
-                                             .Value("frameTimeAverage", StrFmt("%.2f ms", shown.averageFrameTime));
+                                             .Value("frameTime", StrFmt("%.2f ms", shown.lastFrameTime));
+
+            if (averages)
+                rows[OverlayRow_FrameTime]
+                    ->Label(L(", Avg: ", " Avg "))
+                    .Value("frameTimeAverage", StrFmt("%.2f ms", shown.averageFrameTime));
 
             rows[OverlayRow_FrameTimeGraph] = graphRow("##FrameTimeGraph", &gFrameTimes, 66.6f);
 
-            rows[OverlayRow_UpscalerTime] =
-                OverlayLine()
-                    .Label(L("Upscaler Time: ", "UT "))
-                    .Value("upscalerTime", StrFmt("%.2f ms", shown.lastUpscalerTime))
-                    .Label(L(", Avg: ", " Avg "))
+            rows[OverlayRow_UpscalerTime] = OverlayLine()
+                                                .Label(L("Upscaler Time: ", "UT "))
+                                                .Value("upscalerTime", StrFmt("%.2f ms", shown.lastUpscalerTime));
+
+            if (averages)
+                rows[OverlayRow_UpscalerTime]
+                    ->Label(L(", Avg: ", " Avg "))
                     .Value("upscalerTimeAverage", StrFmt("%.2f ms", shown.averageUpscalerTime));
 
             rows[OverlayRow_UpscalerTimeGraph] = graphRow("##UpscalerFrameTimeGraph", &gUpscalerTimes, 20.0f);
@@ -3193,8 +3200,28 @@ void MenuCommon::RenderPerformanceOverlay(RenderMenuContext& ctx)
                 if (fg != nullptr)
                     localFrameCount = fg->FrameCount();
 
-                ImGui::Text("FGId: %llu, RfxId: %llu", localFrameCount, state.reflexFrameId);
-                ImGui::Text("Low latency timings, whole frame: %.1fms", rangeInNs / 1000.0);
+                // Text lines with the overlay's shadow or outline under them
+                auto shadowedText = [&](ImU32 color, const std::string& text)
+                {
+                    const char* begin = text.c_str();
+                    const char* end = begin + text.size();
+                    drawText(drawList, ImGui::GetFontSize(), ImGui::GetCursorScreenPos(), color, begin, end, true);
+
+                    ImGui::PushStyleColor(ImGuiCol_Text, color);
+                    ImGui::TextUnformatted(begin, end);
+                    ImGui::PopStyleColor();
+                };
+
+                // OverlayLine frameIds;
+                // frameIds.Label("FGId: ")
+                //     .Value("lowLatencyFgId", StrFmt("%llu", localFrameCount))
+                //     .Label(", RfxId: ")
+                //     .Value("lowLatencyRfxId", StrFmt("%llu", state.reflexFrameId));
+                // drawLine(frameIds);
+                OverlayLine wholeFrame;
+                wholeFrame.Label("Low latency timings, whole frame: ")
+                    .Value("lowLatencyFrame", StrFmt("%.1fms", rangeInNs / 1000.0));
+                drawLine(wholeFrame);
 
                 const auto maxWidth = horizontal ? fpsScale * 300.0f : plotSize.x;
 
@@ -3208,7 +3235,8 @@ void MenuCommon::RenderPerformanceOverlay(RenderMenuContext& ctx)
                     const auto& timing = timingOpt.value();
                     float duration = static_cast<float>(timing.length * rangeInNs / 1000.0);
 
-                    ImGui::TextColored(toneMappedColor, "%-12s %4.1fms", desc, duration);
+                    shadowedText(ImGui::ColorConvertFloat4ToU32(toneMappedColor),
+                                 StrFmt("%-12s %4.1fms", desc, duration));
 
                     auto leftLimit = ImGui::GetItemRectMin().x + offsetForText * fpsScale;
 
@@ -8151,6 +8179,11 @@ void MenuCommon::RenderFpsOverlaySettings(RenderMenuContext& ctx)
                            "The Upscale Ratio row in the presets from Simple on, Custom has it in its rows");
             ImGui::EndDisabled();
 
+            ImGui::SameLine(0.0f, 6.0f);
+
+            optionCheckbox("Hide Averages", config->FpsOverlayHideAverages,
+                           "Only the current values, without the averages of FPS, frame time and upscaler time");
+
             ImGui::Spacing();
 
             // -1 is the default spacing
@@ -8209,11 +8242,11 @@ void MenuCommon::RenderFpsOverlaySettings(RenderMenuContext& ctx)
                   "OverlaysUseTheme=false;Type=3;CompactLabels=true;Font=unispace bd.ttf;Alpha=0;Rounding=0;"
                   "LabelColor=0xFF9C00;ValueColor=0xFFFFFF;GraphColor=0xFF9C00;Shadow=2;ShadowStrength=0.5;"
                   "ShadowColor=0x000000;UpdateInterval=500" },
-                { "Glass Strip", "A strip at the top center: Bahnschrift, cyan values on a dark glass panel",
-                  "OverlaysUseTheme=false;Pos=4;Horizontal=true;Type=2;CompactLabels=true;"
-                  "Font=bahnschrift.ttf;Alpha=0.35;BGColor=0x0A0F14;Rounding=10;LabelColor=0x8A9BA8;"
-                  "ValueColor=0x00E5FF;GraphColor=0x00E5FF;LabelScale=0.85;ValueScale=1.1;LetterSpacing=0.5;"
-                  "Shadow=1;ShadowStrength=0.5;UpdateInterval=250" },
+                { "Strip", "A strip at the top center: Bahnschrift, FPS and upscaler time in orange on a dark panel",
+                  "Pos=4;Type=7;Horizontal=true;Rows=fps,-upscale,-frametime,-frametimegraph,upscaler,"
+                  "-upscalergraph,-lowlatency;FpsRow=2;UpdateInterval=250;Alpha=0.35;Font=bahnschrift.ttf;"
+                  "LetterSpacing=0.5;LabelScale=0.85;ValueScale=1.1;LabelColor=0xFFFFFF;ValueColor=0xFF9A00;"
+                  "GraphColor=0x00E5FF;BGColor=0x0A0F14;Rounding=10;HideAverages=true" },
             };
 
             const float presetCount = static_cast<float>(std::size(presets));
