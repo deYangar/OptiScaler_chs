@@ -1,6 +1,6 @@
 [
- "Low latency timings, whole frame: ",
- "%.1fms",
- "Hide Averages",
- "A strip at the top center: Bahnschrift, FPS and upscaler time in orange on a dark panel"
+ "%s##%d%s",
+ "FFX Vk",
+ "FFX Vk SR",
+ "FFX Vk FG"
 ]
