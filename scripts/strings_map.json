@@ -1428,5 +1428,9 @@
  "Low latency timings, whole frame: ": "UI_Low_latency_timings_whole_frame",
  "%.1fms": "UI_S_1fms",
  "Hide Averages": "UI_Hide_Averages",
- "A strip at the top center: Bahnschrift, FPS and upscaler time in orange on a dark panel": "UI_A_strip_at_the_top_center_Bahnschrift_FPS_and_upscaler_time_"
+ "A strip at the top center: Bahnschrift, FPS and upscaler time in orange on a dark panel": "UI_A_strip_at_the_top_center_Bahnschrift_FPS_and_upscaler_time_",
+ "%s##%d%s": "UI_s_d_s",
+ "FFX Vk": "UI_FFX_Vk",
+ "FFX Vk SR": "UI_FFX_Vk_SR",
+ "FFX Vk FG": "UI_FFX_Vk_FG"
 }

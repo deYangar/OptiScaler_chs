@@ -1610,4 +1610,8 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_S_1fms)] = "%.1fms";
     table[static_cast<int>(LK::UI_Hide_Averages)] = "隐藏平均值";
     table[static_cast<int>(LK::UI_A_strip_at_the_top_center_Bahnschrift_FPS_and_upscaler_time_)] = "顶部中央条带：Bahnschrift，FPS 和超分辨率时间以橙色显示在深色面板上";
+    table[static_cast<int>(LK::UI_s_d_s)] = "%s##%d%s";
+    table[static_cast<int>(LK::UI_FFX_Vk)] = "FFX Vk";
+    table[static_cast<int>(LK::UI_FFX_Vk_SR)] = "FFX Vk SR";
+    table[static_cast<int>(LK::UI_FFX_Vk_FG)] = "FFX Vk FG";
 }

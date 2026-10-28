@@ -1598,4 +1598,8 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_S_1fms)] = "%.1fms";
     table[static_cast<int>(LK::UI_Hide_Averages)] = "Hide Averages";
     table[static_cast<int>(LK::UI_A_strip_at_the_top_center_Bahnschrift_FPS_and_upscaler_time_)] = "A strip at the top center: Bahnschrift, FPS and upscaler time in orange on a dark panel";
+    table[static_cast<int>(LK::UI_s_d_s)] = "%s##%d%s";
+    table[static_cast<int>(LK::UI_FFX_Vk)] = "FFX Vk";
+    table[static_cast<int>(LK::UI_FFX_Vk_SR)] = "FFX Vk SR";
+    table[static_cast<int>(LK::UI_FFX_Vk_FG)] = "FFX Vk FG";
 }

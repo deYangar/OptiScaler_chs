@@ -1592,6 +1592,10 @@ enum class LK {
     UI_S_1fms,
     UI_Hide_Averages,
     UI_A_strip_at_the_top_center_Bahnschrift_FPS_and_upscaler_time_,
+    UI_s_d_s,
+    UI_FFX_Vk,
+    UI_FFX_Vk_SR,
+    UI_FFX_Vk_FG,
     COUNT
 };
 
