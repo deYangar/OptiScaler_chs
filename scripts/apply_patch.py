@@ -15,6 +15,7 @@ import os
 import re
 import shutil
 import sys
+from bisect import bisect_right
 
 # Windows 控制台默认 cp1252，强制 UTF-8 输出避免 UnicodeEncodeError
 if hasattr(sys.stdout, 'reconfigure'):
@@ -41,6 +42,86 @@ def read(p):
 def write(p, c):
     with io.open(p, 'w', encoding='utf-8', newline='\n') as f:
         f.write(c)
+
+
+def find_static_init_lines(text):
+    """返回不可 LOC 注入的行号集合（0-based）。
+
+    LOC() 展开为 LocalizationManager::Instance().Get()，是运行时调用，落进两类块必然出错：
+    1. constexpr 聚合初始化：初始化器必须是常量表达式，混入 LOC() 直接 C2131
+       （2026-10-24 上游新增 static constexpr presets[] 主题颜色表，颜色名被 LOC 化后连续四晚编译失败）
+    2. 文件作用域（顶格）static 聚合初始化：在 main 之前动态初始化，此时 Init() 未执行，
+       Get() 只能回退英文，LOC 化无意义（splashText 同类问题，见 [4.1] 注释）
+    块的判定：声明行（含 static/constexpr）起向下找 "= {"，用花括号深度定闭合；
+    字符串/字符字面量与注释先剥离（逐字符状态机，保留换行结构），避免其中的花括号/引号干扰计数。"""
+    # 逐字符剥离字符串/字符字面量与注释（内容替换为空格，\n 原样保留，行数与原文严格一致）
+    out = []
+    i, n = 0, len(text)
+    state = 'code'  # code | str | chr | line_comment | block_comment
+    while i < n:
+        c = text[i]
+        nxt = text[i + 1] if i + 1 < n else ''
+        if state == 'code':
+            if c == '"':
+                state = 'str'; out.append(' '); i += 1; continue
+            if c == "'":
+                state = 'chr'; out.append(' '); i += 1; continue
+            if c == '/' and nxt == '/':
+                state = 'line_comment'; out.append('  '); i += 2; continue
+            if c == '/' and nxt == '*':
+                state = 'block_comment'; out.append('  '); i += 2; continue
+            out.append(c); i += 1
+        elif state == 'str':
+            if c == '\\' and nxt:
+                out.append('  '); i += 2; continue
+            if c == '"':
+                state = 'code'
+            out.append(' ' if c != '\n' else '\n'); i += 1
+        elif state == 'chr':
+            if c == '\\' and nxt:
+                out.append('  '); i += 2; continue
+            if c == "'":
+                state = 'code'
+            out.append(' ' if c != '\n' else '\n'); i += 1
+        elif state == 'line_comment':
+            if c == '\n':
+                state = 'code'; out.append('\n')
+            else:
+                out.append(' ')
+            i += 1
+        else:  # block_comment
+            if c == '*' and nxt == '/':
+                state = 'code'; out.append('  '); i += 2; continue
+            out.append(' ' if c != '\n' else '\n'); i += 1
+    mirror = ''.join(out)
+    mlines = mirror.split('\n')
+    skip = set()
+    # constexpr 任意缩进（编译期）；static const 仅顶格（文件作用域）。
+    # 函数内带缩进的 static const 首次执行时初始化（Init 已跑），LOC 有效，不跳。
+    decl_pat = re.compile(r'^\s*(?:static\s+)?constexpr\b|^static\s+const\b')
+    brace_pat = re.compile(r'=\s*\{')
+    i, n = 0, len(mlines)
+    while i < n:
+        if decl_pat.match(mlines[i]):
+            # 声明起 6 行内找 "= {"（区分聚合初始化与函数声明；函数声明没有 = {）
+            k = i
+            while k < min(i + 6, n) and not brace_pat.search(mlines[k]):
+                k += 1
+            if k < min(i + 6, n) and brace_pat.search(mlines[k]):
+                # 从该行起不限行数跟踪花括号深度到闭合（数组可长达数十行）
+                depth, j = 0, k
+                while j < n:
+                    depth += mlines[j].count('{') - mlines[j].count('}')
+                    if depth <= 0:
+                        break
+                    j += 1
+                if j < n:
+                    skip.update(range(i, j + 1))
+                    i = j + 1
+                    continue
+        i += 1
+    return skip
+
 
 print(f'[1] 覆盖 localization/')
 os.makedirs(LOCAL_DIR, exist_ok=True)
@@ -142,22 +223,40 @@ print('    splashText 引用已替换为 splashKeys + Get()')
 
 print(f'[4.2] 多段拼接字符串链整体 LOC 化（结构体数组/跨行拼接，整链命中 strings_map 才替换）')
 mc = read(MC)
+skip_lines = find_static_init_lines(mc)
+line_offsets = []
+off = 0
+for ln in mc.split('\n'):
+    line_offsets.append(off)
+    off += len(ln) + 1
 chain_pat = re.compile(r'"((?:[^"\\]|\\.)*)"(?:\s*"((?:[^"\\]|\\.)*)")+')
 chain_count = 0
+chain_skipped = 0
 def chain_repl(m):
-    global chain_count
+    global chain_count, chain_skipped
     full = ''.join(re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(0)))
     key = strings_map.get(full)
     if key:
+        li = bisect_right(line_offsets, m.start()) - 1
+        if li in skip_lines:
+            chain_skipped += 1
+            return m.group(0)
         chain_count += 1
         return 'LOC(' + key + ')'
     return m.group(0)
 mc = chain_pat.sub(chain_repl, mc)
 write(MC, mc)
-print(f'    拼接链整体替换 {chain_count} 处')
+print(f'    拼接链整体替换 {chain_count} 处（跳过编译期/静态初始化块 {chain_skipped} 处）')
 
 print(f'[4.5] menu_common.cpp tooltip LOC 化（硬编码 ShowHelpMarker 字符串 → LOC(key)）')
 mc = read(MC)
+skip_lines = find_static_init_lines(mc)
+tt_skipped = 0
+line_offsets = []
+off = 0
+for ln in mc.split('\n'):
+    line_offsets.append(off)
+    off += len(ln) + 1
 
 def parse_string_literal(src, start):
     """解析 C++ 字符串字面量（含相邻拼接），返回 (完整文本, 结束位置)"""
@@ -211,21 +310,25 @@ while True:
     if j < len(mc) and mc[j] == '"':
         text, end = parse_string_literal(mc, j)
         if text in strings_map:
-            key = strings_map[text]
-            # 检查字符串结束后的字符：')'=纯字符串调用（吃括号）；','=带参数调用（保留参数）
-            k = end
-            while k < len(mc) and mc[k] in ' \t\r\n':
-                k += 1
-            if k < len(mc) and mc[k] == ')':
-                repl = fn_used[:-1] + '(LOC(' + key + '))'
-                end2 = k + 1
+            li = bisect_right(line_offsets, idx) - 1
+            if li in skip_lines:
+                tt_skipped += 1
             else:
-                repl = fn_used[:-1] + '(LOC(' + key + ')'
-                end2 = end
-            mc = mc[:idx] + repl + mc[end2:]
-            tt_count += 1
-            pos = idx + len(repl)
-            continue
+                key = strings_map[text]
+                # 检查字符串结束后的字符：')'=纯字符串调用（吃括号）；','=带参数调用（保留参数）
+                k = end
+                while k < len(mc) and mc[k] in ' \t\r\n':
+                    k += 1
+                if k < len(mc) and mc[k] == ')':
+                    repl = fn_used[:-1] + '(LOC(' + key + '))'
+                    end2 = k + 1
+                else:
+                    repl = fn_used[:-1] + '(LOC(' + key + ')'
+                    end2 = end
+                mc = mc[:idx] + repl + mc[end2:]
+                tt_count += 1
+                pos = idx + len(repl)
+                continue
     pos = idx + len(fn_used)
 
 # 阶段 2：行首引号的行（步骤 5 的"续行跳过"规则误伤的数组元素字符串等）
@@ -233,12 +336,17 @@ while True:
 import re as _re
 new_lines = []
 prev_ends_with_quote = False
-for line in mc.split('\n'):
+for li2, line in enumerate(mc.split('\n')):
     stripped_line = line.rstrip()
     is_cont = prev_ends_with_quote  # 上一行以引号结尾（未闭合）→ 本行是拼接续段
     if stripped_line.endswith(('}', ',')) and not is_cont:
         m = _re.match(r'^(\s*)"((?:[^"\\]|\\.)*)"(\s*[,}]*\s*)$', line)
         if m and m.group(2) in strings_map:
+            if li2 in skip_lines:
+                tt_skipped += 1
+                new_lines.append(line)
+                prev_ends_with_quote = stripped_line.endswith('"') and not stripped_line.endswith(('"}', '",', '");', '";'))
+                continue
             key = strings_map[m.group(2)]
             line = m.group(1) + 'LOC(' + key + ')' + (m.group(3) or '')
             tt_count += 1
@@ -247,7 +355,7 @@ for line in mc.split('\n'):
     new_lines.append(line)
 mc = '\n'.join(new_lines)
 write(MC, mc)
-print(f'    tooltip LOC 化 {tt_count} 处')
+print(f'    tooltip LOC 化 {tt_count} 处（跳过编译期/静态初始化块 {tt_skipped} 处）')
 
 print(f'[5] menu_common.cpp LOC 注入')
 mc = read(MC)
@@ -276,7 +384,10 @@ elif LOC_INC in mc and mc.find(LOC_INC) < mc.find('#include "pch.h"'):
 with io.open(os.path.join(HERE, 'strings_map.json'), encoding='utf-8') as f:
     strings_map = json.load(f)
 
+skip_lines = find_static_init_lines(mc)
+
 injected = 0
+skipped = 0
 # 按行注入：跳过 #include 行，防止把 include 文件名误替换成 LOC()
 # 同时跳过：std::format 调用行（格式串需编译期常量）、跨行字符串拼接（行首"或行尾引号后无终止符）
 new_lines = []
@@ -289,6 +400,11 @@ for li, line in enumerate(lines_list):
     # 本行是否以未闭合字符串结尾（结尾引号后无终止符）→ 下一行是拼接续段
     prev_dangling = stripped.endswith('"') and not re.search(r'"[),;}]\s*$', stripped)
     if ls.startswith('#include'):
+        new_lines.append(line)
+        continue
+    # 编译期/文件作用域静态初始化块：LOC() 是运行时调用，注入必然出错（C2131 或英文兜底）→ 跳过
+    if li in skip_lines:
+        skipped += 1
         new_lines.append(line)
         continue
     # std::format / fmt::format 的格式串必须是编译期常量，LOC() 是运行时调用 → 跳过整行
@@ -322,7 +438,7 @@ for li, line in enumerate(lines_list):
     new_lines.append(line)
 mc = '\n'.join(new_lines)
 write(MC, mc)
-print(f'    LOC 注入 {injected} 处')
+print(f'    LOC 注入 {injected} 处（跳过编译期/静态初始化块 {skipped} 行）')
 
 # 注入 LocalizationManager::Init() 调用（MenuCommon::Init 开头），否则表格未初始化、LOC 全部返回 [MISSING]
 INIT_MARK = 'LocalizationManager::Instance().Init();'
