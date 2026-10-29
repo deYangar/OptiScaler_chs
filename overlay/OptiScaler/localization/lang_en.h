@@ -1602,4 +1602,6 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_FFX_Vk)] = "FFX Vk";
     table[static_cast<int>(LK::UI_FFX_Vk_SR)] = "FFX Vk SR";
     table[static_cast<int>(LK::UI_FFX_Vk_FG)] = "FFX Vk FG";
+    table[static_cast<int>(LK::UI_Custom_DLSSG_from_custom_s_dlssg)] = "Custom DLSSG from custom\\%s\\dlssg";
+    table[static_cast<int>(LK::UI_Frame_Generation_s)] = "Frame Generation (%s)";
 }

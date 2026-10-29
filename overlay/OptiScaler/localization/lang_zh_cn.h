@@ -1614,4 +1614,6 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_FFX_Vk)] = "FFX Vk";
     table[static_cast<int>(LK::UI_FFX_Vk_SR)] = "FFX Vk SR";
     table[static_cast<int>(LK::UI_FFX_Vk_FG)] = "FFX Vk FG";
+    table[static_cast<int>(LK::UI_Custom_DLSSG_from_custom_s_dlssg)] = "自定义 DLSSG，来自 custom\\\\%s\\\\dlssg";
+    table[static_cast<int>(LK::UI_Frame_Generation_s)] = "帧生成（%s）";
 }

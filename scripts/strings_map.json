@@ -1432,5 +1432,7 @@
  "%s##%d%s": "UI_s_d_s",
  "FFX Vk": "UI_FFX_Vk",
  "FFX Vk SR": "UI_FFX_Vk_SR",
- "FFX Vk FG": "UI_FFX_Vk_FG"
+ "FFX Vk FG": "UI_FFX_Vk_FG",
+ "Custom DLSSG from custom\\\\%s\\\\dlssg": "UI_Custom_DLSSG_from_custom_s_dlssg",
+ "Frame Generation (%s)": "UI_Frame_Generation_s"
 }
