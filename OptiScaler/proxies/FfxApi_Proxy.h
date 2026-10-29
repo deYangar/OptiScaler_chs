@@ -15,7 +15,7 @@
 #include <fsr4/FSR4DriverProviderVk.h>
 #include <fsr4/FSR4Models.h>
 #include <fsr4/FSR4Presets.h>
-#include <upscalers/CustomUpscalers.h>
+#include <misc/CustomProviders.h>
 
 #include "ffx_api.h"
 #include "FfxModule.h"
@@ -161,6 +161,23 @@ class FfxApiProxy
     {
         return module != nullptr &&
                (module == main_dx12.dll || module == upscaling_dx12.dll || IsCustomUpscalerModule(module));
+    }
+
+    static bool IsVkModule(HMODULE module)
+    {
+        if (module == nullptr)
+            return false;
+
+        for (const auto* vk :
+             { &main_vk, &upscaling_vk, &fg_vk, &legacy_vk, &main_vk_hooked, &upscaling_vk_hooked, &fg_vk_hooked })
+        {
+            if (vk->dll == module)
+                return true;
+        }
+
+        std::scoped_lock lock(customMutex);
+        return std::ranges::any_of(custom_vk,
+                                   [module](const auto& custom) { return custom.second.module.dll == module; });
     }
 
     static bool IsCustomUpscalerModule(HMODULE module)
@@ -1003,12 +1020,12 @@ class FfxApiProxy
     // Loading is only tried once per name, nullptr if it failed
     static CustomFfxModule* LoadCustomUpscalerDx12(const std::string& name)
     {
-        return LoadCustomUpscaler(custom_dx12, name, CustomUpscalers::FfxDllPath(name));
+        return LoadCustomUpscaler(custom_dx12, name, CustomProviders::FfxDllPath(name));
     }
 
     static CustomFfxModule* LoadCustomUpscalerVk(const std::string& name)
     {
-        return LoadCustomUpscaler(custom_vk, name, CustomUpscalers::FfxVkDllPath(name));
+        return LoadCustomUpscaler(custom_vk, name, CustomProviders::FfxVkDllPath(name));
     }
 
     // Already loaded custom upscaler, doesn't try loading it
@@ -2413,13 +2430,13 @@ class FfxApiProxy
         if (inserted)
         {
             it->second.name = name;
-            module.dll = CustomUpscalers::LoadDll(name, path);
+            module.dll = CustomProviders::LoadDll(name, path);
 
             if (module.dll == nullptr)
                 return nullptr;
 
             module.filePath = path.wstring();
-            module.vkBackendV2 = !CustomUpscalers::IsLegacyFfxVkDll(path);
+            module.vkBackendV2 = !CustomProviders::IsLegacyFfxVkDll(path);
             FSR4Presets::Hook(module.dll);
             FSR4Models::Hook(module.dll);
             GetMethods(module);
