@@ -42,6 +42,7 @@
 #include <misc/IdentifyGpu.h>
 #include <hooks/Amdxc64_Hooks.h>
 #include <low_latency/input/input_common.h>
+#include <plugins/PluginApi.h>
 #include <hooks/Vulkan_Hooks.h>
 #include <low_latency/input/input_xell.h>
 
@@ -8394,7 +8395,7 @@ void MenuCommon::RenderFpsOverlaySettings(RenderMenuContext& ctx)
                 { "Default", "OptiScaler's overlay: every row with the graphs, grey labels with a shadow", "" },
                 { "Classic", "OptiScaler's earlier overlay: just the FPS in white, no shadow",
                   "LabelColor=0xFFFFFF;Shadow=0;Rounding=2" },
-                { "Afterburner-Like", "As MSI Afterburner: Unispace Bold, orange labels, outlined, no background",
+                { "Afterburner", "As MSI Afterburner: Unispace Bold, orange labels, outlined, no background",
                   "OverlaysUseTheme=false;Type=3;CompactLabels=true;Font=unispace bd.ttf;Alpha=0;Rounding=0;"
                   "LabelColor=0xFF9C00;ValueColor=0xFFFFFF;GraphColor=0xFF9C00;Shadow=2;ShadowStrength=0.5;"
                   "ShadowColor=0x000000;UpdateInterval=500" },
@@ -8403,6 +8404,11 @@ void MenuCommon::RenderFpsOverlaySettings(RenderMenuContext& ctx)
                   "-upscalergraph,-lowlatency;FpsRow=2;UpdateInterval=250;Alpha=0.35;Font=bahnschrift.ttf;"
                   "LetterSpacing=0.5;LabelScale=0.85;ValueScale=1.1;LabelColor=0xFFFFFF;ValueColor=0xFF9A00;"
                   "GraphColor=0x00E5FF;BGColor=0x0A0F14;Rounding=10;HideAverages=true" },
+                { "Lemon zest",
+                  "A winning submission from user Voodoo: a top center strip in Unispace Bold, lime values",
+                  "Pos=4;Type=7;Horizontal=true;Rows=upscale,-frametime,-frametimegraph,fps,upscaler,"
+                  "-upscalergraph,-lowlatency;FpsRow=1;Alpha=0.12;Font=unispace bd.ttf;ValueColor=0xC9DF21;"
+                  "ShadowStrength=0.59;ShadowColor=0x866767;Rounding=7;HideAverages=true" },
             };
 
             const float presetCount = static_cast<float>(std::size(presets));
@@ -9705,8 +9711,15 @@ void MenuCommon::RenderMainMenuTabs(RenderMenuContext& ctx)
     constexpr int customTab = 0;
     const bool customTabEnabled = config->CustomTabEnabled.value_or_default();
 
+    // Tabs registered by plugins come after the built-in ones
+    constexpr int builtinTabCount = (int) std::size(tabs);
+    const auto pluginTabs = PluginApi::GetTabs();
+    const int tabCount = builtinTabCount + (int) pluginTabs.size();
+
     auto isTabVisible = [&](int i)
     {
+        if (i >= builtinTabCount)
+            return true;
         if (i == customTab)
             return customTabEnabled;
         return tabs[i].visible == nullptr || tabs[i].visible(ctx);
@@ -9723,12 +9736,12 @@ void MenuCommon::RenderMainMenuTabs(RenderMenuContext& ctx)
         requestedMenuTab = nullptr;
     }
 
-    selectedMenuTab = std::clamp(selectedMenuTab, 0, (int) std::size(tabs) - 1);
+    selectedMenuTab = std::clamp(selectedMenuTab, 0, tabCount - 1);
 
     // Selected tab can disappear, pick the first one that's visible
     if (!isTabVisible(selectedMenuTab))
     {
-        for (int i = 0; i < (int) std::size(tabs); i++)
+        for (int i = 0; i < builtinTabCount; i++)
         {
             if (isTabVisible(i))
             {
@@ -9752,15 +9765,18 @@ void MenuCommon::RenderMainMenuTabs(RenderMenuContext& ctx)
     {
         const char* lastGroup = nullptr;
 
-        for (int i = 0; i < (int) std::size(tabs); i++)
+        for (int i = 0; i < tabCount; i++)
         {
             if (!isTabVisible(i))
                 continue;
 
-            if (lastGroup != nullptr && strcmp(lastGroup, tabs[i].group) != 0)
+            const bool pluginTab = i >= builtinTabCount;
+            const char* group = pluginTab ? "PLUGINS" : tabs[i].group;
+
+            if (lastGroup != nullptr && strcmp(lastGroup, group) != 0)
                 ImGui::Separator();
 
-            lastGroup = tabs[i].group;
+            lastGroup = group;
 
             const bool selected = selectedMenuTab == i;
 
@@ -9769,13 +9785,30 @@ void MenuCommon::RenderMainMenuTabs(RenderMenuContext& ctx)
                 selectedMenuTab = i;
             ImGui::PopID();
 
+            // Description comes from the plugin, so it isn't used as a format string
+            if (pluginTab && !pluginTabs[i - builtinTabCount].description.empty() &&
+                ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            {
+                ImGui::BeginTooltip();
+                ImGui::TextUnformatted(pluginTabs[i - builtinTabCount].description.c_str());
+                ImGui::EndTooltip();
+            }
+
             // Label is drawn manually to center it vertically
             const ImVec2 rectMin = ImGui::GetItemRectMin();
+            const ImVec2 rectMax = ImGui::GetItemRectMax();
+            auto drawList = ImGui::GetWindowDrawList();
 
-            ImGui::GetWindowDrawList()->AddText(
+            const char* label = pluginTab                         ? pluginTabs[i - builtinTabCount].name.c_str()
+                                : tabs[i].displayLabel != nullptr ? tabs[i].displayLabel(ctx)
+                                                                  : tabs[i].label;
+
+            // Long plugin names are cut at the edge of the sidebar
+            drawList->PushClipRect(rectMin, rectMax, true);
+            drawList->AddText(
                 ImVec2(rectMin.x + 6.0f * menuResScale, rectMin.y + (tabHeight - ImGui::GetTextLineHeight()) * 0.5f),
-                ImGui::GetColorU32(ImGuiCol_Text),
-                tabs[i].displayLabel != nullptr ? tabs[i].displayLabel(ctx) : tabs[i].label);
+                ImGui::GetColorU32(ImGuiCol_Text), label);
+            drawList->PopClipRect();
         }
 
         // OptiPatcher status only visible when used
@@ -9871,6 +9904,18 @@ void MenuCommon::RenderMainMenuTabs(RenderMenuContext& ctx)
     // Scrollable content of the tab -----------------------------
     ImGui::BeginChild("##MenuContent", ImVec2(0.0f, -footerHeight), ImGuiChildFlags_NavFlattened,
                       ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    if (selectedMenuTab >= builtinTabCount)
+    {
+        // Own ID per tab, so every tab remembers its scroll position
+        ImGui::PushID(selectedMenuTab);
+        ImGui::BeginChild("##MenuTabBody", ImVec2(0.0f, 0.0f));
+
+        PluginApi::DrawTab(selectedMenuTab - builtinTabCount, menuResScale, toneMapColor);
+
+        ImGui::EndChild();
+        ImGui::PopID();
+    }
+    else
     {
         const Tab& tab = tabs[selectedMenuTab];
 
