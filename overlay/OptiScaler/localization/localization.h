@@ -1598,6 +1598,7 @@ enum class LK {
     UI_FFX_Vk_FG,
     UI_Custom_DLSSG_from_custom_s_dlssg,
     UI_Frame_Generation_s,
+    UI_Lemon_zest,
     COUNT
 };
 
