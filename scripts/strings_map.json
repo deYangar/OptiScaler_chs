@@ -1435,5 +1435,7 @@
  "FFX Vk FG": "UI_FFX_Vk_FG",
  "Custom DLSSG from custom\\\\%s\\\\dlssg": "UI_Custom_DLSSG_from_custom_s_dlssg",
  "Frame Generation (%s)": "UI_Frame_Generation_s",
- "Lemon zest": "UI_Lemon_zest"
+ "Lemon zest": "UI_Lemon_zest",
+ "If UI is too bright, disable this option": "UI_If_UI_is_too_bright_disable_this_option",
+ "Lowers sharpness at high contrast areas.": "UI_Lowers_sharpness_at_high_contrast_areas"
 }

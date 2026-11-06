@@ -1599,6 +1599,8 @@ enum class LK {
     UI_Custom_DLSSG_from_custom_s_dlssg,
     UI_Frame_Generation_s,
     UI_Lemon_zest,
+    UI_If_UI_is_too_bright_disable_this_option,
+    UI_Lowers_sharpness_at_high_contrast_areas,
     COUNT
 };
 

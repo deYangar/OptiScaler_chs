@@ -1605,4 +1605,6 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Custom_DLSSG_from_custom_s_dlssg)] = "Custom DLSSG from custom\\%s\\dlssg";
     table[static_cast<int>(LK::UI_Frame_Generation_s)] = "Frame Generation (%s)";
     table[static_cast<int>(LK::UI_Lemon_zest)] = "Lemon zest";
+    table[static_cast<int>(LK::UI_If_UI_is_too_bright_disable_this_option)] = "If UI is too bright, disable this option";
+    table[static_cast<int>(LK::UI_Lowers_sharpness_at_high_contrast_areas)] = "Lowers sharpness at high contrast areas.";
 }
