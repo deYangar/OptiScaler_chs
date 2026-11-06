@@ -21,6 +21,7 @@
 
 #include <nvapi/fakenvapi.h>
 #include <hooks/Reflex_Hooks.h>
+#include <hooks/Vulkan_Hooks.h>
 
 #include <BuildInfo.h>
 #include <version_check.h>
@@ -850,10 +851,8 @@ inline void MenuCommon::ReInitUpscaler()
     if (!State::Instance().currentFeature)
         return;
 
-    if (State::Instance().currentFeature->GetUpscalerType() == Upscaler::DLSSD)
-        State::Instance().newBackend = Upscaler::DLSSD;
-    else
-        State::Instance().newBackend = currentBackend;
+    // currentBackend is only updated while the menu is drawn
+    State::Instance().newBackend = State::Instance().currentFeature->GetUpscalerType();
 
     MARK_ALL_BACKENDS_CHANGED();
 }
@@ -4598,7 +4597,7 @@ void MenuCommon::RenderFrameGenerationSelection(RenderMenuContext& ctx)
 
     auto constexpr fgNvngxFfxIndex = (uint32_t) FGNvngxReplacement::FFX;
     if (state.swapchainApi == API::Vulkan)
-        nvngxOptions[fgNvngxFfxIndex].set_disabled(!FfxApiProxy::IsFGReadyVk(),
+        nvngxOptions[fgNvngxFfxIndex].set_disabled(!FfxApiProxy::IsFGReadyVk() && !FSR4DriverProviderVk::InitFg(),
                                                    "Missing amd_fidelityfx_framegeneration_vk.dll");
     else
         nvngxOptions[fgNvngxFfxIndex].set_disabled(!FfxApiProxy::IsFGReady(false),
@@ -5956,6 +5955,13 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
 
             ImGui::SameLine(0.0f, 16.0f);
 
+            bool hudlessFlip = config->FGHudlessFlip.value_or_default();
+            if (ImGui::Checkbox("Flip HUDless", &hudlessFlip))
+                config->FGHudlessFlip = hudlessFlip;
+            ShowTooltip("Flip the HUDless texture\nGames can also request it with the Opti.Hudless.Flip parameter");
+
+            ImGui::SameLine(0.0f, 16.0f);
+
             bool resourceFlipOffset = config->FGResourceFlipOffset.value_or_default();
             if (ImGui::Checkbox("Flip Use Offset", &resourceFlipOffset))
                 config->FGResourceFlipOffset = resourceFlipOffset;
@@ -6350,12 +6356,21 @@ void MenuCommon::RenderFrameGenerationRuntimeSettings(RenderMenuContext& ctx)
 
         if (isLoaded)
         {
-            if (activeNvngxFg == FGNvngxReplacement::Arturs || activeNvngxFg == FGNvngxReplacement::Combo)
+            // DLSS Enabler's own, or any custom provider reporting its antighosting version
+            if (Nvngx_FG::supportsDispatchFlags())
             {
-                auto featureVer = Nvngx_FG::version();
                 auto antighostingVer = Nvngx_FG::extraVersion();
-                ImGui::Text("DE Ver: %d.%d.%d.%d   GB Ver: %d.%d", featureVer.major, featureVer.minor, featureVer.patch,
-                            featureVer.reserved, antighostingVer.major, antighostingVer.minor);
+
+                if (activeNvngxFg == FGNvngxReplacement::Arturs || activeNvngxFg == FGNvngxReplacement::Combo)
+                {
+                    auto featureVer = Nvngx_FG::version();
+                    ImGui::Text("DE Ver: %d.%d.%d.%d   GB Ver: %d.%d", featureVer.major, featureVer.minor,
+                                featureVer.patch, featureVer.reserved, antighostingVer.major, antighostingVer.minor);
+                }
+                else
+                {
+                    ImGui::Text("GB Ver: %d.%d", antighostingVer.major, antighostingVer.minor);
+                }
 
                 static std::vector<FlagDefinition> common_flags = {
                     { "Antighosting (GB)", 0x00100000, "Enable anti-ghosting correction" },
@@ -8886,6 +8901,57 @@ void MenuCommon::RenderVsyncSettings(RenderMenuContext& ctx)
             }
         }
     }
+    else
+    {
+        SectionTitle("V-Sync Settings");
+        {
+            ScopedID sectionId { "V-Sync Settings" };
+
+            const auto& forced = config->VulkanPresentMode;
+            const char* preview = forced.has_value() ? VulkanHooks::PresentModeName(forced.value()) : "Game's";
+            bool changed = false;
+
+            if (ImGui::BeginCombo("Present Mode", preview))
+            {
+                if (ImGui::Selectable("Game's", !forced.has_value()))
+                {
+                    config->VulkanPresentMode.reset();
+                    changed = true;
+                }
+
+                for (uint32_t i = 0; i < std::size(VulkanHooks::PresentModes); i++)
+                {
+                    const auto& entry = VulkanHooks::PresentModes[i];
+
+                    if ((state.vkPresentModeMask & (1u << i)) == 0)
+                        continue;
+
+                    if (ImGui::Selectable(entry.name, forced.has_value() && forced.value() == entry.mode))
+                    {
+                        config->VulkanPresentMode = (int) entry.mode;
+                        changed = true;
+                    }
+                }
+
+                ImGui::EndCombo();
+            }
+
+            ShowTooltip("Overrides the game's Vulkan present mode, the game recreates its swapchain to apply it.\n\n"
+                        "Immediate: no V-Sync, tears.\n"
+                        "Mailbox: no tearing, newest frame replaces the queued one.\n"
+                        "FIFO: V-Sync.\n"
+                        "FIFO Relaxed: V-Sync, tears when below the refresh rate.\n"
+                        "FIFO Latest Ready: V-Sync, shows the newest ready frame at each refresh.\n\n"
+                        "Mailbox and FIFO Latest Ready can drop generated frames above the refresh rate.\n"
+                        "Only modes the display supports are listed.");
+
+            if (state.vkGamePresentMode >= 0)
+                ImGui::Text("Game's present mode: %s", VulkanHooks::PresentModeName(state.vkGamePresentMode));
+
+            if (changed)
+                state.vkPresentModeChanged = true;
+        }
+    }
 }
 
 void MenuCommon::RenderApiAndTextureSettings(RenderMenuContext& ctx)
@@ -9150,6 +9216,18 @@ static const char* ApiName(API api)
     return "Unknown";
 }
 
+// Set by the DLSS inputs, before an upscaler is created the swapchain shows it
+static API GameApi(const State& state)
+{
+    if (state.api != NotSelected)
+        return state.api;
+
+    if (state.swapchainInteropApi == SwapchainInteropApi::Dx11wDx12)
+        return DX11;
+
+    return state.swapchainApi;
+}
+
 // Filled dot for on / found, hollow dot for off / missing. Goes into the next table cell
 static void StatusFlag(const char* label, bool on, bool warnWhenOn = false)
 {
@@ -9319,7 +9397,7 @@ void MenuCommon::RenderStatusInfo(RenderMenuContext& ctx)
         {
             setupPairs();
 
-            pair("API", StrFmt("%s%s", ApiName(state.api),
+            pair("API", StrFmt("%s%s", ApiName(GameApi(state)),
                                IdentifyGpu::gameUsesDxvk()          ? " (DXVK)"
                                : IdentifyGpu::gameUsesVkd3dProton() ? " (VKD3D)"
                                                                     : ""));
@@ -10418,7 +10496,7 @@ static void RenderGameInfoRow(State& state, const GpuInformation& primaryGpu)
 {
     // Game name is in the window title
     ScopedCard card;
-    std::string line = StrFmt("%s%s | %s | Input: %s", ApiName(state.api),
+    std::string line = StrFmt("%s%s | %s | Input: %s", ApiName(GameApi(state)),
                               IdentifyGpu::gameUsesDxvk()          ? " (DXVK)"
                               : IdentifyGpu::gameUsesVkd3dProton() ? " (VKD3D)"
                                                                    : "",
@@ -10586,6 +10664,10 @@ bool MenuCommon::RenderMenu()
     RenderMenuContext ctx { State::Instance(), Config::Instance(), ImGui::GetIO() };
     ctx.now = Util::MillisecondsNow();
     ctx.currentFeature = ctx.state.currentFeature;
+
+    // Applied here, the feature isn't safe to read from the plugin's thread, kept until there is one
+    if (ctx.currentFeature != nullptr && PluginApi::TakeReInitRequest())
+        ReInitUpscaler();
 
     // 1) Collect timing and input state before any ImGui drawing.
     UpdateRenderTiming(ctx);

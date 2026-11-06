@@ -659,6 +659,7 @@ class Config
     CustomOptional<bool> FGMakeDepthCopy { true };
     CustomOptional<bool> FGResourceFlip { false };
     CustomOptional<bool> FGResourceFlipOffset { false };
+    CustomOptional<bool> FGHudlessFlip { false };
     CustomOptional<bool, SoftDefault> FGAlwaysCaptureFSRFGSwapchain { false };
 
     CustomOptional<int, NoDefault> FGRectLeft;
@@ -792,6 +793,7 @@ class Config
     CustomOptional<bool, SoftDefault> OverrideVsync { false };
     CustomOptional<bool, NoDefault> ForceVsync;
     CustomOptional<UINT> VsyncInterval { 0 };
+    CustomOptional<int, NoDefault> VulkanPresentMode; // VkPresentModeKHR
 
     // Old configs for compat reasons
     CustomOptional<bool, NoDefault> _DONTUSE_Fsr4ForceEnableInt8;

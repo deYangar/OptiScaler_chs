@@ -12,6 +12,7 @@
 #include "Nvngx_FFX.h"
 #include "Nvngx_Combo.h"
 #include "Nvngx_Custom.h"
+#include "NvngxVkLayouts.h"
 #include <imgui/ImGuiNotify.hpp>
 #include <nvsdk_ngx_vk.h>
 
@@ -149,6 +150,32 @@ int Nvngx_FG::getMaxFakeFramesCount()
     return provider->getMaxFakeFramesCount();
 }
 
+// Streamline's DLSSG on Vulkan makes its swapchain with MultiFrameCountMax + 1 images and assumes the driver made
+// exactly that many, it never asks. A driver or layer can make more (an RX 6900 XT with the GamePP layer made 3 for
+// 2), its present crashes on an acquired image past Streamline's count. Its maximum of 6 images stays at or over the
+// minimum counts they enforce, the provider's own max still limits the generated frames.
+int Nvngx_FG::streamlineMaxFakeFramesCount(API api)
+{
+    constexpr int streamlineVkMax = 5;
+
+    const int providerMax = std::max(1, getMaxFakeFramesCount());
+
+    if (api == API::Vulkan)
+        return std::max(providerMax, streamlineVkMax);
+
+    return providerMax;
+}
+
+int Nvngx_FG::limitToProvider(int count)
+{
+    if (State::Instance().activeFgNvngx == FGNvngxReplacement::None)
+        return count;
+
+    const int providerMax = getMaxFakeFramesCount();
+
+    return providerMax > 0 ? std::min(count, providerMax) : count;
+}
+
 bool Nvngx_FG::isDx12Available()
 {
     auto* provider = getProvider();
@@ -187,6 +214,16 @@ feature_version Nvngx_FG::extraVersion()
         return {};
 
     return provider->extraVersion();
+}
+
+bool Nvngx_FG::supportsDispatchFlags()
+{
+    auto* provider = getProvider();
+
+    if (!provider)
+        return false;
+
+    return provider->supportsDispatchFlags();
 }
 
 void Nvngx_FG::setDebugView(bool enabled)
@@ -730,9 +767,37 @@ NVSDK_NGX_Result Nvngx_FG::VULKAN_EvaluateFeature(VkCommandBuffer InCmdList, con
     if (Config::Instance()->NvngxFGDisableHudless.value_or_default())
         InParameters->Set("DLSSG.HUDLess", (void*) nullptr);
 
+    static constexpr const char* trackedImages[] = {
+        "DLSSG.Backbuffer",
+        "DLSSG.MVecs",
+        "DLSSG.Depth",
+        "DLSSG.HUDLess",
+        "DLSSG.UI",
+        "DLSSG.UIAlpha",
+        "DLSSG.NoWarp",
+        "DLSSG.BidirectionalDistortionField",
+        "DLSSG.OutputInterpolated",
+        "DLSSG.OutputReal",
+        "DLSSG.OutputDisableInterpolation",
+    };
+
+    for (auto name : trackedImages)
+    {
+        NVSDK_NGX_Resource_VK* resource = nullptr;
+
+        if (InParameters->Get(name, (void**) &resource) == NVSDK_NGX_Result_Success && resource != nullptr &&
+            resource->Type == NVSDK_NGX_RESOURCE_VK_TYPE_VK_IMAGEVIEW)
+        {
+            NvngxVkLayouts::Track(resource->Resource.ImageViewInfo.Image);
+        }
+    }
+
     // LOG_TRACE("Handle received from the game: {:X}", (uint64_t) InFeatureHandle);
 
-    return provider->VULKAN_EvaluateFeature(InCmdList, ourHandle->nativeHandle, InParameters, InCallback);
+    NvngxVkLayouts::inEvaluate = true;
+    auto result = provider->VULKAN_EvaluateFeature(InCmdList, ourHandle->nativeHandle, InParameters, InCallback);
+    NvngxVkLayouts::inEvaluate = false;
+    return result;
 }
 
 NVSDK_NGX_Result Nvngx_FG::VULKAN_PopulateParameters_Impl(NVSDK_NGX_Parameter* InParameters)
@@ -744,6 +809,9 @@ NVSDK_NGX_Result Nvngx_FG::VULKAN_PopulateParameters_Impl(NVSDK_NGX_Parameter* I
 
     auto result = provider->VULKAN_PopulateParameters_Impl(InParameters);
     WrapProviderCallbacks(InParameters);
+
+    // Providers report their own max, Streamline sizes its swapchain with this one
+    InParameters->Set("DLSSG.MultiFrameCountMax", streamlineMaxFakeFramesCount(API::Vulkan));
 
     return result;
 }

@@ -201,6 +201,7 @@ bool Config::Reload(std::filesystem::path iniPath)
 
             FGResourceFlip.set_from_config(readBool("OptiFG", "ResourceFlip"));
             FGResourceFlipOffset.set_from_config(readBool("OptiFG", "ResourceFlipOffset"));
+            FGHudlessFlip.set_from_config(readBool("OptiFG", "HudlessFlip"));
 
             FGAlwaysCaptureFSRFGSwapchain.set_from_config(readBool("OptiFG", "AlwaysCaptureFSRFGSwapchain"));
         }
@@ -816,6 +817,7 @@ bool Config::Reload(std::filesystem::path iniPath)
             OverrideVsync.set_from_config(readBool("V-Sync", "OverrideVsync"));
             ForceVsync.set_from_config(readBool("V-Sync", "ForceVsync"));
             VsyncInterval.set_from_config(readInt("V-Sync", "SyncInterval"));
+            VulkanPresentMode.set_from_config(readInt("V-Sync", "VulkanPresentMode"));
         }
 
         // Libraries
@@ -1554,6 +1556,7 @@ bool Config::SaveIni()
         ini.SetValue("OptiFG", "ResourceFlip", GetBoolValue(Instance()->FGResourceFlip.value_for_config()).c_str());
         ini.SetValue("OptiFG", "ResourceFlipOffset",
                      GetBoolValue(Instance()->FGResourceFlipOffset.value_for_config()).c_str());
+        ini.SetValue("OptiFG", "HudlessFlip", GetBoolValue(Instance()->FGHudlessFlip.value_for_config()).c_str());
 
         ini.SetValue("OptiFG", "AlwaysCaptureFSRFGSwapchain",
                      GetBoolValue(Instance()->FGAlwaysCaptureFSRFGSwapchain.value_for_config()).c_str());
@@ -2041,6 +2044,8 @@ bool Config::SaveIni()
         ini.SetValue("V-Sync", "OverrideVsync", GetBoolValue(Instance()->OverrideVsync.value_for_config()).c_str());
         ini.SetValue("V-Sync", "ForceVsync", GetBoolValue(Instance()->ForceVsync.value_for_config()).c_str());
         ini.SetValue("V-Sync", "SyncInterval", GetIntValue(Instance()->VsyncInterval.value_for_config()).c_str());
+        ini.SetValue("V-Sync", "VulkanPresentMode",
+                     GetIntValue(Instance()->VulkanPresentMode.value_for_config()).c_str());
 
         if (Instance()->VsyncInterval.has_value())
         {

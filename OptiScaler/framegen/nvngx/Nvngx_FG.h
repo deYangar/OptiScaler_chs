@@ -40,10 +40,13 @@ class Nvngx_FG
     static void VkDeviceDestroyed(VkDevice device);
 
     static int getMaxFakeFramesCount();
+    static int streamlineMaxFakeFramesCount(API api);
+    static int limitToProvider(int count);
     static bool isDx12Available();
     static bool isVulkanAvailable();
     static feature_version version();
     static feature_version extraVersion();
+    static bool supportsDispatchFlags();
 
     // TODO: nukem-specific, unify
     static void setDebugView(bool enabled);
