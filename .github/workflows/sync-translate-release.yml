@@ -126,11 +126,18 @@ jobs:
             LICENSE \
             setup_linux.sh \
             .clang-format .gitattributes .gitignore .gitmodules
-          # 兼容：上游新出现的目录也同步（存在才拉，避免 pathspec 报错）
-          for d in run overlay_dev; do
-            if git cat-file -e upstream/master:$d 2>/dev/null; then
-              git checkout upstream/master -- $d
-            fi
+          # 治本：自动同步上游其余顶级条目（新目录/新文件，如 plugin_sdk/）。
+          # 旧写法是手动枚举 run overlay_dev，上游每加一个新目录就编译炸一次
+          # （2026-11-05 plugin_sdk/ 缺失导致 45 个编译单元 C1083，第三次踩同类坑），改为自动发现。
+          # 排除名单 = 本仓库自有资产 + 已汉化文档 + 已在上面核心路径里的条目（注意前后留空格，防子串误匹配）
+          KEEP=" .github docs overlay scripts fonts binaries pending.json \
+            README.md Config.md CONTRIBUTING.md Features.md Issues.md Spoofing.md \
+            OptiScaler.ini setup_windows.bat \
+            OptiScaler external images OptiScaler.sln Changelog.md LICENSE setup_linux.sh \
+            .clang-format .gitattributes .gitignore .gitmodules "
+          for entry in $(git ls-tree --name-only upstream/master); do
+            case "$KEEP" in *" $entry "*) ;; *)
+              git checkout upstream/master -- "$entry" && echo "同步上游新增条目: $entry" ;; esac
           done
 
           git add -A
@@ -266,6 +273,10 @@ jobs:
         with:
           fetch-depth: 1
           submodules: 'true'
+          # 必须显式拉 master：默认 checkout run 触发时的旧 sha，sync job 刚推的
+          # 新代码编不到（nightly 一直编的是前一天代码，tag 日期与内容错位，
+          # 2026-11-05 起的编译失败也因此被延迟一天才暴露）
+          ref: refs/heads/master
 
       - name: 注入汉化补丁
         run: |
