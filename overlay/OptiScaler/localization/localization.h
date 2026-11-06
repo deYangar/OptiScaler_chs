@@ -1601,6 +1601,12 @@ enum class LK {
     UI_Lemon_zest,
     UI_If_UI_is_too_bright_disable_this_option,
     UI_Lowers_sharpness_at_high_contrast_areas,
+    UI_Flip_HUDless,
+    UI_Flip_the_HUDless_texture_nGames_can_also_request_it_with_the,
+    UI_GB_Ver_d_d,
+    UI_Game_s,
+    UI_Present_Mode,
+    UI_Game_s_present_mode_s,
     COUNT
 };
 

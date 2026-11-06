@@ -1619,4 +1619,10 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Lemon_zest)] = "柠檬皮屑";
     table[static_cast<int>(LK::UI_If_UI_is_too_bright_disable_this_option)] = "如果 UI 过亮，请禁用此选项";
     table[static_cast<int>(LK::UI_Lowers_sharpness_at_high_contrast_areas)] = "降低高对比度区域的锐化。";
+    table[static_cast<int>(LK::UI_Flip_HUDless)] = "翻转 HUDLess";
+    table[static_cast<int>(LK::UI_Flip_the_HUDless_texture_nGames_can_also_request_it_with_the)] = "翻转 HUDLess 纹理\n游戏也可以通过 Opti.Hudless.Flip 参数请求";
+    table[static_cast<int>(LK::UI_GB_Ver_d_d)] = "GB 版本：%d.%d";
+    table[static_cast<int>(LK::UI_Game_s)] = "游戏的";
+    table[static_cast<int>(LK::UI_Present_Mode)] = "呈现模式";
+    table[static_cast<int>(LK::UI_Game_s_present_mode_s)] = "游戏的呈现模式：%s";
 }

@@ -1607,4 +1607,10 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Lemon_zest)] = "Lemon zest";
     table[static_cast<int>(LK::UI_If_UI_is_too_bright_disable_this_option)] = "If UI is too bright, disable this option";
     table[static_cast<int>(LK::UI_Lowers_sharpness_at_high_contrast_areas)] = "Lowers sharpness at high contrast areas.";
+    table[static_cast<int>(LK::UI_Flip_HUDless)] = "Flip HUDless";
+    table[static_cast<int>(LK::UI_Flip_the_HUDless_texture_nGames_can_also_request_it_with_the)] = "Flip the HUDless texture\nGames can also request it with the Opti.Hudless.Flip parameter";
+    table[static_cast<int>(LK::UI_GB_Ver_d_d)] = "GB Ver: %d.%d";
+    table[static_cast<int>(LK::UI_Game_s)] = "Game's";
+    table[static_cast<int>(LK::UI_Present_Mode)] = "Present Mode";
+    table[static_cast<int>(LK::UI_Game_s_present_mode_s)] = "Game's present mode: %s";
 }
