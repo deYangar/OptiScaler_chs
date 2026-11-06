@@ -47,13 +47,17 @@ def write(p, c):
 def find_static_init_lines(text):
     """返回不可 LOC 注入的行号集合（0-based）。
 
-    LOC() 展开为 LocalizationManager::Instance().Get()，是运行时调用，落进两类块必然出错：
-    1. constexpr 聚合初始化：初始化器必须是常量表达式，混入 LOC() 直接 C2131
-       （2026-10-24 上游新增 static constexpr presets[] 主题颜色表，颜色名被 LOC 化后连续四晚编译失败）
+    LOC() 展开为 LocalizationManager::Instance().Get()，是运行时调用，落进两类上下文必然出错：
+    1. constexpr 初始化（聚合或单值）：初始化器必须是常量表达式，混入 LOC() 直接 C2131
+       （2026-10-24 上游新增 static constexpr presets[] 主题颜色表；2026-11-05 上游新增
+        constexpr auto fsr3DebugViewTooltip = "..." 单值跨行字符串——旧规则只拦 "= {" 聚合
+        初始化漏掉单值形态，连续两晚编译失败）
     2. 文件作用域（顶格）static 聚合初始化：在 main 之前动态初始化，此时 Init() 未执行，
        Get() 只能回退英文，LOC 化无意义（splashText 同类问题，见 [4.1] 注释）
-    块的判定：声明行（含 static/constexpr）起向下找 "= {"，用花括号深度定闭合；
-    字符串/字符字面量与注释先剥离（逐字符状态机，保留换行结构），避免其中的花括号/引号干扰计数。"""
+    判定：声明行起在剥离后的文本上做顶层扫描（字符串/注释已剥离，字面量内的分号/花括号不干扰）：
+    - 先遇顶层 ';'（含 "= \"...\"" 单值与 "= {...}" 聚合）→ 声明行到该行整体跳过
+    - 先遇顶层 '{' 且此前有顶层 '=' → 聚合初始化，花括号深度跟踪到闭合（数组可长达数十行）
+    - 先遇顶层 '{' 且无 '=' → 函数定义体，不跳过（体内字符串可正常 LOC，嵌套 constexpr 声明另行匹配）"""
     # 逐字符剥离字符串/字符字面量与注释（内容替换为空格，\n 原样保留，行数与原文严格一致）
     out = []
     i, n = 0, len(text)
@@ -99,26 +103,50 @@ def find_static_init_lines(text):
     # constexpr 任意缩进（编译期）；static const 仅顶格（文件作用域）。
     # 函数内带缩进的 static const 首次执行时初始化（Init 已跑），LOC 有效，不跳。
     decl_pat = re.compile(r'^\s*(?:static\s+)?constexpr\b|^static\s+const\b')
-    brace_pat = re.compile(r'=\s*\{')
     i, n = 0, len(mlines)
     while i < n:
         if decl_pat.match(mlines[i]):
-            # 声明起 6 行内找 "= {"（区分聚合初始化与函数声明；函数声明没有 = {）
-            k = i
-            while k < min(i + 6, n) and not brace_pat.search(mlines[k]):
-                k += 1
-            if k < min(i + 6, n) and brace_pat.search(mlines[k]):
-                # 从该行起不限行数跟踪花括号深度到闭合（数组可长达数十行）
-                depth, j = 0, k
-                while j < n:
-                    depth += mlines[j].count('{') - mlines[j].count('}')
-                    if depth <= 0:
+            # 从声明行起顶层扫描定位声明结束；窗口 50 行兜底（正常声明几行内必结束，防剥离异常时死扫）
+            depth, saw_eq, decided = 0, False, False
+            for j in range(i, min(i + 50, n)):
+                for c in mlines[j]:
+                    if c in '([{':
+                        if depth == 0 and c == '{':
+                            seg = ''.join(mlines[i:j + 1])
+                            if saw_eq or ('(' not in seg and
+                                          not re.search(r'\b(?:struct|class|enum|union)\b', seg)):
+                                # "= {" 聚合初始化，或 "auto x{...}" 统一初始化 → 跳到闭合
+                                d2 = 0
+                                for j2 in range(j, n):
+                                    d2 += mlines[j2].count('{') - mlines[j2].count('}')
+                                    if d2 <= 0:
+                                        break
+                                if j2 < n:
+                                    skip.update(range(i, j2 + 1))
+                                    i = j2
+                                decided = True
+                                break
+                            if '(' in seg:
+                                # 参数列表后的 '{' = 函数定义体，体内字符串可正常 LOC
+                                decided = True
+                                break
+                            # 类型定义体（constexpr struct {...} var = ...）：
+                            # 跨过此 '{' 继续找真正的初始化
+                            depth += 1
+                            continue
+                        depth += 1
+                    elif c in ')]}':
+                        depth -= 1
+                    elif c == '=' and depth == 0:
+                        saw_eq = True
+                    elif c == ';' and depth == 0:
+                        # 单值/无初始化声明（含 "= \"...\"" 跨行字符串拼接），整体跳过
+                        skip.update(range(i, j + 1))
+                        i = j
+                        decided = True
                         break
-                    j += 1
-                if j < n:
-                    skip.update(range(i, j + 1))
-                    i = j + 1
-                    continue
+                if decided:
+                    break
         i += 1
     return skip
 
