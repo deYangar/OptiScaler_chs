@@ -1,6 +1,8 @@
 [
- "%s##%d%s",
- "FFX Vk",
- "FFX Vk SR",
- "FFX Vk FG"
+ "Flip HUDless",
+ "Flip the HUDless texture\\nGames can also request it with the Opti.Hudless.Flip parameter",
+ "GB Ver: %d.%d",
+ "Game's",
+ "Present Mode",
+ "Game's present mode: %s"
 ]
