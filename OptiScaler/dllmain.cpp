@@ -50,6 +50,7 @@
 #include <magic_enum.hpp>
 #include <version_check.h>
 #include <misc/IdentifyGpu.h>
+#include <misc/CrashDumps.h>
 #include <sha1/sha1.hpp>
 
 static std::vector<HMODULE> _asiHandles;
@@ -430,12 +431,19 @@ static bool ShouldLoadReShade()
            !Config::Instance()->CreateD3D12DeviceForLuma.value_or_default();
 }
 
+static bool ShouldLoadForLuma()
+{
+    return Config::Instance()->CreateD3D12DeviceForLuma.value_or_default() &&
+           ((skModule == nullptr && Config::Instance()->LoadSpecialK.value_or_default()) ||
+            (reshadeModule == nullptr && Config::Instance()->LoadReShade.value_or_default()));
+}
+
 static void LoadInjectedDlls()
 {
+    // No RESHADE_DISABLE_GRAPHICS_HOOK, Special K sets it itself when it wants ReShade without hooks
     if (ShouldLoadSpecialK())
     {
         auto skFile = Util::ExePath().parent_path() / L"SpecialK64.dll";
-        SetEnvironmentVariableW(L"RESHADE_DISABLE_GRAPHICS_HOOK", L"1");
 
         State::EnableServeOriginal(200);
         skModule = NtdllProxy::LoadLibraryExW_Ldr(skFile.c_str(), NULL, 0);
@@ -489,12 +497,13 @@ static void RunEntryLoads()
     LOG_INFO("Loading injected dlls");
 
     // So ReShade hooks the factory methods after us, Special K should hook before us
-    if (!ShouldLoadSpecialK())
+    if (skModule != nullptr || !Config::Instance()->LoadSpecialK.value_or_default())
         DxgiHooks::HookFactoryMethods();
 
     // Detection fails under the loader lock, nvapi loaded by an injected dll's DllMain would pick fakenvapi
     IdentifyGpu::getAllGpus();
 
+    DxgiHooks::LoadForLuma();
     LoadInjectedDlls();
 
     if (_asiAtEntry)
@@ -1346,6 +1355,10 @@ static void CheckWorkingMode()
     if ((ShouldLoadSpecialK() || ShouldLoadReShade()) && (!_staticLoad || !HookExeEntry()))
         LoadInjectedDlls();
 
+    // Luma's device can't be created under the loader lock, without the entry hook the first factory does it
+    if (_staticLoad && ShouldLoadForLuma())
+        HookExeEntry();
+
     // Version check
     if (Config::Instance()->CheckForUpdate.value_or_default())
         VersionCheck::Start();
@@ -1807,6 +1820,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         NtdllProxy::Init();
         KernelBaseProxy::Init();
         Kernel32Proxy::Init();
+
+        CrashDumps::Init();
 
         // Check for Wine
         spdlog::info("");
