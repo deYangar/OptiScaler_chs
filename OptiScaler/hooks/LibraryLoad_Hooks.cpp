@@ -13,7 +13,7 @@
 #include <proxies/XeFG_Proxy.h>
 #include <proxies/XeLL_Proxy.h>
 #include <inputs/FG/XeFG_Inputs_Dx12.h>
-#include <proxies/NVNGX_Proxy.h>
+#include <proxies/Nvngx_Proxy.h>
 #include <proxies/FfxApi_Proxy.h>
 
 #include <inputs/FSR2_Dx12.h>
@@ -174,6 +174,22 @@ HMODULE LibraryLoadHooks::LoadLibraryCheckW(std::wstring libName, LPCWSTR lpLibF
         return dlssModule;
     }
 
+    // sl.dlss_d.dll
+    if (shouldHookSl && (CheckDllNameW(&libName, &slDlssdNamesW) ||
+                         (normalizedPath.contains(L"\\versions\\") && normalizedPath.contains(L"\\sl_dlss_d_"))))
+    {
+        auto dlssdModule = NtdllProxy::LoadLibraryExW_Ldr(lpLibFullPath, NULL, 0);
+
+        std::scoped_lock lock(StreamlineHooks::mutexHookDlssd);
+
+        if (dlssdModule != nullptr)
+            StreamlineHooks::hookDlssd(dlssdModule);
+        else
+            LOG_ERROR("Trying to load dll as sl.dlss_d: {}", libNameA);
+
+        return dlssdModule;
+    }
+
     // sl.dlss_g.dll
     if ((CheckDllNameW(&libName, &slDlssgNamesW) ||
          (normalizedPath.contains(L"\\versions\\") && normalizedPath.contains(L"\\sl_dlss_g_"))))
@@ -309,7 +325,7 @@ HMODULE LibraryLoadHooks::LoadLibraryCheckW(std::wstring libName, LPCWSTR lpLibF
                 IDXGIFactory1* factory1 = nullptr;
                 IDXGIFactory2* factory2 = nullptr;
 
-                auto ocResult = DxgiProxy::CreateDxgiFactory_()(__uuidof(factory), &factory);
+                auto ocResult = DxgiProxy::CreateDxgiFactory_Hooked()(__uuidof(factory), &factory);
                 LOG_DEBUG("CreateDxgiFactory result: {:X}", ocResult);
 
                 if (ocResult == S_OK && factory != nullptr)
@@ -319,7 +335,7 @@ HMODULE LibraryLoadHooks::LoadLibraryCheckW(std::wstring libName, LPCWSTR lpLibF
                     factory->Release();
                 }
 
-                ocResult = DxgiProxy::CreateDxgiFactory1_()(__uuidof(factory1), &factory1);
+                ocResult = DxgiProxy::CreateDxgiFactory1_Hooked()(__uuidof(factory1), &factory1);
                 LOG_DEBUG("CreateDxgiFactory1 result: {:X}", ocResult);
 
                 if (ocResult == S_OK && factory1 != nullptr)
@@ -328,7 +344,7 @@ HMODULE LibraryLoadHooks::LoadLibraryCheckW(std::wstring libName, LPCWSTR lpLibF
                     factory1->Release();
                 }
 
-                ocResult = DxgiProxy::CreateDxgiFactory2_()(0, __uuidof(factory2), &factory2);
+                ocResult = DxgiProxy::CreateDxgiFactory2_Hooked()(0, __uuidof(factory2), &factory2);
                 LOG_DEBUG("CreateDxgiFactory2 result: {:X}", ocResult);
 
                 if (ocResult == S_OK && factory2 != nullptr)
@@ -1123,6 +1139,19 @@ void LibraryLoadHooks::CheckModulesInMemory()
             {
                 LOG_DEBUG("sl.dlss.dll already in memory");
                 StreamlineHooks::hookDlss(slDlss);
+            }
+        }
+    }
+
+    {
+        std::unique_lock lock(StreamlineHooks::mutexHookDlssd, std::try_to_lock);
+        if (lock.owns_lock() && !StreamlineHooks::isDlssdHooked())
+        {
+            HMODULE slDlssd = GetDllNameWModule(&slDlssdNamesW);
+            if (slDlssd != nullptr)
+            {
+                LOG_DEBUG("sl.dlss_d.dll already in memory");
+                StreamlineHooks::hookDlssd(slDlssd);
             }
         }
     }
