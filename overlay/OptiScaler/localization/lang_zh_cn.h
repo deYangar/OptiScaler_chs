@@ -1625,4 +1625,6 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Game_s)] = "游戏的";
     table[static_cast<int>(LK::UI_Present_Mode)] = "呈现模式";
     table[static_cast<int>(LK::UI_Game_s_present_mode_s)] = "游戏的呈现模式：%s";
+    table[static_cast<int>(LK::UI_RRUpscalerCombo)] = "##RR超分辨率下拉框";
+    table[static_cast<int>(LK::UI_s_rr_s)] = "%s##rr%s";
 }

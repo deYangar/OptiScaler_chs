@@ -1443,5 +1443,7 @@
  "GB Ver: %d.%d": "UI_GB_Ver_d_d",
  "Game's": "UI_Game_s",
  "Present Mode": "UI_Present_Mode",
- "Game's present mode: %s": "UI_Game_s_present_mode_s"
+ "Game's present mode: %s": "UI_Game_s_present_mode_s",
+ "##RRUpscalerCombo": "UI_RRUpscalerCombo",
+ "%s##rr%s": "UI_s_rr_s"
 }

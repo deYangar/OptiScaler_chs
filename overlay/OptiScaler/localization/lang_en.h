@@ -1613,4 +1613,6 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Game_s)] = "Game's";
     table[static_cast<int>(LK::UI_Present_Mode)] = "Present Mode";
     table[static_cast<int>(LK::UI_Game_s_present_mode_s)] = "Game's present mode: %s";
+    table[static_cast<int>(LK::UI_RRUpscalerCombo)] = "##RRUpscalerCombo";
+    table[static_cast<int>(LK::UI_s_rr_s)] = "%s##rr%s";
 }

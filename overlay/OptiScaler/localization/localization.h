@@ -1607,6 +1607,8 @@ enum class LK {
     UI_Game_s,
     UI_Present_Mode,
     UI_Game_s_present_mode_s,
+    UI_RRUpscalerCombo,
+    UI_s_rr_s,
     COUNT
 };
 
