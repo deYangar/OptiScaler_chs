@@ -1627,4 +1627,11 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Game_s_present_mode_s)] = "游戏的呈现模式：%s";
     table[static_cast<int>(LK::UI_RRUpscalerCombo)] = "##RR超分辨率下拉框";
     table[static_cast<int>(LK::UI_s_rr_s)] = "%s##rr%s";
+    table[static_cast<int>(LK::UI_Off_rrOff)] = "关闭##rrOff";
+    table[static_cast<int>(LK::UI_s_rrRegular_d)] = "%s##rrRegular%d";
+    table[static_cast<int>(LK::UI_No_denoise)] = "无降噪";
+    table[static_cast<int>(LK::UI_Ray_Reconstruction_RROfferCombo)] = "光线重建##RROfferCombo";
+    table[static_cast<int>(LK::UI_Upscaler_used_when_Ray_Reconstruction_is_turned_on_in_the_ga)] = "游戏中开启光线重建时使用的超分辨率。";
+    table[static_cast<int>(LK::UI_This_upscaler_can_t_denoise_nWith_DLSSD_on_in_the_game_image)] = "此超分辨率不能降噪。\n游戏中开启 DLSSD 时，画面可能出现颗粒感或噪点。";
+    table[static_cast<int>(LK::UI_Save_Settings_and_restart_the_game_to_apply)] = "保存设置并重启游戏以应用";
 }

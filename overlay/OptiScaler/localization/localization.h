@@ -1609,6 +1609,13 @@ enum class LK {
     UI_Game_s_present_mode_s,
     UI_RRUpscalerCombo,
     UI_s_rr_s,
+    UI_Off_rrOff,
+    UI_s_rrRegular_d,
+    UI_No_denoise,
+    UI_Ray_Reconstruction_RROfferCombo,
+    UI_Upscaler_used_when_Ray_Reconstruction_is_turned_on_in_the_ga,
+    UI_This_upscaler_can_t_denoise_nWith_DLSSD_on_in_the_game_image,
+    UI_Save_Settings_and_restart_the_game_to_apply,
     COUNT
 };
 

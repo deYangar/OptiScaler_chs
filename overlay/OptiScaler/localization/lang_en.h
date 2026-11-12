@@ -1615,4 +1615,11 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Game_s_present_mode_s)] = "Game's present mode: %s";
     table[static_cast<int>(LK::UI_RRUpscalerCombo)] = "##RRUpscalerCombo";
     table[static_cast<int>(LK::UI_s_rr_s)] = "%s##rr%s";
+    table[static_cast<int>(LK::UI_Off_rrOff)] = "Off##rrOff";
+    table[static_cast<int>(LK::UI_s_rrRegular_d)] = "%s##rrRegular%d";
+    table[static_cast<int>(LK::UI_No_denoise)] = "No denoise";
+    table[static_cast<int>(LK::UI_Ray_Reconstruction_RROfferCombo)] = "Ray Reconstruction##RROfferCombo";
+    table[static_cast<int>(LK::UI_Upscaler_used_when_Ray_Reconstruction_is_turned_on_in_the_ga)] = "Upscaler used when Ray Reconstruction is turned on in the game.";
+    table[static_cast<int>(LK::UI_This_upscaler_can_t_denoise_nWith_DLSSD_on_in_the_game_image)] = "This upscaler can't denoise.\nWith DLSSD on in the game, image may look grainy or noisy.";
+    table[static_cast<int>(LK::UI_Save_Settings_and_restart_the_game_to_apply)] = "Save Settings and restart the game to apply";
 }

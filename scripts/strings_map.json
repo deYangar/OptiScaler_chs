@@ -1445,5 +1445,12 @@
  "Present Mode": "UI_Present_Mode",
  "Game's present mode: %s": "UI_Game_s_present_mode_s",
  "##RRUpscalerCombo": "UI_RRUpscalerCombo",
- "%s##rr%s": "UI_s_rr_s"
+ "%s##rr%s": "UI_s_rr_s",
+ "Off##rrOff": "UI_Off_rrOff",
+ "%s##rrRegular%d": "UI_s_rrRegular_d",
+ "No denoise": "UI_No_denoise",
+ "Ray Reconstruction##RROfferCombo": "UI_Ray_Reconstruction_RROfferCombo",
+ "Upscaler used when Ray Reconstruction is turned on in the game.": "UI_Upscaler_used_when_Ray_Reconstruction_is_turned_on_in_the_ga",
+ "This upscaler can't denoise.\\nWith DLSSD on in the game, image may look grainy or noisy.": "UI_This_upscaler_can_t_denoise_nWith_DLSSD_on_in_the_game_image",
+ "Save Settings and restart the game to apply": "UI_Save_Settings_and_restart_the_game_to_apply"
 }
