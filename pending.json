@@ -1,4 +1,9 @@
 [
- "##RRUpscalerCombo",
- "%s##rr%s"
+ "Off##rrOff",
+ "%s##rrRegular%d",
+ "No denoise",
+ "Ray Reconstruction##RROfferCombo",
+ "Upscaler used when Ray Reconstruction is turned on in the game.",
+ "This upscaler can't denoise.\\nWith DLSSD on in the game, image may look grainy or noisy.",
+ "Save Settings and restart the game to apply"
 ]
