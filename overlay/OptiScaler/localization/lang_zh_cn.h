@@ -1634,4 +1634,22 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Upscaler_used_when_Ray_Reconstruction_is_turned_on_in_the_ga)] = "游戏中开启光线重建时使用的超分辨率。";
     table[static_cast<int>(LK::UI_This_upscaler_can_t_denoise_nWith_DLSSD_on_in_the_game_image)] = "此超分辨率不能降噪。\n游戏中开启 DLSSD 时，画面可能出现颗粒感或噪点。";
     table[static_cast<int>(LK::UI_Save_Settings_and_restart_the_game_to_apply)] = "保存设置并重启游戏以应用";
+    table[static_cast<int>(LK::UI_DLSS_Dx12)] = "DLSS Dx12";
+    table[static_cast<int>(LK::UI_Flip_Meter_off)] = "Flip Meter 关闭";
+    table[static_cast<int>(LK::UI_Flip_Meter_WIP)] = "Flip Meter（开发中）";
+    table[static_cast<int>(LK::UI_Frames_of_a_FG_Nvngx_Replacement_paced_by_AMD_s_driver_flip_)] = "FG Nvngx 替换的帧，由 AMD 驱动 Flip Metering 控制节奏\n\n- 仅限 AMD，需要驱动支持\n- 仅在独占或无边窗口全屏下生成\n- 兼容 Anti-Lag 2";
+    table[static_cast<int>(LK::UI_FSR_FG_Provider)] = "FSR FG 提供者";
+    table[static_cast<int>(LK::UI_Flip_Meter_Settings)] = "Flip Meter 设置";
+    table[static_cast<int>(LK::UI_Frame_Gen_flipmeter)] = "帧生成##flipmeter";
+    table[static_cast<int>(LK::UI_Driver_pacing_s_uX)] = "驱动节奏控制：%s，%uX";
+    table[static_cast<int>(LK::UI_frame_index_mode)] = "帧索引模式";
+    table[static_cast<int>(LK::UI_adaptive_mode)] = "自适应模式";
+    table[static_cast<int>(LK::UI_Driver_pacing_off_while_no_frames_are_generated)] = "驱动节奏控制：未生成帧时关闭";
+    table[static_cast<int>(LK::UI_Driver_pacing_off_only_the_game_s_frames_are_shown)] = "驱动节奏控制：关闭，仅显示游戏自身的帧";
+    table[static_cast<int>(LK::UI_Needs_exclusive_fullscreen_or_a_window_covering_the_whole_di)] = "需要独占全屏或覆盖整个显示器的窗口";
+    table[static_cast<int>(LK::UI_The_driver_rejected_the_config_08X_status_u)] = "驱动拒绝了该配置：%08X，状态 %u";
+    table[static_cast<int>(LK::UI_The_driver_allows_up_to_dX_the_FG_replacement_dX)] = "驱动最高允许 %dX，FG 替换为 %dX";
+    table[static_cast<int>(LK::UI_Create_reg_file_flipmeter)] = "创建 .reg 文件##flipmeter";
+    table[static_cast<int>(LK::UI_Saved_s)] = "已保存 %s";
+    table[static_cast<int>(LK::UI_Couldn_t_create_it_s)] = "无法创建：%s";
 }

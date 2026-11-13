@@ -1622,4 +1622,22 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Upscaler_used_when_Ray_Reconstruction_is_turned_on_in_the_ga)] = "Upscaler used when Ray Reconstruction is turned on in the game.";
     table[static_cast<int>(LK::UI_This_upscaler_can_t_denoise_nWith_DLSSD_on_in_the_game_image)] = "This upscaler can't denoise.\nWith DLSSD on in the game, image may look grainy or noisy.";
     table[static_cast<int>(LK::UI_Save_Settings_and_restart_the_game_to_apply)] = "Save Settings and restart the game to apply";
+    table[static_cast<int>(LK::UI_DLSS_Dx12)] = "DLSS Dx12";
+    table[static_cast<int>(LK::UI_Flip_Meter_off)] = "Flip Meter off";
+    table[static_cast<int>(LK::UI_Flip_Meter_WIP)] = "Flip Meter (WIP)";
+    table[static_cast<int>(LK::UI_Frames_of_a_FG_Nvngx_Replacement_paced_by_AMD_s_driver_flip_)] = "Frames of a FG Nvngx Replacement, paced by AMD's driver flip metering\n\n- AMD only, needs driver support\n- Only generates in exclusive or borderless fullscreen\n- Works with Anti-Lag 2";
+    table[static_cast<int>(LK::UI_FSR_FG_Provider)] = "FSR FG Provider";
+    table[static_cast<int>(LK::UI_Flip_Meter_Settings)] = "Flip Meter Settings";
+    table[static_cast<int>(LK::UI_Frame_Gen_flipmeter)] = "Frame Gen##flipmeter";
+    table[static_cast<int>(LK::UI_Driver_pacing_s_uX)] = "Driver pacing: %s, %uX";
+    table[static_cast<int>(LK::UI_frame_index_mode)] = "frame index mode";
+    table[static_cast<int>(LK::UI_adaptive_mode)] = "adaptive mode";
+    table[static_cast<int>(LK::UI_Driver_pacing_off_while_no_frames_are_generated)] = "Driver pacing: off while no frames are generated";
+    table[static_cast<int>(LK::UI_Driver_pacing_off_only_the_game_s_frames_are_shown)] = "Driver pacing: off, only the game's frames are shown";
+    table[static_cast<int>(LK::UI_Needs_exclusive_fullscreen_or_a_window_covering_the_whole_di)] = "Needs exclusive fullscreen or a window covering the whole display";
+    table[static_cast<int>(LK::UI_The_driver_rejected_the_config_08X_status_u)] = "The driver rejected the config: %08X, status %u";
+    table[static_cast<int>(LK::UI_The_driver_allows_up_to_dX_the_FG_replacement_dX)] = "The driver allows up to %dX, the FG replacement %dX";
+    table[static_cast<int>(LK::UI_Create_reg_file_flipmeter)] = "Create .reg file##flipmeter";
+    table[static_cast<int>(LK::UI_Saved_s)] = "Saved %s";
+    table[static_cast<int>(LK::UI_Couldn_t_create_it_s)] = "Couldn't create it: %s";
 }
