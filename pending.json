@@ -1,9 +1,20 @@
 [
- "Off##rrOff",
- "%s##rrRegular%d",
- "No denoise",
- "Ray Reconstruction##RROfferCombo",
- "Upscaler used when Ray Reconstruction is turned on in the game.",
- "This upscaler can't denoise.\\nWith DLSSD on in the game, image may look grainy or noisy.",
- "Save Settings and restart the game to apply"
+ "DLSS Dx12",
+ "Flip Meter off",
+ "Flip Meter (WIP)",
+ "Frames of a FG Nvngx Replacement, paced by AMD's driver flip metering\\n\\n- AMD only, needs driver support\\n- Only generates in exclusive or borderless fullscreen\\n- Works with Anti-Lag 2",
+ "FSR FG Provider",
+ "Flip Meter Settings",
+ "Frame Gen##flipmeter",
+ "Driver pacing: %s, %uX",
+ "frame index mode",
+ "adaptive mode",
+ "Driver pacing: off while no frames are generated",
+ "Driver pacing: off, only the game's frames are shown",
+ "Needs exclusive fullscreen or a window covering the whole display",
+ "The driver rejected the config: %08X, status %u",
+ "The driver allows up to %dX, the FG replacement %dX",
+ "Create .reg file##flipmeter",
+ "Saved %s",
+ "Couldn't create it: %s"
 ]
