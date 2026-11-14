@@ -1472,5 +1472,10 @@
  "Saved %s": "UI_Saved_s",
  "Couldn't create it: %s": "UI_Couldn_t_create_it_s",
  "VLK + Ext": "UI_VLK_Ext",
- "VLK Ext": "UI_VLK_Ext_2"
+ "VLK Ext": "UI_VLK_Ext_2",
+ "Status:": "UI_Status",
+ "ON %dx": "UI_ON_dx",
+ "(the replacement supports up to %dx)": "UI_the_replacement_supports_up_to_dx",
+ "(turn on Frame Gen below)": "UI_turn_on_Frame_Gen_below",
+ "Driver pacing: %s": "UI_Driver_pacing_s"
 }

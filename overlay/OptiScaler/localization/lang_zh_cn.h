@@ -1654,4 +1654,9 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Couldn_t_create_it_s)] = "无法创建：%s";
     table[static_cast<int>(LK::UI_VLK_Ext)] = "VLK + Ext";
     table[static_cast<int>(LK::UI_VLK_Ext_2)] = "VLK Ext";
+    table[static_cast<int>(LK::UI_Status)] = "状态：";
+    table[static_cast<int>(LK::UI_ON_dx)] = "开启 %dx";
+    table[static_cast<int>(LK::UI_the_replacement_supports_up_to_dx)] = "（替代项最高支持 %dx）";
+    table[static_cast<int>(LK::UI_turn_on_Frame_Gen_below)] = "（在下方开启帧生成）";
+    table[static_cast<int>(LK::UI_Driver_pacing_s)] = "驱动节奏控制：%s";
 }

@@ -1642,4 +1642,9 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Couldn_t_create_it_s)] = "Couldn't create it: %s";
     table[static_cast<int>(LK::UI_VLK_Ext)] = "VLK + Ext";
     table[static_cast<int>(LK::UI_VLK_Ext_2)] = "VLK Ext";
+    table[static_cast<int>(LK::UI_Status)] = "Status:";
+    table[static_cast<int>(LK::UI_ON_dx)] = "ON %dx";
+    table[static_cast<int>(LK::UI_the_replacement_supports_up_to_dx)] = "(the replacement supports up to %dx)";
+    table[static_cast<int>(LK::UI_turn_on_Frame_Gen_below)] = "(turn on Frame Gen below)";
+    table[static_cast<int>(LK::UI_Driver_pacing_s)] = "Driver pacing: %s";
 }

@@ -1636,6 +1636,11 @@ enum class LK {
     UI_Couldn_t_create_it_s,
     UI_VLK_Ext,
     UI_VLK_Ext_2,
+    UI_Status,
+    UI_ON_dx,
+    UI_the_replacement_supports_up_to_dx,
+    UI_turn_on_Frame_Gen_below,
+    UI_Driver_pacing_s,
     COUNT
 };
 
