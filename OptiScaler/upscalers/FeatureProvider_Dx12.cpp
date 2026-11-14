@@ -166,6 +166,45 @@ bool FeatureProvider_Dx12::ChangeFeature(Upscaler upscaler, ID3D12Device* device
             contextData->createParams->Set(NVSDK_NGX_Parameter_OutHeight, dc->DisplayHeight());
             contextData->createParams->Set(NVSDK_NGX_Parameter_PerfQualityValue, dc->PerfQualityValue());
 
+            // The FFX inputs' padding, set on the game's parameters
+            int padToMax = 0;
+            parameters->Get("OptiScaler.PadToMaxUpscaleSize", &padToMax);
+
+            if (padToMax)
+            {
+                // Our parameter store converts the int flags
+                if (!isPassthrough)
+                {
+                    for (const char* name :
+                         { "OptiScaler.PadToMaxUpscaleSize", "OptiScaler.PadExactUpscaleSize",
+                           "OptiScaler.PadExactWidth", "OptiScaler.PadExactHeight", "FSR.maxRenderSize.width",
+                           "FSR.maxRenderSize.height", "FSR.maxUpscaleSize.width", "FSR.maxUpscaleSize.height" })
+                    {
+                        unsigned int value = 0;
+                        parameters->Get(name, &value);
+                        contextData->createParams->Set(name, value);
+                    }
+                }
+
+                // Backends that handle upscaleSize themselves take these as their max, not an exact size
+                unsigned int maxWidth = 0;
+                unsigned int maxHeight = 0;
+                unsigned int maxRenderWidth = 0;
+                unsigned int maxRenderHeight = 0;
+                parameters->Get("FSR.maxUpscaleSize.width", &maxWidth);
+                parameters->Get("FSR.maxUpscaleSize.height", &maxHeight);
+                parameters->Get("FSR.maxRenderSize.width", &maxRenderWidth);
+                parameters->Get("FSR.maxRenderSize.height", &maxRenderHeight);
+
+                if (maxWidth > 0 && maxHeight > 0 && maxRenderWidth > 0 && maxRenderHeight > 0)
+                {
+                    contextData->createParams->Set(NVSDK_NGX_Parameter_Width, maxRenderWidth);
+                    contextData->createParams->Set(NVSDK_NGX_Parameter_Height, maxRenderHeight);
+                    contextData->createParams->Set(NVSDK_NGX_Parameter_OutWidth, maxWidth);
+                    contextData->createParams->Set(NVSDK_NGX_Parameter_OutHeight, maxHeight);
+                }
+            }
+
             dc = nullptr;
 
             State::Instance().currentFeature = nullptr;

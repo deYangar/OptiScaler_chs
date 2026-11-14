@@ -32,6 +32,49 @@ class IFeature_Dx12 : public virtual IFeature
 
     void RestoreBarriers(ID3D12GraphicsCommandList* InCommandList);
 
+    // PadToMaxUpscaleSize quirk, the inputs padded to the max upscale size's render size and the output crop
+    enum PadSlot : uint8_t
+    {
+        PadColor,
+        PadDepth,
+        PadMV,
+        PadMask,
+        PadReactive,
+        PadTransparency,
+        PadOutput,
+        PadSlotCount
+    };
+
+    std::array<std::unique_ptr<RC_Dx12>, PadSlotCount> PadCopy;
+    bool _padWarned = false;
+
+    // Padding costs the bigger size's work every frame, an upscale size kept this long gets its own upscaler
+    static constexpr uint32_t PadStableFrames = 60;
+    uint32_t _padStableFrames = 0;
+    uint32_t _padLastUpscaleWidth = 0;
+    uint32_t _padLastUpscaleHeight = 0;
+
+    // Recreates for an upscale size padding can't reach or one that stayed the same, true when this frame can't run
+    bool CheckPadRecreation(NVSDK_NGX_Parameter* InParameters, uint32_t InUpscaleWidth, uint32_t InUpscaleHeight);
+
+    // Game's resources and render size the padding replaced, restored after EvaluateInternal
+    struct PadRestore
+    {
+        std::vector<std::tuple<const char*, ID3D12Resource*, ID3D12Resource*>> Resources; // Name, game's, padded
+        unsigned int RenderWidth = 0;
+        unsigned int RenderHeight = 0;
+    };
+
+    bool IsPadBuffer(ID3D12Resource* InResource) const;
+    ID3D12Resource* PadInput(ID3D12GraphicsCommandList* InCommandList, ID3D12Resource* InResource, PadSlot InSlot,
+                             uint32_t InWidth, uint32_t InHeight, uint32_t InPadWidth, uint32_t InPadHeight);
+
+    // Replaces the inputs and the render size with padded ones, false when the upscale size needs no padding.
+    // A failed padding turns it off and recreates the upscaler for the upscale size.
+    bool PadInputs(ID3D12GraphicsCommandList* InCommandList, NVSDK_NGX_Parameter* InParameters, uint32_t InUpscaleWidth,
+                   uint32_t InUpscaleHeight, PadRestore& OutRestore);
+    void RestorePadding(NVSDK_NGX_Parameter* InParameters, const PadRestore& InRestore);
+
   protected:
     ID3D12Device* Device = nullptr;
     static inline std::unique_ptr<Menu_Dx12> Imgui = nullptr;

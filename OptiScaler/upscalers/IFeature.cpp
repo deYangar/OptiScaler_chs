@@ -134,6 +134,44 @@ bool IFeature::SetInitParameters(NVSDK_NGX_Parameter* InParameters)
 
         GetDynamicOutputResolution(InParameters, &outWidth, &outHeight);
 
+        // Created for the max sizes, or for an upscale size that stayed the same long enough. Games round each
+        // upscale size's render up, padded it can be a few pixels over the one scaled from the max.
+        if (_padToMaxUpscaleSize)
+        {
+            unsigned int maxWidth = 0;
+            unsigned int maxHeight = 0;
+            unsigned int maxRenderWidth = 0;
+            unsigned int maxRenderHeight = 0;
+            InParameters->Get("FSR.maxUpscaleSize.width", &maxWidth);
+            InParameters->Get("FSR.maxUpscaleSize.height", &maxHeight);
+            InParameters->Get("FSR.maxRenderSize.width", &maxRenderWidth);
+            InParameters->Get("FSR.maxRenderSize.height", &maxRenderHeight);
+
+            if (maxWidth > 0 && maxHeight > 0 && maxRenderWidth > 0 && maxRenderHeight > 0)
+            {
+                outWidth = maxWidth;
+                outHeight = maxHeight;
+
+                // The size that stayed the same, recorded when the recreation was requested
+                int exact = 0;
+                unsigned int exactWidth = 0;
+                unsigned int exactHeight = 0;
+                InParameters->Get("OptiScaler.PadExactUpscaleSize", &exact);
+                InParameters->Get("OptiScaler.PadExactWidth", &exactWidth);
+                InParameters->Get("OptiScaler.PadExactHeight", &exactHeight);
+
+                if (exact && exactWidth > 0 && exactHeight > 0 && exactWidth <= maxWidth && exactHeight <= maxHeight)
+                {
+                    outWidth = exactWidth;
+                    outHeight = exactHeight;
+                }
+
+                // Never above the output, the display size would grow past the upscale size
+                width = std::min((unsigned int) ((uint64_t) maxRenderWidth * outWidth / maxWidth) + 16, outWidth);
+                height = std::min((unsigned int) ((uint64_t) maxRenderHeight * outHeight / maxHeight) + 16, outHeight);
+            }
+        }
+
         // Thanks to Crytek added these checks
         if (width > 16384 || width < 20)
             width = 0;
@@ -172,6 +210,14 @@ bool IFeature::SetInitParameters(NVSDK_NGX_Parameter* InParameters)
         }
 
         _perfQualityValue = (NVSDK_NGX_PerfQuality_Value) pqValue;
+
+        if (_padToMaxUpscaleSize)
+        {
+            _maxRenderWidth = _renderWidth;
+            _maxRenderHeight = _renderHeight;
+            LOG_INFO("Padding smaller upscale sizes to {}x{} -> {}x{}", _maxRenderWidth, _maxRenderHeight,
+                     _displayWidth, _displayHeight);
+        }
 
         LOG_INFO("Render Resolution: {0}x{1}, Display Resolution {2}x{3}, Quality: {4}", _renderWidth, _renderHeight,
                  _displayWidth, _displayHeight, pqValue);
@@ -441,6 +487,15 @@ void IFeature::GetDynamicOutputResolution(NVSDK_NGX_Parameter* InParameters, uns
     if (supportsUpscaleSize)
     {
         InParameters->Set("OptiScaler.SupportsUpscaleSize", 0);
+        return;
+    }
+
+    // Set by the FFX inputs, IFeature_Dx12 pads the inputs of smaller upscale sizes
+    int padToMax = 0;
+    InParameters->Get("OptiScaler.PadToMaxUpscaleSize", &padToMax);
+    if (padToMax)
+    {
+        _padToMaxUpscaleSize = true;
         return;
     }
 

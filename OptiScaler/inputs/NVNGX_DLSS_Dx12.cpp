@@ -1024,7 +1024,7 @@ static NVSDK_NGX_Result TryEvaluateOptiFeature(ID3D12GraphicsCommandList* InCmdL
         const bool isFSR31OrLater = isFFX && feature->Version() >= feature_version { 3, 1, 0 };
 
         // FSR 3.1 supports upscaleSize that doesn't need reinit to change output resolution
-        if (!isFSR31OrLater && feature->UpdateOutputResolution(InParameters))
+        if (!isFSR31OrLater && !feature->PadsToMaxUpscaleSize() && feature->UpdateOutputResolution(InParameters))
             state.changeBackend[handleId] = true;
     }
 
@@ -1165,7 +1165,14 @@ NVSDK_NGX_API NVSDK_NGX_Result NVSDK_NGX_D3D12_EvaluateFeature(ID3D12GraphicsCom
 
         int frameCount = 0;
         InParameters->Get("DLSSG.MultiFrameCount", &frameCount);
-        State::Instance().dlssgDetectedInterpolationCount = frameCount;
+        State::Instance().SetDlssgDetectedInterpolationCount(frameCount);
+
+        // MFG can evaluate once per generated frame, only the first one is a new game frame
+        uint32_t frameIndex = 1;
+        InParameters->Get("DLSSG.MultiFrameIndex", &frameIndex);
+
+        if (state.activeFgInput == FGInput::NvngxFG && frameIndex <= 1)
+            State::Instance().gameFrameRate.Present(Util::MillisecondsNow());
         ReflexHooks::setDlssgFrameCount(frameCount);
 
         float dlssgCameraNear = 0.0f;
@@ -1184,7 +1191,7 @@ NVSDK_NGX_API NVSDK_NGX_Result NVSDK_NGX_D3D12_EvaluateFeature(ID3D12GraphicsCom
         if (evalWithoutFG == 6)
         {
             // Report FG as disabled
-            State::Instance().dlssgDetectedInterpolationCount = 0;
+            State::Instance().SetDlssgDetectedInterpolationCount(0);
             ReflexHooks::setDlssgFrameCount(0);
         }
     }

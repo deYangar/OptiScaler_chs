@@ -16,6 +16,19 @@
 #include <imgui/ImGuiNotify.hpp>
 #include <nvsdk_ngx_vk.h>
 
+// During process exit, Streamline's DLL_PROCESS_DETACH releases its features and shuts NGX down.
+// Replacement DLLs are loaded after sl.dlss_g, so the loader has already detached them by then
+// and their globals are freed. Calling into them at that point crashes.
+static bool IsProcessExiting()
+{
+    using PFN_RtlDllShutdownInProgress = BOOLEAN(NTAPI*)();
+    static auto rtlDllShutdownInProgress = (PFN_RtlDllShutdownInProgress) KernelBaseProxy::GetProcAddress_()(
+        KernelBaseProxy::GetModuleHandleW_()(L"ntdll.dll"), "RtlDllShutdownInProgress");
+
+    return State::Instance().isShuttingDown ||
+           (rtlDllShutdownInProgress != nullptr && rtlDllShutdownInProgress() != FALSE);
+}
+
 IFGNvngx* Nvngx_FG::getProvider()
 {
     if (_provider)
@@ -285,6 +298,9 @@ NVSDK_NGX_Result Nvngx_FG::D3D12_Shutdown()
     if (!provider)
         return NVSDK_NGX_Result_Fail;
 
+    if (IsProcessExiting())
+        return NVSDK_NGX_Result_Success;
+
     return provider->D3D12_Shutdown();
 }
 
@@ -294,6 +310,9 @@ NVSDK_NGX_Result Nvngx_FG::D3D12_Shutdown1(ID3D12Device* InDevice)
 
     if (!provider)
         return NVSDK_NGX_Result_Fail;
+
+    if (IsProcessExiting())
+        return NVSDK_NGX_Result_Success;
 
     return provider->D3D12_Shutdown1(InDevice);
 }
@@ -363,6 +382,10 @@ NVSDK_NGX_Result Nvngx_FG::D3D12_ReleaseFeature(NVSDK_NGX_Handle* InHandle)
 
     Nvngx_FG_Handle* ourHandle = (Nvngx_FG_Handle*) InHandle;
     NVSDK_NGX_Result result;
+
+    // The provider's state may already be gone, leave the native feature to process teardown
+    if (IsProcessExiting())
+        return NVSDK_NGX_Result_Success;
 
     // Lock must end before the handle (and its mutex) is deleted
     {
@@ -459,7 +482,7 @@ NVSDK_NGX_Result Nvngx_FG::D3D12_EvaluateFeature(ID3D12GraphicsCommandList* InCm
         }
     }
 
-    if (Config::Instance()->NvngxFGDisableHudless.value_or_default())
+    if (Config::Instance()->FGDisableHudless.value_or_default())
         InParameters->Set("DLSSG.HUDLess", (void*) nullptr);
 
     // LOG_TRACE("Handle received from the game: {:X}", (uint64_t) InFeatureHandle);
@@ -586,6 +609,9 @@ NVSDK_NGX_Result Nvngx_FG::VULKAN_Shutdown()
     if (!provider)
         return NVSDK_NGX_Result_Fail;
 
+    if (IsProcessExiting())
+        return NVSDK_NGX_Result_Success;
+
     return provider->VULKAN_Shutdown();
 }
 
@@ -595,6 +621,9 @@ NVSDK_NGX_Result Nvngx_FG::VULKAN_Shutdown1(VkDevice InDevice)
 
     if (!provider)
         return NVSDK_NGX_Result_Fail;
+
+    if (IsProcessExiting())
+        return NVSDK_NGX_Result_Success;
 
     return provider->VULKAN_Shutdown1(InDevice);
 }
@@ -692,6 +721,10 @@ NVSDK_NGX_Result Nvngx_FG::VULKAN_ReleaseFeature(NVSDK_NGX_Handle* InHandle)
     Nvngx_FG_Handle* ourHandle = (Nvngx_FG_Handle*) InHandle;
     NVSDK_NGX_Result result;
 
+    // The provider's state may already be gone, leave the native feature to process teardown
+    if (IsProcessExiting())
+        return NVSDK_NGX_Result_Success;
+
     // Lock must end before the handle (and its mutex) is deleted
     {
         std::scoped_lock lock(ourHandle->handleMutex);
@@ -773,7 +806,7 @@ NVSDK_NGX_Result Nvngx_FG::VULKAN_EvaluateFeature(VkCommandBuffer InCmdList, con
         }
     }
 
-    if (Config::Instance()->NvngxFGDisableHudless.value_or_default())
+    if (Config::Instance()->FGDisableHudless.value_or_default())
         InParameters->Set("DLSSG.HUDLess", (void*) nullptr);
 
     static constexpr const char* trackedImages[] = {
