@@ -1470,5 +1470,7 @@
  "The driver allows up to %dX, the FG replacement %dX": "UI_The_driver_allows_up_to_dX_the_FG_replacement_dX",
  "Create .reg file##flipmeter": "UI_Create_reg_file_flipmeter",
  "Saved %s": "UI_Saved_s",
- "Couldn't create it: %s": "UI_Couldn_t_create_it_s"
+ "Couldn't create it: %s": "UI_Couldn_t_create_it_s",
+ "VLK + Ext": "UI_VLK_Ext",
+ "VLK Ext": "UI_VLK_Ext_2"
 }

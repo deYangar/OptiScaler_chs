@@ -1652,4 +1652,6 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Create_reg_file_flipmeter)] = "创建 .reg 文件##flipmeter";
     table[static_cast<int>(LK::UI_Saved_s)] = "已保存 %s";
     table[static_cast<int>(LK::UI_Couldn_t_create_it_s)] = "无法创建：%s";
+    table[static_cast<int>(LK::UI_VLK_Ext)] = "VLK + Ext";
+    table[static_cast<int>(LK::UI_VLK_Ext_2)] = "VLK Ext";
 }

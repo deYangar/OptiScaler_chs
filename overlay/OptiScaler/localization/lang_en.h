@@ -1640,4 +1640,6 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Create_reg_file_flipmeter)] = "Create .reg file##flipmeter";
     table[static_cast<int>(LK::UI_Saved_s)] = "Saved %s";
     table[static_cast<int>(LK::UI_Couldn_t_create_it_s)] = "Couldn't create it: %s";
+    table[static_cast<int>(LK::UI_VLK_Ext)] = "VLK + Ext";
+    table[static_cast<int>(LK::UI_VLK_Ext_2)] = "VLK Ext";
 }

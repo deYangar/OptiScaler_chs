@@ -1634,6 +1634,8 @@ enum class LK {
     UI_Create_reg_file_flipmeter,
     UI_Saved_s,
     UI_Couldn_t_create_it_s,
+    UI_VLK_Ext,
+    UI_VLK_Ext_2,
     COUNT
 };
 
