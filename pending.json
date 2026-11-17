@@ -1,7 +1,11 @@
 [
- "Status:",
- "ON %dx",
- "(the replacement supports up to %dx)",
- "(turn on Frame Gen below)",
- "Driver pacing: %s"
+ "Neural Sharpening Parameters",
+ "Model A (standard)",
+ "Model B (edge-enhanced)",
+ "Neural Model",
+ "Edge Response",
+ "Sharpening map",
+ "Residual map",
+ "Debug View",
+ "Reset Neural Values"
 ]
