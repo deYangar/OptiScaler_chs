@@ -1647,4 +1647,13 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_the_replacement_supports_up_to_dx)] = "(the replacement supports up to %dx)";
     table[static_cast<int>(LK::UI_turn_on_Frame_Gen_below)] = "(turn on Frame Gen below)";
     table[static_cast<int>(LK::UI_Driver_pacing_s)] = "Driver pacing: %s";
+    table[static_cast<int>(LK::UI_Neural_Sharpening_Parameters)] = "Neural Sharpening Parameters";
+    table[static_cast<int>(LK::UI_Model_A_standard)] = "Model A (standard)";
+    table[static_cast<int>(LK::UI_Model_B_edge_enhanced)] = "Model B (edge-enhanced)";
+    table[static_cast<int>(LK::UI_Neural_Model)] = "Neural Model";
+    table[static_cast<int>(LK::UI_Edge_Response)] = "Edge Response";
+    table[static_cast<int>(LK::UI_Sharpening_map)] = "Sharpening map";
+    table[static_cast<int>(LK::UI_Residual_map)] = "Residual map";
+    table[static_cast<int>(LK::UI_Debug_View)] = "Debug View";
+    table[static_cast<int>(LK::UI_Reset_Neural_Values)] = "Reset Neural Values";
 }

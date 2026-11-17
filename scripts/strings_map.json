@@ -1477,5 +1477,14 @@
  "ON %dx": "UI_ON_dx",
  "(the replacement supports up to %dx)": "UI_the_replacement_supports_up_to_dx",
  "(turn on Frame Gen below)": "UI_turn_on_Frame_Gen_below",
- "Driver pacing: %s": "UI_Driver_pacing_s"
+ "Driver pacing: %s": "UI_Driver_pacing_s",
+ "Neural Sharpening Parameters": "UI_Neural_Sharpening_Parameters",
+ "Model A (standard)": "UI_Model_A_standard",
+ "Model B (edge-enhanced)": "UI_Model_B_edge_enhanced",
+ "Neural Model": "UI_Neural_Model",
+ "Edge Response": "UI_Edge_Response",
+ "Sharpening map": "UI_Sharpening_map",
+ "Residual map": "UI_Residual_map",
+ "Debug View": "UI_Debug_View",
+ "Reset Neural Values": "UI_Reset_Neural_Values"
 }

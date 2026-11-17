@@ -1659,4 +1659,13 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_the_replacement_supports_up_to_dx)] = "（替代项最高支持 %dx）";
     table[static_cast<int>(LK::UI_turn_on_Frame_Gen_below)] = "（在下方开启帧生成）";
     table[static_cast<int>(LK::UI_Driver_pacing_s)] = "驱动节奏控制：%s";
+    table[static_cast<int>(LK::UI_Neural_Sharpening_Parameters)] = "神经锐化参数";
+    table[static_cast<int>(LK::UI_Model_A_standard)] = "模型 A（标准）";
+    table[static_cast<int>(LK::UI_Model_B_edge_enhanced)] = "模型 B（边缘增强）";
+    table[static_cast<int>(LK::UI_Neural_Model)] = "神经模型";
+    table[static_cast<int>(LK::UI_Edge_Response)] = "边缘响应";
+    table[static_cast<int>(LK::UI_Sharpening_map)] = "锐化图";
+    table[static_cast<int>(LK::UI_Residual_map)] = "残差图";
+    table[static_cast<int>(LK::UI_Debug_View)] = "调试视图";
+    table[static_cast<int>(LK::UI_Reset_Neural_Values)] = "重置神经值";
 }

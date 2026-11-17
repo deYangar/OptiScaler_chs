@@ -1641,6 +1641,15 @@ enum class LK {
     UI_the_replacement_supports_up_to_dx,
     UI_turn_on_Frame_Gen_below,
     UI_Driver_pacing_s,
+    UI_Neural_Sharpening_Parameters,
+    UI_Model_A_standard,
+    UI_Model_B_edge_enhanced,
+    UI_Neural_Model,
+    UI_Edge_Response,
+    UI_Sharpening_map,
+    UI_Residual_map,
+    UI_Debug_View,
+    UI_Reset_Neural_Values,
     COUNT
 };
 
