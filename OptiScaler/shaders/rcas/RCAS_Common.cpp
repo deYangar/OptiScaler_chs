@@ -13,18 +13,39 @@ void RCAS_Common::FillMotionConstants(InternalConstants& OutConstants, const Rca
     OutConstants.MvScaleX = InConstants.MvScaleX;
     OutConstants.MvScaleY = InConstants.MvScaleY;
 
-    OutConstants.DisplaySizeMV = OutConstants.MotionWidth == OutConstants.OutputWidth ? 1 : 0;
+    OutConstants.DisplaySizeMV =
+        (OutConstants.MotionWidth == OutConstants.OutputWidth && OutConstants.MotionHeight == OutConstants.OutputHeight)
+            ? 1
+            : 0;
 
     OutConstants.DynamicSharpenEnabled = Config::Instance()->MotionSharpnessEnabled.value_or_default() ? 1 : 0;
     OutConstants.MotionSharpness = Config::Instance()->MotionSharpness.value_or_default();
     OutConstants.Debug = Config::Instance()->MotionSharpnessDebug.value_or_default() ? 1 : 0;
     OutConstants.Threshold = Config::Instance()->MotionThreshold.value_or_default();
     OutConstants.ScaleLimit = Config::Instance()->MotionScaleLimit.value_or_default();
+}
 
-    if (OutConstants.DisplaySizeMV)
-        OutConstants.MotionTextureScale = 1.0f;
-    else
-        OutConstants.MotionTextureScale = (float) OutConstants.MotionWidth / (float) OutConstants.OutputWidth;
+void RCAS_Common::SetTimedShader(SharpenShader InShader)
+{
+    // Same names as the Method combo of the menu
+    const char* name = "RCAS";
+
+    switch (InShader)
+    {
+    case SharpenShader::DepthAware:
+        name = "Depth Aware (RCAS)";
+        break;
+    case SharpenShader::LocalContrastDepthAware:
+        name = "Depth Aware (DAS)";
+        break;
+    case SharpenShader::BabaNeural:
+        name = "Neural (BaBa)";
+        break;
+    default:
+        break;
+    }
+
+    _timedShaderName = name;
 }
 
 void RCAS_Common::FillMotionConstants(InternalConstantsDA& OutConstants, const RcasConstants& InConstants)
@@ -54,12 +75,10 @@ void RCAS_Common::FillMotionConstants(InternalConstantsDA& OutConstants, const R
     // Off by default, games flagged SDR can still feed pre-tonemap HDR color (Witcher 3)
     OutConstants.ClampOutput = Config::Instance()->DAClampOutput.value_or(false) ? 1 : 0;
 
-    OutConstants.DisplaySizeMV = OutConstants.MotionWidth == OutConstants.OutputWidth ? 1 : 0;
-
-    if (OutConstants.DisplaySizeMV)
-        OutConstants.MotionTextureScale = 1.0f;
-    else
-        OutConstants.MotionTextureScale = (float) OutConstants.MotionWidth / (float) OutConstants.OutputWidth;
+    OutConstants.DisplaySizeMV =
+        (OutConstants.MotionWidth == OutConstants.OutputWidth && OutConstants.MotionHeight == OutConstants.OutputHeight)
+            ? 1
+            : 0;
 }
 
 void RCAS_Common::FillMotionConstants(InternalConstantsBaba& OutConstants, const RcasConstants& InConstants)
@@ -77,16 +96,17 @@ void RCAS_Common::FillMotionConstants(InternalConstantsBaba& OutConstants, const
     OutConstants.MvScaleX = InConstants.MvScaleX;
     OutConstants.MvScaleY = InConstants.MvScaleY;
 
-    OutConstants.DynamicSharpenEnabled = Config::Instance()->MotionSharpnessEnabled.value_or_default() ? 1 : 0;
+    OutConstants.DynamicSharpenEnabled = (Config::Instance()->MotionSharpnessEnabled.value_or_default() &&
+                                          OutConstants.MotionWidth > 0 && OutConstants.MotionHeight > 0)
+                                             ? 1
+                                             : 0;
     OutConstants.Debug = Config::Instance()->MotionSharpnessDebug.value_or_default() ? 1 : 0;
     OutConstants.MotionSharpness = Config::Instance()->MotionSharpness.value_or_default();
     OutConstants.MotionThreshold = Config::Instance()->MotionThreshold.value_or_default();
     OutConstants.MotionScaleLimit = Config::Instance()->MotionScaleLimit.value_or_default();
 
-    OutConstants.DisplaySizeMV = OutConstants.MotionWidth == OutConstants.OutputWidth ? 1 : 0;
-
-    if (OutConstants.DisplaySizeMV)
-        OutConstants.MotionTextureScale = 1.0f;
-    else
-        OutConstants.MotionTextureScale = (float) OutConstants.MotionWidth / (float) OutConstants.OutputWidth;
+    OutConstants.DisplaySizeMV =
+        (OutConstants.MotionWidth == OutConstants.OutputWidth && OutConstants.MotionHeight == OutConstants.OutputHeight)
+            ? 1
+            : 0;
 }

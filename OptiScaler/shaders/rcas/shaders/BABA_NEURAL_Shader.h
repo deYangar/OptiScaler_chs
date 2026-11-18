@@ -9,7 +9,7 @@ static std::string babaNeuralSharpenCode = R"(
 // Original shader: Barbatos Neural Sharpening 2.1 / 12-Channel Neural Network 2.8, MIT license
 //
 // The ReShade version needs two passes (luma texture + apply), here it is a single compute pass:
-// every thread reads the 3x3 neighbourhood straight from the source and builds the luma itself.
+// every thread group loads the luma of its tile (+1 pixel border) to groupshared memory.
 
 #ifdef VK_MODE
 cbuffer Params : register(b0, space0)
@@ -29,7 +29,6 @@ cbuffer Params : register(b0)
     int Debug; // MAS debug tint
 
     float MotionSharpness; // usually negative
-    float MotionTextureScale;
     float MvScaleX;
     float MvScaleY;
 
@@ -152,8 +151,6 @@ static const float4 A_Out_W[3] = {
     float4(-0.382485956, 0.502349734, -0.833594918, 1.040693045)
 };
 static const float A_Out_Bias = 0.041042306;
-)"
-                                           R"(
 // ---- Model B weights (copied from ModelAB_weights.fxh, namespace ModelB)
 static const float4 B_Local_W[27] = {
     float4(-0.180299282, 0.014662747, 0.062037338, 0.162913963),
@@ -251,9 +248,14 @@ static const float B_Out_Bias = 0.065220654;
 // -----------------------------------------------------------------------------
 // Helpers
 // -----------------------------------------------------------------------------
+)"
+                                           R"(
 
 // BT.601 weights, paired with RGBToYCbCr / YCbCrToRGB below (same as the ReShade version)
 static const float3 kLumaCoeff = float3(0.299, 0.587, 0.114);
+
+// 16x16 thread group + 1-pixel border on each side for the 3x3 luma taps
+groupshared float s_luma[18][18];
 
 float GetLuma(float3 rgb)
 {
@@ -337,7 +339,7 @@ float ComputeAdaptiveSharpness(int2 pixelCoord)
         }
         else
         {
-            float2 mvf = (float2(pixelCoord) + 0.5) * MotionTextureScale;
+            float2 mvf = (float2(pixelCoord) + 0.5) * (float2(MotionWidth, MotionHeight) / float2(DisplayWidth, DisplayHeight));
             mv = LoadMotion(int2(mvf));
         }
 
@@ -369,7 +371,7 @@ float3 ApplyMasDebugTint(float3 color, float baseSharpness, float adaptiveSharpn
     return color;
 }
 
-void WritePassthrough(int2 p, float3 c, float intensity)
+void WritePassthrough(int2 p, float3 c, float alpha, float intensity)
 {
     if (Debug > 0 && DynamicSharpenEnabled > 0)
         c = ApplyMasDebugTint(c, Sharpness, intensity);
@@ -377,7 +379,7 @@ void WritePassthrough(int2 p, float3 c, float intensity)
     if (ClampOutput > 0)
         c = saturate(c);
 
-    Dest[p] = float4(c, 1.0);
+    Dest[p] = float4(c, alpha);
 }
 
 // -----------------------------------------------------------------------------
@@ -385,8 +387,6 @@ void WritePassthrough(int2 p, float3 c, float intensity)
 // taps: luma of the 3x3 neighbourhood, row major (0 1 2 / 3 4 5 / 6 7 8)
 // -----------------------------------------------------------------------------
 
-)"
-                                           R"(
 float RunNetA(float taps[9])
 {
     // LAYER 1: 3x3 convolution, 12 channels stored as 3 float4 groups
@@ -573,40 +573,138 @@ float RunNetB(float taps[9])
     return res;
 }
 
+// Network answer for a flat patch (all 9 taps = mean). With one input and PReLU activations it is piecewise
+// linear in mean, written here as hinges at its breakpoints, the same function as RunNetA/B on a flat patch
+// (float32 differs ~1e-6). Generated from the weights above, regenerate if they change. Breakpoints above 1 are
+// left out: encoded taps are never above 1, localScale is at least the largest tap
+float RunNetFlatA(float mean)
+{
+    float flat = 0.0060600224405 + 0.175067294912 * mean;
+
+    // Only one side's hinges can be non zero, negative means are rare (SDR with negative luma)
+    [branch]
+    if (mean >= 0.0)
+    {
+        flat += -0.150968173604 * max(mean - 0.014251068354, 0.0);
+        flat += -0.0572397387027 * max(mean - 0.0247515683503, 0.0);
+        flat += 0.000115763534968 * max(mean - 0.0550066773131, 0.0);
+        flat += 0.0305009873447 * max(mean - 0.097019030578, 0.0);
+        flat += 0.0681568495192 * max(mean - 0.135350654766, 0.0);
+        flat += -0.225701032239 * max(mean - 0.167670870173, 0.0);
+        flat += 0.138205237234 * max(mean - 0.176185385576, 0.0);
+        flat += 0.0379811555884 * max(mean - 0.614819644624, 0.0);
+        flat += 0.312393273336 * max(mean - 0.878628609894, 0.0);
+        flat += -0.325835521453 * max(mean - 0.879908311442, 0.0);
+    }
+    else
+    {
+        flat += -0.320186759593 * max(-0.0153030932581 - mean, 0.0);
+        flat += 0.248268476742 * max(-0.0182633030934 - mean, 0.0);
+        flat += 0.131543843716 * max(-0.024893074335 - mean, 0.0);
+        flat += -0.828078985856 * max(-0.0286011565566 - mean, 0.0);
+        flat += 0.378372720001 * max(-0.029243185007 - mean, 0.0);
+        flat += -0.127722375726 * max(-0.116665666306 - mean, 0.0);
+        flat += 0.291334879569 * max(-0.1342146258 - mean, 0.0);
+        flat += -1.06977892019 * max(-0.166516498241 - mean, 0.0);
+        flat += -0.00634175929432 * max(-0.188603808329 - mean, 0.0);
+        flat += -0.218456127884 * max(-0.288253670903 - mean, 0.0);
+        flat += -0.0126240685325 * max(-0.342916063483 - mean, 0.0);
+        flat += 0.986959893291 * max(-0.39312024127 - mean, 0.0);
+        flat += 0.0909796853916 * max(-0.431024404817 - mean, 0.0);
+        flat += 0.236969792167 * max(-0.707216963513 - mean, 0.0);
+        flat += -0.161559871524 * max(-2.51984802432 - mean, 0.0);
+        flat += 0.00874072097725 * max(-6.13224086942 - mean, 0.0);
+    }
+)"
+                                           R"(
+
+    return flat;
+}
+
+float RunNetFlatB(float mean)
+{
+    float flat = 0.0050881055069 + 0.751365926683 * mean;
+
+    [branch]
+    if (mean >= 0.0)
+    {
+        flat += -3.1911015516 * max(mean - 0.00632336345482, 0.0);
+        flat += 2.92045777063 * max(mean - 0.00779963788163, 0.0);
+        flat += -0.545743344435 * max(mean - 0.0141646869386, 0.0);
+        flat += 0.481058718233 * max(mean - 0.0357847241578, 0.0);
+        flat += -0.746653119581 * max(mean - 0.0409117461946, 0.0);
+        flat += 0.248145308176 * max(mean - 0.0582469815953, 0.0);
+        flat += -0.287864643495 * max(mean - 0.0862950277974, 0.0);
+        flat += -0.287965471802 * max(mean - 0.0877899551077, 0.0);
+        flat += 0.666144589111 * max(mean - 0.0947852013482, 0.0);
+        flat += -0.00776714226758 * max(mean - 0.807396931514, 0.0);
+    }
+    else
+    {
+        flat += -0.395228421239 * max(-0.0118680346466 - mean, 0.0);
+        flat += -1.11449681372 * max(-0.200443822499 - mean, 0.0);
+        flat += 1.34960286286 * max(-0.409868462457 - mean, 0.0);
+        flat += -0.889477289545 * max(-0.4784245775 - mean, 0.0);
+        flat += 1.09211718264 * max(-0.480572785318 - mean, 0.0);
+        flat += 0.0136815823277 * max(-0.670213587711 - mean, 0.0);
+        flat += -0.418580677883 * max(-0.794003817545 - mean, 0.0);
+        flat += 0.243976450468 * max(-0.853032168865 - mean, 0.0);
+        flat += -0.1066883019 * max(-1.547628992 - mean, 0.0);
+        flat += -0.011665346854 * max(-6.33907306161 - mean, 0.0);
+    }
+
+    return flat;
+}
+
 // -----------------------------------------------------------------------------
 // Main
 // -----------------------------------------------------------------------------
 
 [numthreads(16, 16, 1)]
-void CSMain(uint3 DTid : SV_DispatchThreadID)
+void CSMain(uint3 DTid : SV_DispatchThreadID, uint3 GTid : SV_GroupThreadID, uint3 Gid : SV_GroupID,
+            uint GIndex : SV_GroupIndex)
 {
+    const int2 groupOrigin = int2(Gid.xy) * 16 - 1;
+
+    // Luma tile of the group, borders are clamped like the clamped sampler of the ReShade version.
+    // Luma of an Inf / NaN color is not finite either, the finite check below catches it
+    for (uint ti = GIndex; ti < 18 * 18; ti += 256)
+    {
+        const int2 local = int2(ti % 18, ti / 18);
+        s_luma[local.y][local.x] = GetLuma(LoadColor(groupOrigin + local));
+    }
+
+    GroupMemoryBarrierWithGroupSync();
+
     int2 p = int2(DTid.x, DTid.y);
 
     // Guard against oversized dispatch
     if (p.x >= DisplayWidth || p.y >= DisplayHeight)
         return;
 
-    float3 c = LoadColor(p);
+    float4 source = Source.Load(int3(p, 0));
+    float3 c = source.rgb;
     float intensity = ComputeAdaptiveSharpness(p);
 
     // Nothing to add, the debug views still need the network so they skip this
     if (intensity <= 0.0 && ViewMode == 0)
     {
-        WritePassthrough(p, c, intensity);
+        WritePassthrough(p, c, source.a, intensity);
         return;
     }
 
-    // Luma of the 3x3 neighbourhood. Borders are clamped, like the clamped sampler of the ReShade version
+    // Luma of the 3x3 neighbourhood from shared memory
+    const int2 s = int2(GTid.xy) + 1;
     float taps[9];
-    taps[0] = GetLuma(LoadColor(p + int2(-1, -1)));
-    taps[1] = GetLuma(LoadColor(p + int2(0, -1)));
-    taps[2] = GetLuma(LoadColor(p + int2(1, -1)));
-    taps[3] = GetLuma(LoadColor(p + int2(-1, 0)));
-    taps[4] = GetLuma(c);
-    taps[5] = GetLuma(LoadColor(p + int2(1, 0)));
-    taps[6] = GetLuma(LoadColor(p + int2(-1, 1)));
-    taps[7] = GetLuma(LoadColor(p + int2(0, 1)));
-    taps[8] = GetLuma(LoadColor(p + int2(1, 1)));
+    taps[0] = s_luma[s.y - 1][s.x - 1];
+    taps[1] = s_luma[s.y - 1][s.x];
+    taps[2] = s_luma[s.y - 1][s.x + 1];
+    taps[3] = s_luma[s.y][s.x - 1];
+    taps[4] = s_luma[s.y][s.x];
+    taps[5] = s_luma[s.y][s.x + 1];
+    taps[6] = s_luma[s.y + 1][s.x - 1];
+    taps[7] = s_luma[s.y + 1][s.x];
+    taps[8] = s_luma[s.y + 1][s.x + 1];
 
     float lumaLinear = taps[4];
     float localScale = 1.0;
@@ -622,7 +720,7 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
     // An Inf / NaN would set the scale of the whole neighbourhood, leave the pixel as it is
     if (!finite)
     {
-        WritePassthrough(p, c, intensity);
+        WritePassthrough(p, c, source.a, intensity);
         return;
     }
 
@@ -633,7 +731,6 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
     // The network gives a small positive residual even on a flat patch (~+0.007). Invisible after tonemapping,
     // but it doubles the brightness of dark linear values (pre-tonemap input). Its answer for a flat patch at the
     // local mean is subtracted, so only the detail is sharpened
-    float flat[9];
     float mean = 0.0;
 
     [unroll]
@@ -642,24 +739,20 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
 
     mean /= 9.0;
 
-    [unroll]
-    for (int f = 0; f < 9; f++)
-        flat[f] = mean;
-
     float rawResidual;
 
     [branch]
     if (Model == 0)
-        rawResidual = RunNetA(taps) - RunNetA(flat);
+        rawResidual = RunNetA(taps) - RunNetFlatA(mean);
     else
-        rawResidual = RunNetB(taps) - RunNetB(flat);
+        rawResidual = RunNetB(taps) - RunNetFlatB(mean);
 
     float normalizedResidual = saturate(abs(rawResidual) * 2.63); // 2.63 ~ 1/0.38
 
     // Debug: residual map
     if (ViewMode == 2)
     {
-        Dest[p] = float4(normalizedResidual, normalizedResidual, normalizedResidual, 1.0);
+        Dest[p] = float4(normalizedResidual, normalizedResidual, normalizedResidual, source.a);
         return;
     }
 
@@ -674,7 +767,7 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
     if (ViewMode == 1)
     {
         float debugRes = residual * intensity;
-        Dest[p] = float4(0.5 + debugRes, 0.5 + debugRes, 0.5 + debugRes, 1.0);
+        Dest[p] = float4(0.5 + debugRes, 0.5 + debugRes, 0.5 + debugRes, source.a);
         return;
     }
 
@@ -730,7 +823,7 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
 
         // DecodeLuma(lumaC) and not lumaLinear, a negative luma is encoded as 0
         float3 added = c + (lumaOut - DecodeLuma(lumaC, localScale));
-        outColor = lerp(added, c * ratio, ratioWeight);
+        outColor = max(floorC, lerp(added, c * ratio, ratioWeight));
     }
 
     if (Debug > 0 && DynamicSharpenEnabled > 0)
@@ -739,6 +832,6 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
     if (ClampOutput > 0)
         outColor = saturate(outColor);
 
-    Dest[p] = float4(outColor, 1.0);
+    Dest[p] = float4(outColor, source.a);
 }
 )";
