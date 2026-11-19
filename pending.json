@@ -1,11 +1,9 @@
 [
- "Neural Sharpening Parameters",
- "Model A (standard)",
- "Model B (edge-enhanced)",
- "Neural Model",
- "Edge Response",
- "Sharpening map",
- "Residual map",
- "Debug View",
- "Reset Neural Values"
+ "OptiSharpen Parameters",
+ "TAA Wide",
+ "TAA Wide 12",
+ "Punch 10",
+ "Punch 15",
+ "Change magnitude",
+ "Reset OptiSharpen Values"
 ]
