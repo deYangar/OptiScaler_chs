@@ -1486,5 +1486,12 @@
  "Sharpening map": "UI_Sharpening_map",
  "Residual map": "UI_Residual_map",
  "Debug View": "UI_Debug_View",
- "Reset Neural Values": "UI_Reset_Neural_Values"
+ "Reset Neural Values": "UI_Reset_Neural_Values",
+ "OptiSharpen Parameters": "UI_OptiSharpen_Parameters",
+ "TAA Wide": "UI_TAA_Wide",
+ "TAA Wide 12": "UI_TAA_Wide_12",
+ "Punch 10": "UI_Punch_10",
+ "Punch 15": "UI_Punch_15",
+ "Change magnitude": "UI_Change_magnitude",
+ "Reset OptiSharpen Values": "UI_Reset_OptiSharpen_Values"
 }

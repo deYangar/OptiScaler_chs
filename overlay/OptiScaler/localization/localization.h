@@ -1650,6 +1650,13 @@ enum class LK {
     UI_Residual_map,
     UI_Debug_View,
     UI_Reset_Neural_Values,
+    UI_OptiSharpen_Parameters,
+    UI_TAA_Wide,
+    UI_TAA_Wide_12,
+    UI_Punch_10,
+    UI_Punch_15,
+    UI_Change_magnitude,
+    UI_Reset_OptiSharpen_Values,
     COUNT
 };
 

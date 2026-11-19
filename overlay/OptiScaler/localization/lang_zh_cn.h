@@ -1668,4 +1668,11 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Residual_map)] = "残差图";
     table[static_cast<int>(LK::UI_Debug_View)] = "调试视图";
     table[static_cast<int>(LK::UI_Reset_Neural_Values)] = "重置神经值";
+    table[static_cast<int>(LK::UI_OptiSharpen_Parameters)] = "OptiSharpen 参数";
+    table[static_cast<int>(LK::UI_TAA_Wide)] = "TAA Wide";
+    table[static_cast<int>(LK::UI_TAA_Wide_12)] = "TAA Wide 12";
+    table[static_cast<int>(LK::UI_Punch_10)] = "Punch 10";
+    table[static_cast<int>(LK::UI_Punch_15)] = "Punch 15";
+    table[static_cast<int>(LK::UI_Change_magnitude)] = "变化幅度";
+    table[static_cast<int>(LK::UI_Reset_OptiSharpen_Values)] = "重置 OptiSharpen 数值";
 }

@@ -1656,4 +1656,11 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Residual_map)] = "Residual map";
     table[static_cast<int>(LK::UI_Debug_View)] = "Debug View";
     table[static_cast<int>(LK::UI_Reset_Neural_Values)] = "Reset Neural Values";
+    table[static_cast<int>(LK::UI_OptiSharpen_Parameters)] = "OptiSharpen Parameters";
+    table[static_cast<int>(LK::UI_TAA_Wide)] = "TAA Wide";
+    table[static_cast<int>(LK::UI_TAA_Wide_12)] = "TAA Wide 12";
+    table[static_cast<int>(LK::UI_Punch_10)] = "Punch 10";
+    table[static_cast<int>(LK::UI_Punch_15)] = "Punch 15";
+    table[static_cast<int>(LK::UI_Change_magnitude)] = "Change magnitude";
+    table[static_cast<int>(LK::UI_Reset_OptiSharpen_Values)] = "Reset OptiSharpen Values";
 }
