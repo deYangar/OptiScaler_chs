@@ -1675,4 +1675,5 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Punch_15)] = "Punch 15";
     table[static_cast<int>(LK::UI_Change_magnitude)] = "变化幅度";
     table[static_cast<int>(LK::UI_Reset_OptiSharpen_Values)] = "重置 OptiSharpen 数值";
+    table[static_cast<int>(LK::UI_MacType_detected)] = "检测到 MacType";
 }

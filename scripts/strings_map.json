@@ -1493,5 +1493,6 @@
  "Punch 10": "UI_Punch_10",
  "Punch 15": "UI_Punch_15",
  "Change magnitude": "UI_Change_magnitude",
- "Reset OptiSharpen Values": "UI_Reset_OptiSharpen_Values"
+ "Reset OptiSharpen Values": "UI_Reset_OptiSharpen_Values",
+ "MacType detected": "UI_MacType_detected"
 }

@@ -1663,4 +1663,5 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Punch_15)] = "Punch 15";
     table[static_cast<int>(LK::UI_Change_magnitude)] = "Change magnitude";
     table[static_cast<int>(LK::UI_Reset_OptiSharpen_Values)] = "Reset OptiSharpen Values";
+    table[static_cast<int>(LK::UI_MacType_detected)] = "MacType detected";
 }

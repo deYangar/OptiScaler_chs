@@ -1657,6 +1657,7 @@ enum class LK {
     UI_Punch_15,
     UI_Change_magnitude,
     UI_Reset_OptiSharpen_Values,
+    UI_MacType_detected,
     COUNT
 };
 
