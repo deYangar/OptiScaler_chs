@@ -26,6 +26,7 @@
 #include <nvapi/fakenvapi.h>
 #include <hooks/Reflex_Hooks.h>
 #include <hooks/Vulkan_Hooks.h>
+#include <hooks/LibraryLoad_Hooks.h>
 
 #include <BuildInfo.h>
 #include <version_check.h>
@@ -306,8 +307,22 @@ enum OverlayRow : int
     OverlayRow_COUNT,
 };
 
-static const char* overlayRowKeys[] = { "fps",      "upscale",       "frametime", "frametimegraph",
-                                        "upscaler", "upscalergraph", "lowlatency" };
+template <> struct EnumConfig<OverlayRow>
+{
+    // Unknown keys are skipped
+    static constexpr auto default_value = OverlayRow_COUNT;
+
+    static constexpr std::pair<OverlayRow, std::string_view> mapping[] = {
+        { OverlayRow_Fps, "fps" },
+        { OverlayRow_Upscale, "upscale" },
+        { OverlayRow_FrameTime, "frametime" },
+        { OverlayRow_FrameTimeGraph, "frametimegraph" },
+        { OverlayRow_UpscalerTime, "upscaler" },
+        { OverlayRow_UpscalerTimeGraph, "upscalergraph" },
+        { OverlayRow_LowLatency, "lowlatency" },
+    };
+};
+
 static const char* overlayRowNames[] = {
     "FPS",           "Upscale Ratio",       "Frame Time",         "Frame Time Graph",
     "Upscaler Time", "Upscaler Time Graph", "Low Latency Timings"
@@ -380,11 +395,8 @@ static std::vector<OverlayRowEntry> OverlayRows(FpsOverlay type)
         if (!shown)
             name.remove_prefix(1);
 
-        for (int row = 0; row < OverlayRow_COUNT; row++)
-        {
-            if (name == overlayRowKeys[row] && !listed(row))
-                rows.push_back({ row, shown });
-        }
+        if (const auto row = CodeToEnum<OverlayRow>(name); row != OverlayRow_COUNT && !listed(row))
+            rows.push_back({ row, shown });
     }
 
     for (int row = 0; row < OverlayRow_COUNT; row++)
@@ -401,7 +413,7 @@ static void SetOverlayRows(const std::vector<OverlayRowEntry>& rows)
     std::string keys;
 
     for (const auto& entry : rows)
-        keys += (keys.empty() ? "" : ",") + std::string(entry.shown ? "" : "-") + overlayRowKeys[entry.row];
+        keys += (keys.empty() ? "" : ",") + std::string(entry.shown ? "" : "-") + EnumToCode((OverlayRow) entry.row);
 
     Config::Instance()->FpsOverlayRows = keys;
 }
@@ -2598,6 +2610,19 @@ void MenuCommon::UpdateVersionAndStartupNotifications(RenderMenuContext& ctx)
         state.postDone = true;
     }
 
+    static bool macTypeNoticeShown = false;
+    if (!macTypeNoticeShown && LibraryLoadHooks::macTypeRejections.load(std::memory_order_relaxed) >= 20)
+    {
+        macTypeNoticeShown = true;
+
+        ImGuiToast notification { ImGuiToastType::Warning, 20000 };
+        notification.setTitle("MacType detected");
+        notification.setContent("MacType is known to cause performance issues,\n"
+                                "especially with high polling rate mice.\n"
+                                "Please disable it while playing.");
+        ImGui::InsertNotification(notification);
+    }
+
     // Initialize splash timing and select the splash text once per process.
     if (splashLimit < 1.0f)
     {
@@ -2976,8 +3001,14 @@ void MenuCommon::RenderPerformanceOverlay(RenderMenuContext& ctx)
                              : std::format("{} x{}", fg->Name(), fg->GetInterpolatedFrameCount() + 1);
 
             const int fakeFramesCount = state.DlssgDetectedInterpolationCount();
+
+            // Nvngx/DLSSG paths report generation through the game's DLSSG frame count, not IsGenerating()
+            bool nvngxFgGenerating = false;
+
             auto formatFg = [&](std::string_view name, int maxFakeFrames)
             {
+                nvngxFgGenerating = fakeFramesCount > 0 && fakeFramesCount <= maxFakeFrames;
+
                 if (fakeFramesCount > maxFakeFrames)
                     return std::format("{} Doesn't support more than {}x", name, maxFakeFrames);
 
@@ -3125,8 +3156,9 @@ void MenuCommon::RenderPerformanceOverlay(RenderMenuContext& ctx)
                 shownAt = now;
             }
 
-            // With an FG input also the measured base frame rate, the same as FPS shows that FG isn't generating
-            const std::string fpsValue = shown.baseFrameTime > 0.0
+            // With an FG input also the measured base frame rate, but only while FG is generating frames
+            const bool fgGenerating = (fg != nullptr && fg->IsGenerating()) || nvngxFgGenerating;
+            const std::string fpsValue = (shown.baseFrameTime > 0.0 && fgGenerating)
                                              ? StrFmt("%.1f/%.1f", shown.frameRate, 1000.0 / shown.baseFrameTime)
                                              : StrFmt("%.1f", shown.frameRate);
 
@@ -4636,12 +4668,6 @@ static void RenderFGStatus(State& state, Config* config)
         ImGui::Text("Please select %s Frame Generation in the game options\n"
                     "You might need to select %s first",
                     name, name);
-    }
-    else if (input != FGInput::NvngxFG && !config->IsFGEnabled())
-    {
-        // The game controls Nvngx FG, the rest is set by Frame Gen in the output's settings
-        ImGui::SameLine();
-        ImGui::TextColored(StatusWarn(), "(turn on Frame Gen below)");
     }
 }
 
@@ -7416,7 +7442,7 @@ void MenuCommon::RenderActiveImageSettings(RenderMenuContext& ctx)
                 selectedMode = 1;
             else if (currentShader == SharpenShader::DepthAware)
                 selectedMode = 2;
-            else if (currentShader == SharpenShader::LocalContrastDepthAware)
+            else if (currentShader == SharpenShader::DepthAwareDAS)
                 selectedMode = 3;
             else if (currentShader == SharpenShader::BabaNeural)
                 selectedMode = 4;
@@ -7441,7 +7467,7 @@ void MenuCommon::RenderActiveImageSettings(RenderMenuContext& ctx)
                 else if (selectedMode == 2)
                     Config::Instance()->SharpnessShader = SharpenShader::DepthAware;
                 else if (selectedMode == 3)
-                    Config::Instance()->SharpnessShader = SharpenShader::LocalContrastDepthAware;
+                    Config::Instance()->SharpnessShader = SharpenShader::DepthAwareDAS;
                 else if (selectedMode == 4)
                     Config::Instance()->SharpnessShader = SharpenShader::BabaNeural;
                 else if (selectedMode == 5)
@@ -8722,7 +8748,7 @@ void MenuCommon::RenderFpsOverlaySettings(RenderMenuContext& ctx)
                 for (size_t i = 0; i < shownRows.size(); i++)
                 {
                     const int row = shownRows[i].row;
-                    ScopedID rowId { overlayRowKeys[row] };
+                    ScopedID rowId { EnumToCode((OverlayRow) row).c_str() };
 
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
