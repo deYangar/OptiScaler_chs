@@ -1658,6 +1658,9 @@ enum class LK {
     UI_Change_magnitude,
     UI_Reset_OptiSharpen_Values,
     UI_MacType_detected,
+    UI_Natural_D10,
+    UI_Crisp_D10_p50,
+    UI_Natural_D10_fp16_packed,
     COUNT
 };
 
