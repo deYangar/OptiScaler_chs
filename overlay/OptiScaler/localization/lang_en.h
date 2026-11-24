@@ -1667,4 +1667,8 @@ inline void InitEnglishTable(std::unordered_map<int, const char*>& table) {
     table[static_cast<int>(LK::UI_Natural_D10)] = "Natural D10";
     table[static_cast<int>(LK::UI_Crisp_D10_p50)] = "Crisp D10 p50";
     table[static_cast<int>(LK::UI_Natural_D10_fp16_packed)] = "Natural D10 (fp16 packed)";
+    table[static_cast<int>(LK::UI_Driver_pacing_the_driver_doesn_t_pace_the_flips_08X_status_u)] = "Driver pacing: the driver doesn't pace the flips (%08X, status %u)";
+    table[static_cast<int>(LK::UI_The_driver_got_flips_without_usable_pacing_info)] = "The driver got flips without usable pacing info.";
+    table[static_cast<int>(LK::UI_The_driver_has_no_pacing_config_for_the_swapchain)] = "The driver has no pacing config for the swapchain.";
+    table[static_cast<int>(LK::UI_The_driver_hasn_t_reported_on_the_flips_yet)] = "The driver hasn't reported on the flips yet.";
 }

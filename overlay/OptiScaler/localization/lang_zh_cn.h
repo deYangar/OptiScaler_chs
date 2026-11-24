@@ -1679,4 +1679,8 @@ inline void InitChineseSimplifiedTable(std::unordered_map<int, const char*>& tab
     table[static_cast<int>(LK::UI_Natural_D10)] = "Natural D10";
     table[static_cast<int>(LK::UI_Crisp_D10_p50)] = "Crisp D10 p50";
     table[static_cast<int>(LK::UI_Natural_D10_fp16_packed)] = "Natural D10（fp16 packed）";
+    table[static_cast<int>(LK::UI_Driver_pacing_the_driver_doesn_t_pace_the_flips_08X_status_u)] = "驱动节奏控制：驱动程序没有对翻转进行节奏控制（%08X，状态 %u）";
+    table[static_cast<int>(LK::UI_The_driver_got_flips_without_usable_pacing_info)] = "驱动程序在没有可用节奏控制信息的情况下完成了翻转。";
+    table[static_cast<int>(LK::UI_The_driver_has_no_pacing_config_for_the_swapchain)] = "驱动程序没有针对交换链的节奏控制配置。";
+    table[static_cast<int>(LK::UI_The_driver_hasn_t_reported_on_the_flips_yet)] = "驱动程序尚未报告翻转情况。";
 }

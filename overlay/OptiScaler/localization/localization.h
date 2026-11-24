@@ -1661,6 +1661,10 @@ enum class LK {
     UI_Natural_D10,
     UI_Crisp_D10_p50,
     UI_Natural_D10_fp16_packed,
+    UI_Driver_pacing_the_driver_doesn_t_pace_the_flips_08X_status_u,
+    UI_The_driver_got_flips_without_usable_pacing_info,
+    UI_The_driver_has_no_pacing_config_for_the_swapchain,
+    UI_The_driver_hasn_t_reported_on_the_flips_yet,
     COUNT
 };
 

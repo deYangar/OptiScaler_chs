@@ -1497,5 +1497,9 @@
  "MacType detected": "UI_MacType_detected",
  "Natural D10": "UI_Natural_D10",
  "Crisp D10 p50": "UI_Crisp_D10_p50",
- "Natural D10 (fp16 packed)": "UI_Natural_D10_fp16_packed"
+ "Natural D10 (fp16 packed)": "UI_Natural_D10_fp16_packed",
+ "Driver pacing: the driver doesn't pace the flips (%08X, status %u)": "UI_Driver_pacing_the_driver_doesn_t_pace_the_flips_08X_status_u",
+ "The driver got flips without usable pacing info.": "UI_The_driver_got_flips_without_usable_pacing_info",
+ "The driver has no pacing config for the swapchain.": "UI_The_driver_has_no_pacing_config_for_the_swapchain",
+ "The driver hasn't reported on the flips yet.": "UI_The_driver_hasn_t_reported_on_the_flips_yet"
 }
